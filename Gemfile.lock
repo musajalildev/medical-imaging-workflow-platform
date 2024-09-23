@@ -122,6 +122,8 @@ GEM
     capistrano-rvm (0.1.2)
       capistrano (~> 3.0)
       sshkit (~> 1.2)
+    capistrano-yarn (2.0.2)
+      capistrano (~> 3.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -232,7 +234,7 @@ GEM
     package_json (0.1.0)
     pg (1.5.7)
     public_suffix (6.0.1)
-    puma (6.4.2)
+    puma (6.4.3)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (2.2.9)
@@ -364,6 +366,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-session_store
   annotate
+  base64
   bcrypt_pbkdf (>= 1.0, < 2.0)
   bootsnap
   brakeman
@@ -375,6 +378,7 @@ DEPENDENCIES
   capistrano-passenger
   capistrano-rails
   capistrano-rvm
+  capistrano-yarn
   capybara
   daemons
   database_cleaner

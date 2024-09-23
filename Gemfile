@@ -29,6 +29,7 @@ gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
 gem "bootsnap", require: false
 gem 'mutex_m', require: false
 gem 'drb', require: false
+gem 'base64'
 
 # Use Sass to process CSS
 # gem "sassc-rails"
@@ -85,6 +86,7 @@ group :development do
   gem 'capistrano-bundler', require: false
   gem 'capistrano-rvm', require: false
   gem 'capistrano-passenger', require: false
+  gem 'capistrano-yarn', require: false
 
   gem 'epi_deploy', git: 'https://github.com/epigenesys/epi_deploy.git'
   gem 'bcrypt_pbkdf', '>= 1.0', '< 2.0'

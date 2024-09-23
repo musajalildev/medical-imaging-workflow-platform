@@ -4,7 +4,3 @@
 require_relative "config/application"
 
 Rails.application.load_tasks
-
-# Ensure yarn install runs before compiling assets
-Rake::Task["assets:precompile"].clear
-task "assets:precompile" => ["yarn:install", "shakapacker:compile"]

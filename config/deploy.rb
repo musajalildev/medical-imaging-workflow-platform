@@ -2,12 +2,12 @@
 set :application,             'Project'
 set :branch,                  -> { fetch(:stage) }
 set :repo_url,                ''
-set :linked_files,            fetch(:linked_files,  fetch(:env_links, [])).push('config/database.yml', 'config/secrets.yml')
+set :linked_files,            fetch(:linked_files,  fetch(:env_links, [])).push('config/credentials.yml.enc', 'config/database.yml', 'config/master.key')
 set :linked_dirs,             fetch(:linked_dirs, []).push('log', 'tmp/pids', 'public/packs', 'node_modules', 'storage')
 
 ## Ruby configuration
 set :rvm_type,                    :system
-set :rvm_ruby_version,            'ruby-3.1'
+set :rvm_ruby_version,            'ruby-3.3.4'
 set :rvm_path,                    '/usr/local/rvm'
 
 # Currently Passenger is installed against the 'default' Ruby version
@@ -29,7 +29,7 @@ namespace :monit do
       fetch(:monit_processes).each do |process_name|
         filename = File.expand_path("../deploy/monit_templates/#{process_name}.monitrc.erb", __FILE__)
         erb = File.read(filename)
-        upload! StringIO.new(ERB.new(erb, nil, '-').result(binding)), File.join(shared_path, 'monit', "#{process_name}.monitrc")
+        upload! StringIO.new(ERB.new(erb, trim_mode: '-').result(binding)), File.join(shared_path, 'monit', "#{process_name}.monitrc")
       end
       sudo 'monit', 'reload'
     end
@@ -120,13 +120,6 @@ namespace :deploy do
   end
 end
 
-namespace :assets do
-  desc "Ensures that dependencies required to compile assets are installed"
-  task install_dependencies: :environment do
-    raise if File.exist?("package.json") && !(system "yarn install --immutable")
-  end
-end
-Rake::Task["assets:precompile"].enhance ["assets:install_dependencies"]
 Rake::Task["deploy:assets:backup_manifest"].clear_actions
 
 ## Restart delayed_job during the deployment process
