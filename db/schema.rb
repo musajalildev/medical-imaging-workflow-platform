@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_11_173945) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_173945) do
     t.string "sn"
     t.string "givenname"
     t.string "account_type"
+    t.integer "role", default: 0, null: false
     t.index ["email"], name: "index_users_on_email"
     t.index ["username"], name: "index_users_on_username"
   end

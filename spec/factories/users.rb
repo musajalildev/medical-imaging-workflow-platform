@@ -13,6 +13,7 @@
 #  last_sign_in_ip    :string
 #  mail               :string
 #  ou                 :string
+#  role               :integer          default(0), not null
 #  sign_in_count      :integer          default(0), not null
 #  sn                 :string
 #  uid                :string
