@@ -17,8 +17,17 @@ require "action_view/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Require gems used by epi_cas
+require 'devise'
+require 'devise_cas_authenticatable'
+require "devise_ldap_authenticatable"
+require 'sheffield_ldap_lookup'
+require 'rack-cas/session_store/active_record'
 module Project
   class Application < Rails::Application
+    config.rack_cas.session_store = RackCAS::ActiveRecordStore
+    config.rack_cas.server_url = 'https://login.shef.ac.uk/cas' # replace with your server URL
+    config.rack_cas.service = "/users/service" # If your user model isn't called User, change this
     config.load_defaults 8.0
 
     config.active_job.queue_adapter = :delayed_job
