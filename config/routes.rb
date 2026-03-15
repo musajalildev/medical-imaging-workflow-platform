@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :job_status_histories
   resources :reports
   resources :notifications
   resources :jobs

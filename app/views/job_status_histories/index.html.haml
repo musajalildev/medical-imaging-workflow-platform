@@ -1,0 +1,26 @@
+.card
+  .card-header.d-flex.align-items-center
+    %span Listing Job Status Histories
+
+    = link_to 'New Job status history', new_job_status_history_path, class: 'btn btn-outline-secondary ms-auto'
+
+  %table.table
+    %thead
+      %tr
+        %th Job
+        %th Old status
+        %th New status
+        %th Initiator
+        %th
+    %tbody
+      - @job_status_histories.each do |job_status_history|
+        %tr
+          %td= job_status_history.job
+          %td= job_status_history.old_status
+          %td= job_status_history.new_status
+          %td= job_status_history.initiator
+          %td
+            .btn-toolbar.float-end
+              = link_to 'Show', job_status_history, class: 'btn btn-outline-secondary btn-sm'
+              = link_to 'Edit', edit_job_status_history_path(job_status_history), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              = link_to 'Destroy', job_status_history, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'
