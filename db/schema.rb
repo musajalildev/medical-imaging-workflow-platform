@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_15_150248) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "jobs", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.bigint "operator_id", null: false
+    t.integer "status"
+    t.string "title"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_jobs_on_client_id"
+    t.index ["operator_id"], name: "index_jobs_on_operator_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -61,4 +73,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
     t.index ["email"], name: "index_users_on_email"
     t.index ["username"], name: "index_users_on_username"
   end
+
+  add_foreign_key "jobs", "users", column: "client_id"
+  add_foreign_key "jobs", "users", column: "operator_id"
 end

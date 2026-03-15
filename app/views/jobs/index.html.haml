@@ -1,0 +1,30 @@
+.card
+  .card-header.d-flex.align-items-center
+    %span Listing Jobs
+
+    = link_to 'New Job', new_job_path, class: 'btn btn-outline-secondary ms-auto'
+
+  %table.table
+    %thead
+      %tr
+        %th Client
+        %th Operator
+        %th Status
+        %th Title
+        %th Description
+        %th Date of creation
+        %th
+    %tbody
+      - @jobs.each do |job|
+        %tr
+          %td= job.client
+          %td= job.operator
+          %td= job.status
+          %td= job.title
+          %td= job.description
+          %td= job.date_of_creation
+          %td
+            .btn-toolbar.float-end
+              = link_to 'Show', job, class: 'btn btn-outline-secondary btn-sm'
+              = link_to 'Edit', edit_job_path(job), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              = link_to 'Destroy', job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'
