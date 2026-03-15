@@ -1,0 +1,24 @@
+.card
+  .card-header.d-flex.align-items-center
+    %span Listing Image Files
+
+    = link_to 'New Image file', new_image_file_path, class: 'btn btn-outline-secondary ms-auto'
+
+  %table.table
+    %thead
+      %tr
+        %th Job
+        %th File path
+        %th File type
+        %th
+    %tbody
+      - @image_files.each do |image_file|
+        %tr
+          %td= image_file.job
+          %td= image_file.file_path
+          %td= image_file.file_type
+          %td
+            .btn-toolbar.float-end
+              = link_to 'Show', image_file, class: 'btn btn-outline-secondary btn-sm'
+              = link_to 'Edit', edit_image_file_path(image_file), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              = link_to 'Destroy', image_file, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'

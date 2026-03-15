@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_15_171751) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_15_172235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "cancelled_jobs", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.text "cancel_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_cancelled_jobs_on_job_id"
+  end
+
+  create_table "complete_jobs", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_complete_jobs_on_job_id"
+  end
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer "priority", default: 0, null: false
@@ -27,6 +42,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_15_171751) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "image_files", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.string "file_path"
+    t.string "file_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_image_files_on_job_id"
   end
 
   create_table "job_status_histories", force: :cascade do |t|
@@ -102,6 +126,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_15_171751) do
     t.index ["username"], name: "index_users_on_username"
   end
 
+  add_foreign_key "cancelled_jobs", "jobs"
+  add_foreign_key "complete_jobs", "jobs"
+  add_foreign_key "image_files", "jobs"
   add_foreign_key "job_status_histories", "jobs"
   add_foreign_key "job_status_histories", "users", column: "initiator_id"
   add_foreign_key "jobs", "users", column: "client_id"

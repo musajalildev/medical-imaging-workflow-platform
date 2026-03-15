@@ -1,0 +1,16 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Image File details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Job:
+          %dd.col-md-9= @image_file.job
+          %dt.col-md-3 File path:
+          %dd.col-md-9= @image_file.file_path
+          %dt.col-md-3 File type:
+          %dd.col-md-9= @image_file.file_type
+      .card-footer.d-flex
+        = link_to 'Edit', edit_image_file_path(@image_file), class: 'btn btn-link'
+        = link_to 'Back', image_files_path, class: 'btn btn-link ms-auto'

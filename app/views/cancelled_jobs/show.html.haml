@@ -1,0 +1,14 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Cancelled Job details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Job:
+          %dd.col-md-9= @cancelled_job.job
+          %dt.col-md-3 Cancel reason:
+          %dd.col-md-9= @cancelled_job.cancel_reason
+      .card-footer.d-flex
+        = link_to 'Edit', edit_cancelled_job_path(@cancelled_job), class: 'btn btn-link'
+        = link_to 'Back', cancelled_jobs_path, class: 'btn btn-link ms-auto'
