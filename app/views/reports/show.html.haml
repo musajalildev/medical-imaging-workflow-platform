@@ -1,0 +1,14 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Report details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Job:
+          %dd.col-md-9= @report.job
+          %dt.col-md-3 File path:
+          %dd.col-md-9= @report.file_path
+      .card-footer.d-flex
+        = link_to 'Edit', edit_report_path(@report), class: 'btn btn-link'
+        = link_to 'Back', reports_path, class: 'btn btn-link ms-auto'

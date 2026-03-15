@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :reports
   resources :notifications
   resources :jobs
   mount EpiCas::Engine, at: "/"
