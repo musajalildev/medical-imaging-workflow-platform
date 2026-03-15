@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_15_150248) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_15_163709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_15_150248) do
     t.datetime "updated_at", null: false
     t.index ["client_id"], name: "index_jobs_on_client_id"
     t.index ["operator_id"], name: "index_jobs_on_operator_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "body"
+    t.boolean "is_read"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -76,4 +85,5 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_15_150248) do
 
   add_foreign_key "jobs", "users", column: "client_id"
   add_foreign_key "jobs", "users", column: "operator_id"
+  add_foreign_key "notifications", "users"
 end

@@ -1,0 +1,16 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Notification details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 User:
+          %dd.col-md-9= @notification.user
+          %dt.col-md-3 Body:
+          %dd.col-md-9= @notification.body
+          %dt.col-md-3 Is read:
+          %dd.col-md-9= @notification.is_read
+      .card-footer.d-flex
+        = link_to 'Edit', edit_notification_path(@notification), class: 'btn btn-link'
+        = link_to 'Back', notifications_path, class: 'btn btn-link ms-auto'
