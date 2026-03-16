@@ -24,8 +24,7 @@
 class Job < ApplicationRecord
   belongs_to :client
   belongs_to :operator
-
-  STATUSES = { :pending, :assigned, :in_progress, :complete, :failed }
-
+  STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
+  
   enum :status, STATUSES
 end
