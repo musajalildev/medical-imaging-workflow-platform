@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   # Disabling caching will prevent sensitive information being stored in the
   # browser cache. If your app does not deal with sensitive information then it
   # may be worth enabling caching for performance.
+  before_action :authenticate_user!
   before_action :update_headers_to_disable_caching
 
   private
