@@ -32,6 +32,14 @@
             = link_to '/', class: 'active nav-link' do
               %i.bi-house-fill
               Home
+          - if user_signed_in?
+            .d-flex.align-items-center.gap-2.ms-auto
+              %span.text-muted.small
+                = "Signed in as #{current_user.username}"
+              - if Rails.env.development?
+                = button_to 'Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
+              - else
+                = button_to 'Sign out', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
 
     - if flash.present?
       .container-fluid.flash-messages
