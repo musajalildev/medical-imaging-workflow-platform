@@ -2,14 +2,15 @@
 #
 # Table name: jobs
 #
-#  id          :bigint           not null, primary key
-#  description :text
-#  status      :integer
-#  title       :string
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  client_id   :bigint           not null
-#  operator_id :bigint           not null
+#  id            :bigint           not null, primary key
+#  custom_status :string
+#  description   :text
+#  status        :integer
+#  title         :string
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  client_id     :bigint           not null
+#  operator_id   :bigint           not null
 #
 # Indexes
 #

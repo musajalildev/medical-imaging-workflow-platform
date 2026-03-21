@@ -72,6 +72,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "custom_status"
     t.index ["client_id"], name: "index_jobs_on_client_id"
     t.index ["operator_id"], name: "index_jobs_on_operator_id"
   end
