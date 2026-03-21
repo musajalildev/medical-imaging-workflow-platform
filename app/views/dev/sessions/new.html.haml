@@ -1,0 +1,14 @@
+%h1 Dev Login
+- if @users.any?
+  %p Select a user to sign in as:
+  %ul{ style: "list-style: none; padding-left: 0; max-width: 460px;" }
+    - @users.each do |user|
+      %li{ style: "margin-bottom: 10px;" }
+        = form_with url: dev_session_path, method: :post do |f|
+          = f.hidden_field :user_id, value: user.id
+          %button{ type: "submit", style: "width: 100%; border: 1px solid #1f2937; border-radius: 8px; padding: 10px 14px; background: #111827; color: #ffffff; font-weight: 600; text-align: left; cursor: pointer;" }
+            = "Login as #{user.username} (#{user.role})"
+- else
+  %p No users in the database yet. Run
+  %code bin/rails db:seed
+  %p to create dev users.

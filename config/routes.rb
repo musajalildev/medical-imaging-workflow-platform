@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+    if Rails.env.development?
+      namespace :dev do
+        resource :session, only: [:new, :create, :destroy]
+      end
+    end
+
   resources :complete_jobs
   resources :cancelled_jobs
   resources :image_files
