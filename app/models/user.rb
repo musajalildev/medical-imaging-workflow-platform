@@ -30,4 +30,6 @@ class User < ApplicationRecord
   include EpiCas::DeviseHelper
 
   enum :role, [ :unassinged, :client, :operator, :admin, :owner ]
+  has_many :jobs, dependent: :destroy
+
 end
