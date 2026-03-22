@@ -13,7 +13,7 @@
 #  last_sign_in_ip    :string
 #  mail               :string
 #  ou                 :string
-#  role               :integer          default("unassinged"), not null
+#  role               :integer          default(0), not null
 #  sign_in_count      :integer          default(0), not null
 #  sn                 :string
 #  uid                :string
@@ -30,6 +30,4 @@ class User < ApplicationRecord
   include EpiCas::DeviseHelper
 
   enum :role, [ :unassinged, :client, :operator, :admin, :owner ]
-  has_many :jobs, dependent: :destroy
-
 end
