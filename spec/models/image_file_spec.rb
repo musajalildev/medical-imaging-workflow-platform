@@ -3,8 +3,8 @@
 # Table name: image_files
 #
 #  id         :bigint           not null, primary key
-#  file_path  :string
-#  file_type  :string
+#  file_path  :string           not null
+#  file_type  :string           not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  job_id     :bigint           not null
