@@ -3,8 +3,8 @@
 # Table name: notifications
 #
 #  id         :bigint           not null, primary key
-#  body       :text
-#  is_read    :boolean
+#  body       :text             not null
+#  is_read    :boolean          default(FALSE), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  user_id    :bigint           not null

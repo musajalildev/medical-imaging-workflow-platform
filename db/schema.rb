@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_23_124638) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -46,8 +46,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
 
   create_table "image_files", force: :cascade do |t|
     t.bigint "job_id", null: false
-    t.string "file_path"
-    t.string "file_type"
+    t.string "file_path", null: false
+    t.string "file_type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["job_id"], name: "index_image_files_on_job_id"
@@ -55,8 +55,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
 
   create_table "job_status_histories", force: :cascade do |t|
     t.bigint "job_id", null: false
-    t.integer "old_status"
-    t.integer "new_status"
+    t.integer "old_status", null: false
+    t.integer "new_status", null: false
     t.bigint "initiator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -66,9 +66,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
 
   create_table "jobs", force: :cascade do |t|
     t.bigint "client_id", null: false
-    t.bigint "operator_id", null: false
-    t.integer "status"
-    t.string "title"
+    t.bigint "operator_id"
+    t.integer "status", null: false
+    t.string "title", null: false
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -79,8 +79,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
 
   create_table "notifications", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.text "body"
-    t.boolean "is_read"
+    t.text "body", null: false
+    t.boolean "is_read", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_notifications_on_user_id"
@@ -88,7 +88,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_21_173208) do
 
   create_table "reports", force: :cascade do |t|
     t.bigint "job_id", null: false
-    t.string "file_path"
+    t.string "file_path", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["job_id"], name: "index_reports_on_job_id"
