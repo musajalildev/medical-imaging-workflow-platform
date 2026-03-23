@@ -1,0 +1,21 @@
+.row.justify-content-center
+	.col-12.col-md-8.col-lg-6
+		.card.shadow-sm.mt-4
+			.card-body
+				%h1.h4.mb-3 Google Drive Upload
+				%p.text-muted.mb-4 Select a file and upload it through Rails to Google Drive.
+
+				#drive-upload
+					.mb-3
+						%label.form-label{ for: 'upload-file-input' } File
+						%input#upload-file-input.form-control{ type: 'file' }
+
+					.d-flex.align-items-center.gap-3.mb-3
+						%button#upload-button.btn.btn-primary{ type: 'button' } Upload
+						%span#upload-status.text-muted Ready
+
+					.mb-2
+						%label.form-label{ for: 'upload-progress' } Progress
+						%progress#upload-progress.form-control{ value: '0', max: '100' } 0%
+
+					#upload-progress-text.small.text-muted 0%
