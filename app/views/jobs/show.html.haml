@@ -6,9 +6,9 @@
       .card-body
         %dl.row.mb-0
           %dt.col-md-3 Client:
-          %dd.col-md-9= @job.client
+          %dd.col-md-9= @job.client.email
           %dt.col-md-3 Operator:
-          %dd.col-md-9= @job.operator
+          %dd.col-md-9= @job.operator.email
           %dt.col-md-3 Status:
           %dd.col-md-9= @job.status
           %dt.col-md-3 Title:
@@ -16,7 +16,15 @@
           %dt.col-md-3 Description:
           %dd.col-md-9= @job.description
           %dt.col-md-3 Date of creation:
-          %dd.col-md-9= @job.date_of_creation
+          %dd.col-md-9= @job.created_at
+
+          %h4 Status history
+          .status-history-box
+            %ul
+              - @job.status_histories.each do |history|
+                %li
+                  = history.formatted_history
+
       .card-footer.d-flex
         = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'

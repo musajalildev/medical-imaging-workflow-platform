@@ -28,4 +28,9 @@ class Job < ApplicationRecord
   STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
   
   enum :status, STATUSES
+
+  # get all the status history for this job, ordered by most recent first
+  def status_histories
+    JobStatusHistory.where(job: self).order(created_at: :desc)
+  end
 end

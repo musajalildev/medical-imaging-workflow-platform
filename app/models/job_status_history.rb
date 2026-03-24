@@ -26,4 +26,9 @@ class JobStatusHistory < ApplicationRecord
 
   enum :old_status, Job::STATUSES, prefix: :old
   enum :new_status, Job::STATUSES, prefix: :new
+
+  # get formatted status history for display
+  def formatted_history
+    "#{initiator.email} changed status from #{old_status.to_s.humanize} to #{new_status.to_s.humanize} at #{created_at.strftime("%Y-%m-%d %H:%M:%S")}"
+  end
 end
