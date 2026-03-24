@@ -56,6 +56,8 @@ function initializeDriveUpload() {
   const progressBar = document.getElementById('upload-progress');
   const progressText = document.getElementById('upload-progress-text');
   const statusText = document.getElementById('upload-status');
+  const uploadedFileIdInput = document.getElementById('uploaded-file-id');
+  const uploadedFileTypeInput = document.getElementById('uploaded-file-type');
 
   const setProgress = (percent) => {
     progressBar.value = percent;
@@ -66,6 +68,19 @@ function initializeDriveUpload() {
   const setStatus = (message) => {
     statusText.textContent = message;
   };
+
+  fileInput.addEventListener('change', () => {
+    if (uploadedFileIdInput) {
+      uploadedFileIdInput.value = '';
+    }
+
+    if (uploadedFileTypeInput) {
+      uploadedFileTypeInput.value = 'google_drive_file_id';
+    }
+
+    setProgress(0);
+    setStatus('Ready');
+  });
 
   uploadButton.addEventListener('click', async () => {
     const file = fileInput.files && fileInput.files[0];
@@ -83,6 +98,14 @@ function initializeDriveUpload() {
       console.log('uploading file:', file.name);
       const response = await uploadFileWithXhr(file, setProgress);
       console.log('file_id:', response.file_id);
+
+      if (uploadedFileIdInput) {
+        uploadedFileIdInput.value = response.file_id || '';
+      }
+
+      if (uploadedFileTypeInput) {
+        uploadedFileTypeInput.value = file.type || 'application/octet-stream';
+      }
 
       setProgress(100);
       setStatus('Upload complete');

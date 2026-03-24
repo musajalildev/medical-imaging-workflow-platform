@@ -23,8 +23,9 @@
 #  fk_rails_...  (operator_id => users.id)
 #
 class Job < ApplicationRecord
-  belongs_to :client, class_name: 'User'
-  belongs_to :operator, class_name: 'User', optional: true
+  belongs_to :client, class_name: "User"
+  belongs_to :operator, class_name: "User"
+  has_many :image_files, dependent: :destroy
   STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
   
   enum :status, STATUSES

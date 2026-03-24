@@ -24,6 +24,7 @@ class JobsController < ApplicationController
     @job = Job.new(job_params)
 
     if @job.save
+      attach_uploaded_file(@job)
       redirect_to @job, notice: "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -33,6 +34,7 @@ class JobsController < ApplicationController
   # PATCH/PUT /jobs/1
   def update
     if @job.update(job_params)
+      attach_uploaded_file(@job)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
       render :edit, status: :unprocessable_entity
@@ -53,6 +55,16 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :client_id, :operator_id, :status, :title, :description, :date_of_creation ])
+      params.expect(job: [ :client_id, :operator_id, :status, :title, :description ])
+    end
+
+    def attach_uploaded_file(job)
+      file_id = params[:uploaded_file_id].presence
+      return if file_id.blank?
+
+      image_file = job.image_files.order(:id).last || job.image_files.build
+      image_file.file_path = file_id
+      image_file.file_type = params[:uploaded_file_type].presence || "google_drive_file_id"
+      image_file.save!
     end
 end
