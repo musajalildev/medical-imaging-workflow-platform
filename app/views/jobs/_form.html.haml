@@ -14,11 +14,11 @@
     #drive-upload
       .mb-3
         %label.form-label{ for: 'upload-file-input-1' } PDF file
-        %input#upload-file-input-1.form-control{ type: 'file' }
+        %input#upload-file-input-1.form-control{ type: 'file', accept: '.pdf,application/pdf' }
 
       .mb-3
         %label.form-label{ for: 'upload-file-input-2' } DICOM file
-        %input#upload-file-input-2.form-control{ type: 'file' }
+        %input#upload-file-input-2.form-control{ type: 'file', accept: '.dcm,application/dicom' }
 
       .mb-3
         %span#upload-status.text-muted Ready

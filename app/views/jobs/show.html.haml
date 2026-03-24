@@ -54,7 +54,7 @@
 
           - if current_user&.operator?
             = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'd-flex flex-column gap-2 mb-3' do
-              %input.form-control{ type: 'file', name: 'output_file' }
+              %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
               %button.btn.btn-outline-primary{ type: 'submit' } Upload Report file
 
           .d-flex.gap-2.flex-wrap

@@ -3,6 +3,7 @@ require "googleauth"
 require "stringio"
 class FilesController < ApplicationController
   FOLDER_ID = "0AMU1EVlpjzbkUk9PVA"
+  MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
 
   skip_before_action :dev_auto_login, only: :upload
   skip_before_action :authenticate_user!, only: :upload
@@ -10,6 +11,8 @@ class FilesController < ApplicationController
 
   def upload
     file = params.require(:file)
+    slot = params[:slot].to_s
+    validate_input_file!(file, slot)
 
     drive_service = Google::Apis::DriveV3::DriveService.new
     drive_service.client_options.application_name = "Rails Drive Upload"
@@ -42,6 +45,8 @@ class FilesController < ApplicationController
       file_id: uploaded_file.id,
       file_url: file_url
     }
+  rescue ArgumentError => e
+    render json: { error: e.message }, status: :unprocessable_entity
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
   end
@@ -123,5 +128,25 @@ class FilesController < ApplicationController
     redirect_back fallback_location: jobs_path, alert: "File delete failed. The service account likely lacks delete permission for this Shared Drive file: #{e.message}"
   rescue StandardError => e
     redirect_back fallback_location: jobs_path, alert: "File delete failed: #{e.message}"
+  end
+
+  private
+
+  def validate_input_file!(file, slot)
+    raise ArgumentError, "Please select a file to upload." if file.blank?
+
+    if file.size.to_i > MAX_FILE_SIZE_BYTES
+      raise ArgumentError, "File exceeds 1 GB size limit."
+    end
+
+    extension = File.extname(file.original_filename.to_s).downcase
+    case slot
+    when "1"
+      raise ArgumentError, "PDF file must have .pdf extension." unless extension == ".pdf"
+    when "2"
+      raise ArgumentError, "DICOM file must have .dcm extension." unless extension == ".dcm"
+    else
+      raise ArgumentError, "Invalid upload slot."
+    end
   end
 end

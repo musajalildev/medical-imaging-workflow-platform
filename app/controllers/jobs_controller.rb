@@ -2,6 +2,7 @@ require "google/apis/drive_v3"
 require "googleauth"
 
 class JobsController < ApplicationController
+  MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output ]
 
   # GET /jobs
@@ -62,6 +63,7 @@ class JobsController < ApplicationController
       redirect_to @job, alert: "Please select an output file."
       return
     end
+    validate_output_file!(file)
 
     drive_service = build_drive_service
     uploaded_file = drive_service.create_file(
@@ -148,5 +150,14 @@ class JobsController < ApplicationController
       credentials.fetch_access_token!
       drive_service.authorization = credentials
       drive_service
+    end
+
+    def validate_output_file!(file)
+      if file.size.to_i > MAX_FILE_SIZE_BYTES
+        raise ArgumentError, "Report file exceeds 1 GB size limit."
+      end
+
+      extension = File.extname(file.original_filename.to_s).downcase
+      raise ArgumentError, "Report file must have .pdf extension." unless extension == ".pdf"
     end
 end

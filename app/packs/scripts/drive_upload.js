@@ -3,12 +3,15 @@ function getCsrfToken() {
   return token ? token.content : '';
 }
 
-function uploadFileWithXhr(file, onProgress) {
+const MAX_FILE_SIZE_BYTES = 1073741824; // 1 GB
+
+function uploadFileWithXhr(file, slot, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
 
     formData.append('file', file);
+    formData.append('slot', String(slot));
 
     xhr.open('POST', '/files/upload', true);
     xhr.setRequestHeader('X-CSRF-Token', getCsrfToken());
@@ -74,6 +77,27 @@ function initializeDriveUpload() {
     statusText.textContent = message;
   };
 
+  const validateFileBySlot = (slot, file) => {
+    if (!file) {
+      return null;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return `${slot === 1 ? 'PDF file' : 'DICOM file'} exceeds 1 GB size limit.`;
+    }
+
+    const name = (file.name || '').toLowerCase();
+    if (slot === 1 && !name.endsWith('.pdf')) {
+      return 'PDF file must have .pdf extension.';
+    }
+
+    if (slot === 2 && !name.endsWith('.dcm')) {
+      return 'DICOM file must have .dcm extension.';
+    }
+
+    return null;
+  };
+
   const resetSelectionState = () => {
     if (uploadedFilesJsonInput) {
       uploadedFilesJsonInput.value = JSON.stringify([
@@ -103,6 +127,15 @@ function initializeDriveUpload() {
       { slot: 2, file: fileInput2.files && fileInput2.files[0] }
     ];
     const files = selectedSlots.filter((entry) => entry.file);
+
+    const validationError = selectedSlots
+      .map((entry) => validateFileBySlot(entry.slot, entry.file))
+      .find(Boolean);
+
+    if (validationError) {
+      setStatus(validationError);
+      return;
+    }
 
     if (uploadedFilesJsonInput) {
       uploadedFilesJsonInput.value = JSON.stringify([
@@ -136,7 +169,7 @@ function initializeDriveUpload() {
         setStatus(`Uploading ${index + 1}/${files.length}: ${file.name}`);
 
         console.log('uploading file:', file.name);
-        const response = await uploadFileWithXhr(file, (filePercent) => {
+        const response = await uploadFileWithXhr(file, selected.slot, (filePercent) => {
           const overallPercent = Math.round(((index + (filePercent / 100)) / files.length) * 100);
           setProgress(overallPercent);
         });
