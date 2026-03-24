@@ -47,8 +47,16 @@ class JobsController < ApplicationController
 
   # DELETE /jobs/1
   def destroy
+    purge_error = purge_job_files_from_drive
+    if purge_error.present?
+      redirect_to @job, alert: "Job was not deleted because Drive cleanup failed: #{purge_error}"
+      return
+    end
+
     @job.destroy!
     redirect_to jobs_path, notice: "Job was successfully destroyed.", status: :see_other
+  rescue StandardError => e
+    redirect_to @job, alert: "Job delete failed: #{e.message}"
   end
 
   # POST /jobs/1/upload_output
@@ -159,5 +167,53 @@ class JobsController < ApplicationController
 
       extension = File.extname(file.original_filename.to_s).downcase
       raise ArgumentError, "Report file must have .pdf extension." unless extension == ".pdf"
+    end
+
+    def purge_job_files_from_drive
+      file_ids = @job.image_files.filter_map(&:drive_file_id).uniq
+      return nil if file_ids.empty?
+
+      drive_service = build_drive_service
+
+      file_ids.each do |file_id|
+        begin
+          purge_drive_file!(drive_service, file_id)
+        rescue Google::Apis::ClientError => e
+          next if e.status_code.to_i == 404
+
+          return e.message
+        end
+      end
+
+      nil
+    end
+
+    def purge_drive_file!(drive_service, file_id)
+      metadata = drive_service.get_file(
+        file_id,
+        fields: "id,parents,capabilities(canDelete,canTrash)",
+        supports_all_drives: true
+      )
+
+      if metadata.capabilities&.can_delete
+        drive_service.delete_file(file_id, supports_all_drives: true)
+      elsif metadata.capabilities&.can_trash
+        drive_service.update_file(
+          file_id,
+          Google::Apis::DriveV3::File.new(trashed: true),
+          supports_all_drives: true,
+          fields: "id"
+        )
+      elsif metadata.parents&.include?(FilesController::FOLDER_ID)
+        drive_service.update_file(
+          file_id,
+          Google::Apis::DriveV3::File.new,
+          remove_parents: FilesController::FOLDER_ID,
+          supports_all_drives: true,
+          fields: "id"
+        )
+      else
+        raise "Google Drive does not allow this service account to delete, trash, or remove file #{file_id} from the folder."
+      end
     end
 end
