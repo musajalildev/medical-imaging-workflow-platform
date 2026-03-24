@@ -207,6 +207,8 @@ GEM
     factory_bot_rails (6.5.1)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
+    faker (3.6.1)
+      i18n (>= 1.8.11, < 2)
     git (1.19.1)
       addressable (~> 2.8)
       rchardet (~> 1.8)
@@ -468,6 +470,7 @@ DEPENDENCIES
   epi_cas!
   epi_deploy!
   factory_bot_rails
+  faker
   hamlit
   hamlit-rails
   launchy

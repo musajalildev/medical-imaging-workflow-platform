@@ -83,6 +83,8 @@ group :development do
   gem 'epi_deploy', git: 'https://github.com/epigenesys/epi_deploy.git'
   gem 'bcrypt_pbkdf', '>= 1.0', '< 2.0'
   gem 'ed25519', '>= 1.2', '< 2.0'
+
+  gem "faker"
 end
 
 group :test do
