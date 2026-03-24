@@ -28,5 +28,25 @@ class Ability
     #
     # See the wiki for details:
     # https://github.com/CanCanCommunity/cancancan/blob/develop/docs/define_check_abilities.md
+
+    return unless user
+    
+    if user.unassigned?
+    end
+
+    if user.client?
+    end
+
+    if user.operator?
+    end
+
+    if user.admin?
+      can :assign_role, User, role: ["unassigned",  "client", "operator"]
+    end
+
+    if user.owner?
+      can :assign_role, User, role: ["unassigned", "client",  "operator",  "admin"]
+    end
+    
   end
 end
