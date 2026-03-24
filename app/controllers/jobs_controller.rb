@@ -1,5 +1,8 @@
+require "google/apis/drive_v3"
+require "googleauth"
+
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ show edit update destroy ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output ]
 
   # GET /jobs
   def index
@@ -47,6 +50,45 @@ class JobsController < ApplicationController
     redirect_to jobs_path, notice: "Job was successfully destroyed.", status: :see_other
   end
 
+  # POST /jobs/1/upload_output
+  def upload_output
+    unless current_user&.operator?
+      redirect_to @job, alert: "Only operators can upload output files."
+      return
+    end
+
+    file = params[:output_file]
+    if file.blank?
+      redirect_to @job, alert: "Please select an output file."
+      return
+    end
+
+    drive_service = build_drive_service
+    uploaded_file = drive_service.create_file(
+      Google::Apis::DriveV3::File.new(name: file.original_filename, parents: [FilesController::FOLDER_ID]),
+      upload_source: file.tempfile,
+      content_type: file.content_type.presence || "application/octet-stream",
+      fields: "id, webViewLink, webContentLink",
+      supports_all_drives: true
+    )
+
+    file_url = uploaded_file.web_view_link.presence || uploaded_file.web_content_link.presence || "https://drive.google.com/file/d/#{uploaded_file.id}/view"
+    metadata = {
+      file_id: uploaded_file.id,
+      mime_type: file.content_type.presence,
+      slot: "output"
+    }.to_json
+
+    output_image = @job.image_files.detect(&:output_file?) || @job.image_files.build
+    output_image.file_path = file_url
+    output_image.file_type = metadata
+    output_image.save!
+
+    redirect_to @job, notice: "Output file uploaded."
+  rescue StandardError => e
+    redirect_to @job, alert: "Output upload failed: #{e.message}"
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_job
@@ -62,7 +104,8 @@ class JobsController < ApplicationController
       uploaded_files = JSON.parse(params[:uploaded_files_json].presence || "[]")
       if uploaded_files.blank?
         if ensure_placeholders
-          2.times { job.image_files.create!(file_path: nil, file_type: nil) }
+          existing_non_output = job.image_files.reject(&:output_file?).count
+          [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
         end
         return
       end
@@ -83,11 +126,27 @@ class JobsController < ApplicationController
       end
 
       if ensure_placeholders && uploaded_files.length < 2
-        (2 - uploaded_files.length).times { job.image_files.create!(file_path: nil, file_type: nil) }
+        existing_non_output = job.image_files.reject(&:output_file?).count
+        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
       end
     rescue JSON::ParserError
       if ensure_placeholders
-        2.times { job.image_files.create!(file_path: nil, file_type: nil) }
+        existing_non_output = job.image_files.reject(&:output_file?).count
+        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
       end
+    end
+
+    def build_drive_service
+      drive_service = Google::Apis::DriveV3::DriveService.new
+      drive_service.client_options.application_name = "Rails Drive Upload"
+
+      service_account_path = Rails.root.join("service_account.json")
+      credentials = Google::Auth::ServiceAccountCredentials.make_creds(
+        json_key_io: File.open(service_account_path),
+        scope: [Google::Apis::DriveV3::AUTH_DRIVE]
+      )
+      credentials.fetch_access_token!
+      drive_service.authorization = credentials
+      drive_service
     end
 end

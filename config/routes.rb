@@ -11,7 +11,9 @@ Rails.application.routes.draw do
   resources :job_status_histories
   resources :reports
   resources :notifications
-  resources :jobs
+  resources :jobs do
+    post :upload_output, on: :member
+  end
   post '/files/upload', to: 'files#upload'
   get '/files/:file_id/download', to: 'files#download', as: :download_file
   delete '/files/:image_file_id/remove', to: 'files#remove', as: :remove_file

@@ -33,4 +33,12 @@ class ImageFile < ApplicationRecord
   def mime_type_value
     drive_metadata["mime_type"].presence
   end
+
+  def slot
+    drive_metadata["slot"].presence
+  end
+
+  def output_file?
+    slot == "output"
+  end
 end

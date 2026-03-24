@@ -1,6 +1,8 @@
 .row.justify-content-center
   .col-sm-8.col-lg-6
-    - file_slots = @job.image_files.order(:id).limit(2).to_a
+    - output_file = @job.image_files.detect(&:output_file?)
+    - regular_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
+    - file_slots = regular_files.first(2)
     - file_slots << nil while file_slots.length < 2
     .card
       .card-header
@@ -46,6 +48,25 @@
             - else
               %button.btn.btn-outline-secondary{ type: 'button', disabled: true } Delete File 2
               %button.btn.btn-secondary{ type: 'button', disabled: true } Download File 2
+
+        .mt-4
+          %h2.h5 Output File
+
+          - if current_user&.operator?
+            = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'd-flex flex-column gap-2 mb-3' do
+              %input.form-control{ type: 'file', name: 'output_file' }
+              %button.btn.btn-outline-primary{ type: 'submit' } Upload Output File
+
+          .d-flex.gap-2.flex-wrap
+            - output_url = output_file&.file_path
+            - output_id = output_file&.drive_file_id
+            - if output_url.present?
+              - if output_id.present?
+                = link_to 'Download Output File', download_file_path(file_id: output_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %button.btn.btn-secondary{ type: 'button', disabled: true } Download Output File
+            - else
+              %button.btn.btn-secondary{ type: 'button', disabled: true } Download Output File
       .card-footer.d-flex
         = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
