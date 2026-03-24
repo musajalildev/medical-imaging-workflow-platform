@@ -1,0 +1,12 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Complete Job details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Job:
+          %dd.col-md-9= @complete_job.job
+      .card-footer.d-flex
+        = link_to 'Edit', edit_complete_job_path(@complete_job), class: 'btn btn-link'
+        = link_to 'Back', complete_jobs_path, class: 'btn btn-link ms-auto'

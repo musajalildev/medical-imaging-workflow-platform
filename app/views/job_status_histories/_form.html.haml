@@ -1,0 +1,12 @@
+-# frozen_string_literal: true
+= simple_form_for(@job_status_history) do |f|
+  .card-body
+    = f.association :job, wrapper_html: { class: 'mb-3' }
+    = f.input :old_status, wrapper_html: { class: 'mb-3' }
+    = f.input :new_status, wrapper_html: { class: 'mb-3' }
+    = f.association :initiator, wrapper_html: { class: 'mb-3' }
+
+  .card-footer.d-flex
+    %button.btn.btn-primary{ type: 'submit' }
+      Save
+    = link_to 'Back', job_status_histories_path, class: 'btn btn-link ms-auto'

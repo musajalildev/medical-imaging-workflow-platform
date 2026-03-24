@@ -1,0 +1,11 @@
+-# frozen_string_literal: true
+= simple_form_for(@image_file) do |f|
+  .card-body
+    = f.association :job, wrapper_html: { class: 'mb-3' }
+    = f.input :file_path, wrapper_html: { class: 'mb-3' }
+    = f.input :file_type, wrapper_html: { class: 'mb-3' }
+
+  .card-footer.d-flex
+    %button.btn.btn-primary{ type: 'submit' }
+      Save
+    = link_to 'Back', image_files_path, class: 'btn btn-link ms-auto'

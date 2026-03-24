@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_24_133214) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,56 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "image_files", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.string "file_path", null: false
+    t.string "file_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_image_files_on_job_id"
+  end
+
+  create_table "job_status_histories", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.integer "old_status", null: false
+    t.integer "new_status", null: false
+    t.bigint "initiator_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["initiator_id"], name: "index_job_status_histories_on_initiator_id"
+    t.index ["job_id"], name: "index_job_status_histories_on_job_id"
+  end
+
+  create_table "jobs", force: :cascade do |t|
+    t.bigint "client_id", null: false
+    t.bigint "operator_id"
+    t.integer "status", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "custom_status"
+    t.index ["client_id"], name: "index_jobs_on_client_id"
+    t.index ["operator_id"], name: "index_jobs_on_operator_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.boolean "is_read", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "reports", force: :cascade do |t|
+    t.bigint "job_id", null: false
+    t.string "file_path", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_reports_on_job_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -61,4 +111,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_193540) do
     t.index ["email"], name: "index_users_on_email"
     t.index ["username"], name: "index_users_on_username"
   end
+
+  add_foreign_key "image_files", "jobs"
+  add_foreign_key "job_status_histories", "jobs"
+  add_foreign_key "job_status_histories", "users", column: "initiator_id"
+  add_foreign_key "jobs", "users", column: "client_id"
+  add_foreign_key "jobs", "users", column: "operator_id"
+  add_foreign_key "notifications", "users"
+  add_foreign_key "reports", "jobs"
 end

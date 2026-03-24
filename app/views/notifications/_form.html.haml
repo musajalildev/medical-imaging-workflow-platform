@@ -1,0 +1,11 @@
+-# frozen_string_literal: true
+= simple_form_for(@notification) do |f|
+  .card-body
+    = f.association :user, wrapper_html: { class: 'mb-3' }
+    = f.input :body, wrapper_html: { class: 'mb-3' }
+    = f.input :is_read, wrapper_html: { class: 'mb-3' }
+
+  .card-footer.d-flex
+    %button.btn.btn-primary{ type: 'submit' }
+      Save
+    = link_to 'Back', notifications_path, class: 'btn btn-link ms-auto'

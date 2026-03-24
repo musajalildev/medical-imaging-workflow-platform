@@ -1,0 +1,10 @@
+-# frozen_string_literal: true
+= simple_form_for(@cancelled_job) do |f|
+  .card-body
+    = f.association :job, wrapper_html: { class: 'mb-3' }
+    = f.input :cancel_reason, wrapper_html: { class: 'mb-3' }
+
+  .card-footer.d-flex
+    %button.btn.btn-primary{ type: 'submit' }
+      Save
+    = link_to 'Back', cancelled_jobs_path, class: 'btn btn-link ms-auto'

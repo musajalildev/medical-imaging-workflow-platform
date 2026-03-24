@@ -1,0 +1,18 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Job Status History details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Job:
+          %dd.col-md-9= @job_status_history.job
+          %dt.col-md-3 Old status:
+          %dd.col-md-9= @job_status_history.old_status
+          %dt.col-md-3 New status:
+          %dd.col-md-9= @job_status_history.new_status
+          %dt.col-md-3 Initiator:
+          %dd.col-md-9= @job_status_history.initiator
+      .card-footer.d-flex
+        = link_to 'Edit', edit_job_status_history_path(@job_status_history), class: 'btn btn-link'
+        = link_to 'Back', job_status_histories_path, class: 'btn btn-link ms-auto'

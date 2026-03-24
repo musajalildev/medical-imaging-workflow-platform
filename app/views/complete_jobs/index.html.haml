@@ -1,0 +1,20 @@
+.card
+  .card-header.d-flex.align-items-center
+    %span Listing Complete Jobs
+
+    = link_to 'New Complete job', new_complete_job_path, class: 'btn btn-outline-secondary ms-auto'
+
+  %table.table
+    %thead
+      %tr
+        %th Job
+        %th
+    %tbody
+      - @complete_jobs.each do |complete_job|
+        %tr
+          %td= complete_job.job
+          %td
+            .btn-toolbar.float-end
+              = link_to 'Show', complete_job, class: 'btn btn-outline-secondary btn-sm'
+              = link_to 'Edit', edit_complete_job_path(complete_job), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              = link_to 'Destroy', complete_job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'

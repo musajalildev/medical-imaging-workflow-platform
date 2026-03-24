@@ -1,0 +1,22 @@
+.row.justify-content-center
+  .col-sm-8.col-lg-6
+    .card
+      .card-header
+        Job details
+      .card-body
+        %dl.row.mb-0
+          %dt.col-md-3 Client:
+          %dd.col-md-9= @job.client
+          %dt.col-md-3 Operator:
+          %dd.col-md-9= @job.operator
+          %dt.col-md-3 Status:
+          %dd.col-md-9= @job.status
+          %dt.col-md-3 Title:
+          %dd.col-md-9= @job.title
+          %dt.col-md-3 Description:
+          %dd.col-md-9= @job.description
+          %dt.col-md-3 Date of creation:
+          %dd.col-md-9= @job.date_of_creation
+      .card-footer.d-flex
+        = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
+        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
