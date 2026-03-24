@@ -22,7 +22,7 @@
 #
 class JobStatusHistory < ApplicationRecord
   belongs_to :job
-  belongs_to :initiator
+  belongs_to :initiator, class_name: 'User'
 
   enum :old_status, Job::STATUSES, prefix: :old
   enum :new_status, Job::STATUSES, prefix: :new
