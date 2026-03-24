@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
-  get "users/index"
-  get "users/edit"
-  get "users/update"
+  
   resources :complete_jobs
   resources :cancelled_jobs
   resources :image_files
@@ -12,7 +10,7 @@ Rails.application.routes.draw do
   mount EpiCas::Engine, at: "/"
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
+  resources :users, only: [:index, :edit, :update]
   # Defines the root path route ("/")
   root "pages#home"
 end
