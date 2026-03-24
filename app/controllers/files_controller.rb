@@ -30,11 +30,17 @@ class FilesController < ApplicationController
       metadata,
       upload_source: file.tempfile,
       content_type: file.content_type.presence || "application/octet-stream",
-      fields: "id",
+      fields: "id, webViewLink, webContentLink",
       supports_all_drives: true
     )
 
-    render json: { success: true, file_id: uploaded_file.id }
+    file_url = uploaded_file.web_view_link.presence || uploaded_file.web_content_link.presence || "https://drive.google.com/file/d/#{uploaded_file.id}/view"
+
+    render json: {
+      success: true,
+      file_id: uploaded_file.id,
+      file_url: file_url
+    }
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
   end

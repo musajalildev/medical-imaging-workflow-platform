@@ -76,7 +76,10 @@ function initializeDriveUpload() {
 
   const resetSelectionState = () => {
     if (uploadedFilesJsonInput) {
-      uploadedFilesJsonInput.value = '[]';
+      uploadedFilesJsonInput.value = JSON.stringify([
+        { slot: 1, file_id: null, file_url: null, file_type: null },
+        { slot: 2, file_id: null, file_url: null, file_type: null }
+      ]);
     }
 
     setProgress(0);
@@ -95,13 +98,17 @@ function initializeDriveUpload() {
 
     event.preventDefault();
 
-    const files = [
-      fileInput1.files && fileInput1.files[0],
-      fileInput2.files && fileInput2.files[0]
-    ].filter(Boolean);
+    const selectedSlots = [
+      { slot: 1, file: fileInput1.files && fileInput1.files[0] },
+      { slot: 2, file: fileInput2.files && fileInput2.files[0] }
+    ];
+    const files = selectedSlots.filter((entry) => entry.file);
 
     if (uploadedFilesJsonInput) {
-      uploadedFilesJsonInput.value = '[]';
+      uploadedFilesJsonInput.value = JSON.stringify([
+        { slot: 1, file_id: null, file_url: null, file_type: null },
+        { slot: 2, file_id: null, file_url: null, file_type: null }
+      ]);
     }
 
     if (files.length === 0) {
@@ -118,10 +125,14 @@ function initializeDriveUpload() {
     setStatus('Uploading files before save...');
 
     try {
-      const uploadedFiles = [];
+      const uploadedFiles = [
+        { slot: 1, file_id: null, file_url: null, file_type: null },
+        { slot: 2, file_id: null, file_url: null, file_type: null }
+      ];
 
       for (let index = 0; index < files.length; index += 1) {
-        const file = files[index];
+        const selected = files[index];
+        const file = selected.file;
         setStatus(`Uploading ${index + 1}/${files.length}: ${file.name}`);
 
         console.log('uploading file:', file.name);
@@ -131,10 +142,12 @@ function initializeDriveUpload() {
         });
 
         console.log('file_id:', response.file_id);
-        uploadedFiles.push({
+        uploadedFiles[selected.slot - 1] = {
+          slot: selected.slot,
           file_id: response.file_id,
+          file_url: response.file_url || null,
           file_type: file.type || 'application/octet-stream'
-        });
+        };
       }
 
       if (uploadedFilesJsonInput) {
