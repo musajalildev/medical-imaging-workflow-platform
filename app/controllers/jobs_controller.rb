@@ -71,7 +71,10 @@ class JobsController < ApplicationController
         file_id = uploaded["file_id"].presence
         file_url = uploaded["file_url"].presence
         file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)
-        file_type = uploaded["file_type"].presence
+        file_type = {
+          file_id: file_id,
+          mime_type: uploaded["file_type"].presence
+        }.to_json
 
         image_file = job.image_files.build
         image_file.file_path = file_path

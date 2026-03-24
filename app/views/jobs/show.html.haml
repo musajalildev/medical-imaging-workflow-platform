@@ -1,5 +1,7 @@
 .row.justify-content-center
   .col-sm-8.col-lg-6
+    - file_slots = @job.image_files.order(:id).limit(2).to_a
+    - file_slots << nil while file_slots.length < 2
     .card
       .card-header
         Job details
@@ -17,6 +19,33 @@
           %dd.col-md-9= @job.description
           %dt.col-md-3 Date of creation:
           %dd.col-md-9= @job.created_at
+
+        .mt-4
+          %h2.h5 Attached Files
+          .d-flex.gap-2.flex-wrap
+            - file_1_url = file_slots[0]&.file_path
+            - file_1_id = file_slots[0]&.drive_file_id
+            - if file_1_url.present?
+              = button_to 'Delete File 1', remove_file_path(image_file_id: file_slots[0].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete File 1 from Google Drive?' } }
+              - if file_1_id.present?
+                = link_to 'Download File 1', download_file_path(file_id: file_1_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %button.btn.btn-secondary{ type: 'button', disabled: true } Download File 1
+            - else
+              %button.btn.btn-outline-secondary{ type: 'button', disabled: true } Delete File 1
+              %button.btn.btn-secondary{ type: 'button', disabled: true } Download File 1
+
+            - file_2_url = file_slots[1]&.file_path
+            - file_2_id = file_slots[1]&.drive_file_id
+            - if file_2_url.present?
+              = button_to 'Delete File 2', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete File 2 from Google Drive?' } }
+              - if file_2_id.present?
+                = link_to 'Download File 2', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %button.btn.btn-secondary{ type: 'button', disabled: true } Download File 2
+            - else
+              %button.btn.btn-outline-secondary{ type: 'button', disabled: true } Delete File 2
+              %button.btn.btn-secondary{ type: 'button', disabled: true } Download File 2
       .card-footer.d-flex
         = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'

@@ -1,5 +1,6 @@
 require "google/apis/drive_v3"
 require "googleauth"
+require "stringio"
 class FilesController < ApplicationController
   FOLDER_ID = "0AMU1EVlpjzbkUk9PVA"
 
@@ -43,5 +44,84 @@ class FilesController < ApplicationController
     }
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
+  end
+
+  def download
+    file_id = params.require(:file_id)
+
+    drive_service = Google::Apis::DriveV3::DriveService.new
+    drive_service.client_options.application_name = "Rails Drive Upload"
+
+    service_account_path = Rails.root.join("service_account.json")
+    credentials = Google::Auth::ServiceAccountCredentials.make_creds(
+      json_key_io: File.open(service_account_path),
+      scope: [Google::Apis::DriveV3::AUTH_DRIVE]
+    )
+    credentials.fetch_access_token!
+    drive_service.authorization = credentials
+
+    metadata = drive_service.get_file(file_id, fields: "name,mimeType", supports_all_drives: true)
+    io = StringIO.new
+    drive_service.get_file(file_id, download_dest: io, supports_all_drives: true)
+    io.rewind
+
+    send_data io.read,
+              filename: metadata.name.presence || "downloaded_file",
+              type: metadata.mime_type.presence || "application/octet-stream",
+              disposition: "attachment"
+  rescue StandardError => e
+    render plain: "Download failed: #{e.message}", status: :internal_server_error
+  end
+
+  def remove
+    image_file = ImageFile.find(params.require(:image_file_id))
+    file_id = image_file.drive_file_id
+
+    if file_id.present?
+      drive_service = Google::Apis::DriveV3::DriveService.new
+      drive_service.client_options.application_name = "Rails Drive Upload"
+
+      service_account_path = Rails.root.join("service_account.json")
+      credentials = Google::Auth::ServiceAccountCredentials.make_creds(
+        json_key_io: File.open(service_account_path),
+        scope: [Google::Apis::DriveV3::AUTH_DRIVE]
+      )
+      credentials.fetch_access_token!
+      drive_service.authorization = credentials
+
+      metadata = drive_service.get_file(
+        file_id,
+        fields: 'id,name,driveId,parents,capabilities(canDelete,canTrash)',
+        supports_all_drives: true
+      )
+
+      if metadata.capabilities&.can_delete
+        drive_service.delete_file(file_id, supports_all_drives: true)
+      elsif metadata.capabilities&.can_trash
+        drive_service.update_file(
+          file_id,
+          Google::Apis::DriveV3::File.new(trashed: true),
+          supports_all_drives: true,
+          fields: 'id'
+        )
+      elsif metadata.parents&.include?(FOLDER_ID)
+        drive_service.update_file(
+          file_id,
+          Google::Apis::DriveV3::File.new,
+          remove_parents: FOLDER_ID,
+          supports_all_drives: true,
+          fields: 'id'
+        )
+      else
+        raise "Google Drive does not allow this service account to delete, trash, or remove the file from the folder."
+      end
+    end
+
+    image_file.update!(file_path: nil, file_type: nil)
+    redirect_back fallback_location: jobs_path, notice: "File deleted."
+  rescue Google::Apis::ClientError => e
+    redirect_back fallback_location: jobs_path, alert: "File delete failed. The service account likely lacks delete permission for this Shared Drive file: #{e.message}"
+  rescue StandardError => e
+    redirect_back fallback_location: jobs_path, alert: "File delete failed: #{e.message}"
   end
 end
