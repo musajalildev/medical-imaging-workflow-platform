@@ -51,13 +51,18 @@ function initializeDriveUpload() {
     return;
   }
 
-  const fileInput = document.getElementById('upload-file-input');
-  const uploadButton = document.getElementById('upload-button');
+  const form = container.closest('form');
+  if (!form) {
+    return;
+  }
+
+  const fileInput1 = document.getElementById('upload-file-input-1');
+  const fileInput2 = document.getElementById('upload-file-input-2');
+  const saveButton = form.querySelector('button[type="submit"]');
   const progressBar = document.getElementById('upload-progress');
   const progressText = document.getElementById('upload-progress-text');
   const statusText = document.getElementById('upload-status');
-  const uploadedFileIdInput = document.getElementById('uploaded-file-id');
-  const uploadedFileTypeInput = document.getElementById('uploaded-file-type');
+  const uploadedFilesJsonInput = document.getElementById('uploaded-files-json');
 
   const setProgress = (percent) => {
     progressBar.value = percent;
@@ -69,51 +74,83 @@ function initializeDriveUpload() {
     statusText.textContent = message;
   };
 
-  fileInput.addEventListener('change', () => {
-    if (uploadedFileIdInput) {
-      uploadedFileIdInput.value = '';
-    }
-
-    if (uploadedFileTypeInput) {
-      uploadedFileTypeInput.value = 'google_drive_file_id';
+  const resetSelectionState = () => {
+    if (uploadedFilesJsonInput) {
+      uploadedFilesJsonInput.value = '[]';
     }
 
     setProgress(0);
     setStatus('Ready');
-  });
+  };
 
-  uploadButton.addEventListener('click', async () => {
-    const file = fileInput.files && fileInput.files[0];
+  fileInput1.addEventListener('change', resetSelectionState);
+  fileInput2.addEventListener('change', resetSelectionState);
 
-    if (!file) {
-      setStatus('Please select a file first.');
+  let submittingAfterUpload = false;
+
+  form.addEventListener('submit', async (event) => {
+    if (submittingAfterUpload) {
       return;
     }
 
-    uploadButton.disabled = true;
+    event.preventDefault();
+
+    const files = [
+      fileInput1.files && fileInput1.files[0],
+      fileInput2.files && fileInput2.files[0]
+    ].filter(Boolean);
+
+    if (uploadedFilesJsonInput) {
+      uploadedFilesJsonInput.value = '[]';
+    }
+
+    if (files.length === 0) {
+      setStatus('No files selected, saving job...');
+      submittingAfterUpload = true;
+      form.submit();
+      return;
+    }
+
+    if (saveButton) {
+      saveButton.disabled = true;
+    }
     setProgress(0);
-    setStatus('Uploading...');
+    setStatus('Uploading files before save...');
 
     try {
-      console.log('uploading file:', file.name);
-      const response = await uploadFileWithXhr(file, setProgress);
-      console.log('file_id:', response.file_id);
+      const uploadedFiles = [];
 
-      if (uploadedFileIdInput) {
-        uploadedFileIdInput.value = response.file_id || '';
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        setStatus(`Uploading ${index + 1}/${files.length}: ${file.name}`);
+
+        console.log('uploading file:', file.name);
+        const response = await uploadFileWithXhr(file, (filePercent) => {
+          const overallPercent = Math.round(((index + (filePercent / 100)) / files.length) * 100);
+          setProgress(overallPercent);
+        });
+
+        console.log('file_id:', response.file_id);
+        uploadedFiles.push({
+          file_id: response.file_id,
+          file_type: file.type || 'application/octet-stream'
+        });
       }
 
-      if (uploadedFileTypeInput) {
-        uploadedFileTypeInput.value = file.type || 'application/octet-stream';
+      if (uploadedFilesJsonInput) {
+        uploadedFilesJsonInput.value = JSON.stringify(uploadedFiles);
       }
 
       setProgress(100);
-      setStatus('Upload complete');
+      setStatus('Upload complete, saving job...');
+      submittingAfterUpload = true;
+      form.submit();
     } catch (error) {
       console.error(error);
       setStatus(error.message || 'Upload failed');
-    } finally {
-      uploadButton.disabled = false;
+      if (saveButton) {
+        saveButton.disabled = false;
+      }
     }
   });
 }

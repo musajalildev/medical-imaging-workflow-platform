@@ -59,12 +59,19 @@ class JobsController < ApplicationController
     end
 
     def attach_uploaded_file(job)
-      file_id = params[:uploaded_file_id].presence
-      return if file_id.blank?
+      uploaded_files = JSON.parse(params[:uploaded_files_json].presence || "[]")
+      return if uploaded_files.blank?
 
-      image_file = job.image_files.order(:id).last || job.image_files.build
-      image_file.file_path = file_id
-      image_file.file_type = params[:uploaded_file_type].presence || "google_drive_file_id"
-      image_file.save!
+      uploaded_files.first(2).each do |uploaded|
+        file_id = uploaded["file_id"].presence
+        next if file_id.blank?
+
+        image_file = job.image_files.build
+        image_file.file_path = file_id
+        image_file.file_type = uploaded["file_type"].presence || "google_drive_file_id"
+        image_file.save!
+      end
+    rescue JSON::ParserError
+      nil
     end
 end

@@ -8,15 +8,19 @@
     = f.input :description, wrapper_html: { class: 'mb-3' }
 
     %hr
-    %h2.h5.mb-3 Upload File
+    %h2.h5.mb-3 Upload Files
+    %p.text-muted.small.mb-3 Selected files are uploaded automatically when you click Save.
 
     #drive-upload
       .mb-3
-        %label.form-label{ for: 'upload-file-input' } File
-        %input#upload-file-input.form-control{ type: 'file' }
+        %label.form-label{ for: 'upload-file-input-1' } File 1
+        %input#upload-file-input-1.form-control{ type: 'file' }
 
-      .d-flex.align-items-center.gap-3.mb-3
-        %button#upload-button.btn.btn-outline-primary{ type: 'button' } Upload To Drive
+      .mb-3
+        %label.form-label{ for: 'upload-file-input-2' } File 2
+        %input#upload-file-input-2.form-control{ type: 'file' }
+
+      .mb-3
         %span#upload-status.text-muted Ready
 
       .mb-2
@@ -25,8 +29,7 @@
 
       #upload-progress-text.small.text-muted 0%
 
-    %input#uploaded-file-id{ type: 'hidden', name: 'uploaded_file_id' }
-    %input#uploaded-file-type{ type: 'hidden', name: 'uploaded_file_type', value: 'google_drive_file_id' }
+    %input#uploaded-files-json{ type: 'hidden', name: 'uploaded_files_json', value: '[]' }
 
   .card-footer.d-flex
     %button.btn.btn-primary{ type: 'submit' }
