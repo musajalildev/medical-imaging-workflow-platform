@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  get "users/index"
+  get "users/edit"
+  get "users/update"
   resources :complete_jobs
   resources :cancelled_jobs
   resources :image_files
