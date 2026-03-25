@@ -27,6 +27,14 @@ class Job < ApplicationRecord
   belongs_to :operator, class_name: "User"
   has_many :image_files, dependent: :destroy
   STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
+
+  before_validation :set_default_status
   
   enum :status, STATUSES
+
+  private
+
+  def set_default_status
+    self.status = :pending if status.blank?
+  end
 end
