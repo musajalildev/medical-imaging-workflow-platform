@@ -4,7 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output ]
-  before_action :check_client_role, only: %i[ new create ]
+  before_action :check_client_role, only: %i[ new create edit update ]
 
   # GET /jobs
   def index
@@ -220,7 +220,7 @@ class JobsController < ApplicationController
 
     def check_client_role
       unless current_user&.client?
-        redirect_to jobs_path, alert: "Only clients can create jobs."
+        redirect_to jobs_path, alert: "Only clients can create or edit jobs."
       end
     end
 end
