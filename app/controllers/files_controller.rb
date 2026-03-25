@@ -25,8 +25,10 @@ class FilesController < ApplicationController
     credentials.fetch_access_token!
     drive_service.authorization = credentials
 
+    # Generate unique name with UUID prefix to avoid collisions
+    generated_filename = "#{SecureRandom.uuid}-#{file.original_filename}"
     metadata = Google::Apis::DriveV3::File.new(
-      name: file.original_filename,
+      name: generated_filename,
       parents: [FOLDER_ID]
     )
 
@@ -70,8 +72,12 @@ class FilesController < ApplicationController
     drive_service.get_file(file_id, download_dest: io, supports_all_drives: true)
     io.rewind
 
+    # Extract original filename from Drive name (format: {uuid}-{original_filename})
+    drive_name = metadata.name.presence || "downloaded_file"
+    original_filename = extract_original_filename(drive_name)
+
     send_data io.read,
-              filename: metadata.name.presence || "downloaded_file",
+              filename: original_filename,
               type: metadata.mime_type.presence || "application/octet-stream",
               disposition: "attachment"
   rescue StandardError => e
@@ -131,6 +137,18 @@ class FilesController < ApplicationController
   end
 
   private
+
+  def extract_original_filename(drive_name)
+    # Drive name format: {uuid}-{original_filename}
+    # UUID format: 8-4-4-4-12 hex digits with hyphens
+    # Extract everything after the first UUID
+    if drive_name.match?(/^[0-9a-f]{8}-/i)
+      # Remove UUID prefix and following hyphen
+      drive_name.sub(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/, "")
+    else
+      drive_name
+    end
+  end
 
   def validate_input_file!(file, slot)
     raise ArgumentError, "Please select a file to upload." if file.blank?

@@ -75,8 +75,10 @@ class JobsController < ApplicationController
     validate_output_file!(file)
 
     drive_service = build_drive_service
+    # Generate unique name with UUID prefix to avoid collisions
+    generated_filename = "#{SecureRandom.uuid}-#{file.original_filename}"
     uploaded_file = drive_service.create_file(
-      Google::Apis::DriveV3::File.new(name: file.original_filename, parents: [FilesController::FOLDER_ID]),
+      Google::Apis::DriveV3::File.new(name: generated_filename, parents: [FilesController::FOLDER_ID]),
       upload_source: file.tempfile,
       content_type: file.content_type.presence || "application/octet-stream",
       fields: "id, webViewLink, webContentLink",
