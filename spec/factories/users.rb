@@ -28,6 +28,9 @@
 #
 FactoryBot.define do
   factory :user do
-    
+    sequence(:email) { |n| "user#{n}@example.com" }
+    sequence(:username) { |n| "user#{n}" }
+    role { :client }
+    sign_in_count { 0 }
   end
 end
