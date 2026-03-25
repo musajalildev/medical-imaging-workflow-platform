@@ -118,7 +118,7 @@ class JobsController < ApplicationController
       if uploaded_files.blank?
         if ensure_placeholders
           existing_non_output = job.image_files.reject(&:output_file?).count
-          [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
+          [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
         end
         return
       end
@@ -140,12 +140,12 @@ class JobsController < ApplicationController
 
       if ensure_placeholders && uploaded_files.length < 2
         existing_non_output = job.image_files.reject(&:output_file?).count
-        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
+        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
     rescue JSON::ParserError
       if ensure_placeholders
         existing_non_output = job.image_files.reject(&:output_file?).count
-        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: nil, file_type: nil) }
+        [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
     end
 

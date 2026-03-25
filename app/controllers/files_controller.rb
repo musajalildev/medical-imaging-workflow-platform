@@ -128,7 +128,7 @@ class FilesController < ApplicationController
       end
     end
 
-    image_file.update!(file_path: nil, file_type: nil)
+    image_file.destroy!
     redirect_back fallback_location: jobs_path, notice: "File deleted."
   rescue Google::Apis::ClientError => e
     redirect_back fallback_location: jobs_path, alert: "File delete failed. The service account likely lacks delete permission for this Shared Drive file: #{e.message}"
