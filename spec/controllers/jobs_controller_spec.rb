@@ -87,7 +87,10 @@ RSpec.describe JobsController, type: :controller do
 
     describe "POST #create" do
       context "when user is a client" do
-        before { allow(controller).to receive(:current_user).and_return(client_user) }
+        before do
+          allow(controller).to receive(:current_user).and_return(client_user)
+          allow(controller).to receive(:attach_uploaded_file)
+        end
 
         it "allows job creation" do
           expect {
