@@ -4,6 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output ]
+  before_action :check_client_role, only: %i[ new create ]
 
   # GET /jobs
   def index
@@ -214,6 +215,12 @@ class JobsController < ApplicationController
         )
       else
         raise "Google Drive does not allow this service account to delete, trash, or remove file #{file_id} from the folder."
+      end
+    end
+
+    def check_client_role
+      unless current_user&.client?
+        redirect_to jobs_path, alert: "Only clients can create jobs."
       end
     end
 end
