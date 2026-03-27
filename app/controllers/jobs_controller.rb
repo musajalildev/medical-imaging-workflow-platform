@@ -32,7 +32,24 @@ class JobsController < ApplicationController
 
   # PATCH/PUT /jobs/1
   def update
-    if @job.update(job_params)
+    updated_params = job_params
+
+    # clear custom status if status is changed to non-custom
+    if updated_params[:status] != "custom"
+      updated_params[:custom_status] = nil
+    end
+
+    # create a job status history record if the status is changing
+    if @job.status != updated_params[:status]
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: @job.get_status,
+        new_status: updated_params[:status] == "custom" ? updated_params[:custom_status] : updated_params[:status],
+        initiator: current_user
+      )
+    end
+
+    if @job.update(updated_params)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
       render :edit, status: :unprocessable_entity
@@ -53,6 +70,6 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :client_id, :operator_id, :status, :title, :description, :date_of_creation ])
+      params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
     end
 end

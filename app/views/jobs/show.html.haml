@@ -9,13 +9,13 @@
           %dd.col-md-9= @job.client.email
           %dt.col-md-3 Operator:
           %dd.col-md-9= @job.operator.email
-          %dt.col-md-3 Status:
-          %dd.col-md-9= @job.status
+          %dt.col-md-3 Status
+          %dd.col-md-9= @job.get_status
           %dt.col-md-3 Title:
           %dd.col-md-9= @job.title
           %dt.col-md-3 Description:
           %dd.col-md-9= @job.description
-          %dt.col-md-3 Date of creation:
+          %dt.col-md-3 Job Created:
           %dd.col-md-9= @job.created_at
 
           %h4 Status history

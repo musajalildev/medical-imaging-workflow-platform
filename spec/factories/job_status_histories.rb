@@ -3,8 +3,8 @@
 # Table name: job_status_histories
 #
 #  id           :bigint           not null, primary key
-#  new_status   :integer          not null
-#  old_status   :integer          not null
+#  new_status   :string           not null
+#  old_status   :string           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  initiator_id :bigint           not null
