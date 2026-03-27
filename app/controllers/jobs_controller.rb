@@ -40,7 +40,7 @@ class JobsController < ApplicationController
     end
 
     # create a job status history record if the status is changing
-    if @job.status != updated_params[:status]
+    if @job.status != updated_params[:status] || @job.custom_status != updated_params[:custom_status]
       JobStatusHistory.create!(
         job: @job,
         old_status: @job.get_status,
