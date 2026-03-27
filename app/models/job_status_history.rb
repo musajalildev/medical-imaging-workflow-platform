@@ -26,6 +26,6 @@ class JobStatusHistory < ApplicationRecord
 
   # get formatted status history for display
   def formatted_history
-    "#{initiator.email} changed status from #{old_status.humanize} to #{new_status.humanize} at #{created_at.strftime("%Y-%m-%d %H:%M:%S")}"
+    "#{initiator.email} changed status from #{old_status.humanize} to #{new_status.humanize} on #{created_at.strftime("%Y/%m/%d, at %H:%M")}"
   end
 end
