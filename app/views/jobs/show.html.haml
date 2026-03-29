@@ -16,7 +16,7 @@
           %dt.col-md-3 Description:
           %dd.col-md-9= @job.description
           %dt.col-md-3 Date of creation:
-          %dd.col-md-9= @job.date_of_creation
+          %dd.col-md-9= @job.created_at
       .card-footer.d-flex
         = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'

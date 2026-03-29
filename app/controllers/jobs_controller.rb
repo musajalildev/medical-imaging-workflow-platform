@@ -4,6 +4,12 @@ class JobsController < ApplicationController
   # GET /jobs
   def index
     @jobs = Job.all
+    @jobs = @jobs.where(status: params[:status]) if params[:status].present?
+    if params[:search].present?
+      q = "%#{params[:search]}%"
+      @jobs = @jobs.joins(:client).where("jobs.title ILIKE :q OR users.givenname ILIKE :q OR users.sn ILIKE :q OR users.username ILIKE :q", q: q)
+    end
+    @total_count = Job.count
   end
 
   # GET /jobs/1

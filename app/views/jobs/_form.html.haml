@@ -6,7 +6,8 @@
     = f.input :status, wrapper_html: { class: 'mb-3' }
     = f.input :title, wrapper_html: { class: 'mb-3' }
     = f.input :description, wrapper_html: { class: 'mb-3' }
-    = f.input :date_of_creation, wrapper_html: { class: 'mb-3' }
+    = f.input :created_at, wrapper_html: { class: 'mb-3' } # fixed method error
+    
 
   .card-footer.d-flex
     %button.btn.btn-primary{ type: 'submit' }

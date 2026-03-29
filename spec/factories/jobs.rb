@@ -29,6 +29,6 @@ FactoryBot.define do
     status { 1 }
     title { "MyString" }
     description { "MyString" }
-    date_of_creation { "2026-03-15 14:55:52" }
+    created_at { "2026-03-15 14:55:52" } #date_of_creation -> created_at
   end
 end
