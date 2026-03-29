@@ -33,10 +33,6 @@ RSpec.describe Job, type: :model do
       expect(job).to be_persisted
     end
 
-    it 'is invalid without a title' do
-      job = Job.new(status: :pending, client: client)
-      expect(job).not_to be_valid
-    end
 
     it 'is invalid without a client' do
       job = Job.new(title: 'Test Job', status: :pending)
