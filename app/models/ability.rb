@@ -28,5 +28,18 @@ class Ability
     #
     # See the wiki for details:
     # https://github.com/CanCanCommunity/cancancan/blob/develop/docs/define_check_abilities.md
+    # 
+    #
+    return unless user.present?
+
+    #defining abilities for job list
+    if user.admin? || user.owner?
+      can :manage, Job
+    elsif user.operator?
+      can :read, Job
+    elsif user.client?
+      can :read, Job, client_id: user.id
+    end
+    
   end
 end

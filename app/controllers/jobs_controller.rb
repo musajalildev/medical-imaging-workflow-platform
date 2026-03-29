@@ -1,15 +1,14 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ show edit update destroy ]
+  load_and_authorize_resource
 
   # GET /jobs
   def index
-    @jobs = Job.all
     @jobs = @jobs.where(status: params[:status]) if params[:status].present?
     if params[:search].present?
       q = "%#{params[:search]}%"
       @jobs = @jobs.joins(:client).where("jobs.title ILIKE :q OR users.givenname ILIKE :q OR users.sn ILIKE :q OR users.username ILIKE :q", q: q)
     end
-    @total_count = Job.count
+    @total_count = @jobs.count
   end
 
   # GET /jobs/1
@@ -57,8 +56,12 @@ class JobsController < ApplicationController
       @job = Job.find(params.expect(:id))
     end
 
+    def authorize_job
+      authorize! :manage, @job
+    end
+
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :client_id, :operator_id, :status, :title, :description, :date_of_creation ])
+      params.expect(job: [ :client_id, :operator_id, :status, :title, :description ])
     end
 end

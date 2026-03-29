@@ -34,10 +34,14 @@
           %td= job.created_at.strftime('%d %b, %Y : %I:%M %p')
           %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
           %td
-            = form_with url: job_path(job), method: :patch, local: true do |f|
-              = f.select 'job[status]',
-                  Job::STATUSES.map { |s| [s.to_s.humanize, s] },
-                  { selected: job.status },
-                  class: 'form-select form-select-sm', onchange: 'this.form.submit()'
+            - if can?(:manage, job)
+              = form_with url: job_path(job), method: :patch, local: true do |f|
+                = f.select 'job[status]',
+                    Job::STATUSES.map { |s| [s.to_s.humanize, s] },
+                    { selected: job.status },
+                    class: 'form-select form-select-sm', onchange: 'this.form.submit()'
+            - else
+              = job.status.to_s.humanize
           %td= link_to 'Details', job
-          %td= link_to 'Manage', edit_job_path(job)
+          -if can?(:manage, Job)
+            %td= link_to 'Manage', edit_job_path(job)
