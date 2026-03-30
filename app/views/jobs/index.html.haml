@@ -1,47 +1,54 @@
-.card
-  .card-header.d-flex.align-items-center
-    %span Jobs
-    %span.badge.bg-secondary.ms-2= @total_count
+= form_with url: jobs_path, method: :get, local: true do |f|
+  .card
+    .card-header
+      .d-flex.align-items-center.gap-2.flex-wrap
+        %span.fw-semibold Jobs
+        %span.badge.bg-secondary= @total_count
+        .ms-auto.d-flex.align-items-center.gap-2.flex-wrap
+          = f.select :search_by,
+              [['All fields', ''], ['Title', 'title'], ['Client', 'client'], ['Operator', 'operator']],
+              { selected: params[:search_by] },
+              class: 'form-select form-select-sm', style: 'width: auto'
+          = f.text_field :search, value: params[:search], placeholder: 'Search...', class: 'form-control form-control-sm', style: 'width: 180px'
+          %button{ type: 'submit', class: 'btn btn-outline-secondary btn-sm' } Search
+          - next_sort = params[:sort] == 'asc' ? 'desc' : 'asc'
+          - sort_label = params[:sort] == 'asc' ? '↑ Date' : '↓ Date'
+          = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
+          - if params[:status].present? || params[:search].present? || params[:sort].present?
+            = link_to 'Clear', jobs_path, class: 'btn btn-link btn-sm'
 
-  .card-body
-    = form_with url: jobs_path, method: :get, local: true do |f|
-      .d-flex.gap-2.align-items-center
+    .card-body.py-2
+      .d-flex.align-items-center.gap-3
         = f.select :status,
             Job::STATUSES.map { |s| [s.to_s.humanize, s] },
             { include_blank: 'All Statuses', selected: params[:status] },
-            class: 'form-select'
-        = f.text_field :search, value: params[:search], placeholder: 'Search...', class: 'form-control'
-        = f.submit 'Search', class: 'btn btn-outline-secondary'
-        - if params[:status].present? || params[:search].present?
-          = link_to 'Clear', jobs_path, class: 'btn btn-link'
+            class: 'form-select form-select-sm', style: 'width: auto', onchange: 'this.form.submit()'
+        %p.text-muted.mb-0.small= "Showing #{@jobs.count} of #{@total_count}"
 
-    %p.text-muted.mt-2.mb-0
-      = "Showing #{@jobs.count} of #{@total_count}"
-
-  %table.table.mb-0
-    %thead
-      %tr
-        %th Client
-        %th Job Submitted
-        %th Operator
-        %th Status
-        %th
-        %th
-    %tbody
-      - @jobs.each do |job|
+    %table.table.mb-0
+      %thead
         %tr
-          %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
-          %td= job.created_at.strftime('%d %b, %Y ')
-          %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
-          %td
-            - if can?(:manage, job)
-              = form_with url: job_path(job), method: :patch, local: true do |f|
-                = f.select 'job[status]',
-                    Job::STATUSES.map { |s| [s.to_s.humanize, s] },
-                    { selected: job.status },
-                    class: 'form-select form-select-sm', onchange: 'this.form.submit()'
-            - else
-              = job.status.to_s.humanize
-          %td= link_to 'Details', job
-          -if can?(:manage, Job)
-            %td= link_to 'Manage', edit_job_path(job)
+          %th Client
+          %th Job Submitted
+          %th Operator
+          %th Status
+          %th
+          %th
+      %tbody
+        - @jobs.each do |job|
+          %tr
+            %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
+            %td= job.created_at.strftime('%d %b, %Y ')
+            %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
+            %td
+              - if can?(:manage, job)
+                = form_with url: job_path(job), method: :patch, local: true do |pf|
+                  = pf.select 'job[status]',
+                      Job::STATUSES.map { |s| [s.to_s.humanize, s] },
+                      { selected: job.status },
+                      class: 'form-select form-select-sm', onchange: 'this.form.submit()'
+              - else
+                = job.status.to_s.humanize
+            %td= link_to 'Details', job
+            - if can?(:manage, Job)
+              %td= link_to 'Manage', edit_job_path(job)

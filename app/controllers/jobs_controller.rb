@@ -3,11 +3,27 @@ class JobsController < ApplicationController
 
   # GET /jobs
   def index
-    @jobs = @jobs.where(status: params[:status]) if params[:status].present?
-    if params[:search].present?
-      q = "%#{params[:search]}%"
-      @jobs = @jobs.joins(:client).where("jobs.title ILIKE :q OR users.givenname ILIKE :q OR users.sn ILIKE :q OR users.username ILIKE :q", q: q)
+    permitted = params.permit(:status, :search, :search_by, :sort)
+
+    @jobs = @jobs.where(status: permitted[:status]) if permitted[:status].present?
+
+    if permitted[:search].present?
+      q = "%#{permitted[:search]}%"
+      case permitted[:search_by]
+      when 'title'
+        @jobs = @jobs.where("jobs.title ILIKE :q", q: q)
+      when 'client'
+        @jobs = @jobs.joins(:client).where("users.givenname ILIKE :q OR users.sn ILIKE :q OR users.username ILIKE :q", q: q)
+      when 'operator'
+        @jobs = @jobs.joins("INNER JOIN users AS operators ON operators.id = jobs.operator_id")
+                     .where("operators.givenname ILIKE :q OR operators.sn ILIKE :q OR operators.username ILIKE :q", q: q)
+      else
+        @jobs = @jobs.joins(:client).where("jobs.title ILIKE :q OR users.givenname ILIKE :q OR users.sn ILIKE :q OR users.username ILIKE :q", q: q)
+      end
     end
+
+    sort_dir = permitted[:sort] == 'asc' ? :asc : :desc
+    @jobs = @jobs.order(created_at: sort_dir)
     @total_count = @jobs.count
   end
 
