@@ -4,6 +4,9 @@ SimpleCov.start 'rails'
 
 require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
+# In CI/local containers, DATABASE_URL may point at development or a remote host.
+# Force test specs to use config/database.yml test settings instead.
+ENV.delete('DATABASE_URL') if ENV['RAILS_ENV'] == 'test'
 require_relative '../config/environment'
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
@@ -30,8 +33,15 @@ Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f 
 begin
   ActiveRecord::Migration.maintain_test_schema!
 rescue ActiveRecord::PendingMigrationError => e
-  puts e.to_s.strip
-  exit 1
+  warn e.to_s.strip
+  system({ "RAILS_ENV" => "test" }, "bin/rails db:environment:set", exception: false)
+  system({ "RAILS_ENV" => "test" }, "bin/rails db:prepare", exception: false)
+  begin
+    ActiveRecord::Migration.maintain_test_schema!
+  rescue ActiveRecord::PendingMigrationError => e2
+    warn e2.to_s.strip
+    exit 1
+  end
 end
 RSpec.configure do |config|
 # Allows us to call FactoryBot methods without doing FactoryBot._
