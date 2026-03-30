@@ -31,7 +31,7 @@
       - @jobs.each do |job|
         %tr
           %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
-          %td= job.created_at.strftime('%d %b, %Y : %I:%M %p')
+          %td= job.created_at.strftime('%d %b, %Y ')
           %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
           %td
             - if can?(:manage, job)

@@ -6,9 +6,9 @@
       .card-body
         %dl.row.mb-0
           %dt.col-md-3 Client:
-          %dd.col-md-9= @job.client
+          %dd.col-md-9= "#{@job.client.givenname} #{@job.client.sn}"
           %dt.col-md-3 Operator:
-          %dd.col-md-9= @job.operator
+          %dd.col-md-9= @job.operator ? "#{@job.operator.givenname} #{@job.operator.sn}" : "Unassigned"
           %dt.col-md-3 Status:
           %dd.col-md-9= @job.status
           %dt.col-md-3 Title:
@@ -16,7 +16,8 @@
           %dt.col-md-3 Description:
           %dd.col-md-9= @job.description
           %dt.col-md-3 Date of creation:
-          %dd.col-md-9= @job.created_at
+          %dd.col-md-9= @job.created_at.strftime(' %B %d, %Y')
       .card-footer.d-flex
-        = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
+        -if can?(:manage, Job)
+          = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
