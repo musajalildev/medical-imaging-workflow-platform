@@ -19,6 +19,7 @@ if Rails.env.development?
 	end
 	puts "Seeded #{User.count} dev users"
 end
+
 client = User.create(email: "client@example.com")
 operator = User.create(email: "operator@example.com")
 
