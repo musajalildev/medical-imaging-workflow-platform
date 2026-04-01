@@ -8,6 +8,7 @@ class JobsController < ApplicationController
 
   # GET /jobs/1
   def show
+    @user = current_user
   end
 
   # GET /jobs/new
@@ -52,7 +53,7 @@ class JobsController < ApplicationController
     if @job.update(updated_params)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :show, status: :unprocessable_entity
     end
   end
 
@@ -70,6 +71,6 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
+      params.expect(job: [ :status ])
     end
 end

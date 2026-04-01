@@ -1,30 +1,40 @@
 .row.justify-content-center
   .col-sm-8.col-lg-6
     .card
-      .card-header
-        Job details
-      .card-body
-        %dl.row.mb-0
-          %dt.col-md-3 Client:
-          %dd.col-md-9= @job.client.email
-          %dt.col-md-3 Operator:
-          %dd.col-md-9= @job.operator.email
-          %dt.col-md-3 Status
-          %dd.col-md-9= @job.get_status
-          %dt.col-md-3 Title:
-          %dd.col-md-9= @job.title
-          %dt.col-md-3 Description:
-          %dd.col-md-9= @job.description
-          %dt.col-md-3 Job Created:
-          %dd.col-md-9= @job.created_at
+      = simple_form_for(@job) do |f|
+        .card-header
+          %h1= @job.title
+          #status_display= @job.get_status
+          - if can?(:edit, Job)
+            .change-status-drop-down
+              Change Status
+              = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
+                    class: "form-select",
+                    id: "job_status";
+        .card-body
+          %dl.row.mb-0
+            - if @user.role != "client" 
+              %dt.col-md-3 Client:
+              %dd.col-md-9= @job.client.email
+            - if current_user.role != "operator"
+              %dt.col-md-3 Operator:
+              %dd.col-md-9= @job.operator.email
 
-          %h4 Status history
-          .status-history-box
-            %ul
-              - @job.status_histories.each do |history|
-                %li
-                  = history.formatted_history
+            .file-download-boxes
+              %dt.col-md-3 Report File
+              link to download report file
+              %dt.col-md-3 DICOM File
+              link to download dicom file
 
-      .card-footer.d-flex
-        = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
-        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
+            %h4 Status history
+            .status-history-box
+              %ul
+                - @job.status_histories.each do |history|
+                  %li
+                    = history.formatted_history
+
+        .card-footer.d-flex
+          #save_changes_button{ style: "display: none;" }
+            %button.btn.btn-primary{ type: 'submit' }
+              Update Status
+          = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
