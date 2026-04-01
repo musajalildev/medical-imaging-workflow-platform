@@ -35,17 +35,23 @@ class JobsController < ApplicationController
   def update
     updated_params = job_params
 
+    # normalize custom status
+    updated_params[:custom_status] = updated_params[:custom_status]&.strip
+
     # clear custom status if status is changed to non-custom
     if updated_params[:status] != "custom"
       updated_params[:custom_status] = nil
     end
 
+    old_status = @job.get_status
+    new_status = updated_params[:status] == "custom" ? updated_params[:custom_status] : updated_params[:status]
+
     # create a job status history record if the status is changing
-    if @job.status != updated_params[:status] || @job.custom_status != updated_params[:custom_status]
+    if old_status != new_status
       JobStatusHistory.create!(
         job: @job,
         old_status: @job.get_status,
-        new_status: updated_params[:status] == "custom" ? updated_params[:custom_status] : updated_params[:status],
+        new_status: new_status,
         initiator: current_user
       )
     end
@@ -71,6 +77,6 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :status ])
+      params.expect(job: [ :status, :custom_status ])
     end
 end

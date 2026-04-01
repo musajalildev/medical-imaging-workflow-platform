@@ -1,6 +1,6 @@
 import Rails from "@rails/ujs";
 import "bootstrap";
 import "@hotwired/turbo-rails";
-import "../scripts/save_new_status_button_listener";
+import "../scripts/status_form_listener";
 
 Rails.start();

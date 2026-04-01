@@ -1,40 +1,46 @@
 .row.justify-content-center
   .col-sm-8.col-lg-6
     .card
-      = simple_form_for(@job) do |f|
-        .card-header
-          %h1= @job.title
-          #status_display= @job.get_status
-          - if can?(:edit, Job)
-            .change-status-drop-down
-              Change Status
-              = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
-                    class: "form-select",
-                    id: "job_status";
-        .card-body
-          %dl.row.mb-0
-            - if @user.role != "client" 
-              %dt.col-md-3 Client:
-              %dd.col-md-9= @job.client.email
-            - if current_user.role != "operator"
-              %dt.col-md-3 Operator:
-              %dd.col-md-9= @job.operator.email
+      .card-header
+        %h1= @job.title
+        #status_display= @job.get_status
 
-            .file-download-boxes
-              %dt.col-md-3 Report File
-              link to download report file
-              %dt.col-md-3 DICOM File
-              link to download dicom file
+        = simple_form_for(@job) do |f|
 
-            %h4 Status history
-            .status-history-box
-              %ul
-                - @job.status_histories.each do |history|
-                  %li
-                    = history.formatted_history
+          .status-drop-down
+            = f.label :status, "Select status"
+            = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
+                  class: "form-select";
 
-        .card-footer.d-flex
+          #custom_status_field{ style: "display: none;" }
+            = f.label :custom_status, "Enter custom status"
+            = f.text_field :custom_status, class: "form-control"
+
           #save_changes_button{ style: "display: none;" }
             %button.btn.btn-primary{ type: 'submit' }
               Update Status
-          = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
+
+      .card-body
+        %dl.row.mb-0
+          - if @user.role != "client" 
+            %dt.col-md-3 Client:
+            %dd.col-md-9= @job.client.email
+          - if current_user.role != "operator"
+            %dt.col-md-3 Operator:
+            %dd.col-md-9= @job.operator.email
+
+          .file-download-boxes
+            %dt.col-md-3 Report File
+            link to download report file
+            %dt.col-md-3 DICOM File
+            link to download dicom file
+
+          %h4 Status history
+          .status-history-box
+            %ul
+              - @job.status_histories.each do |history|
+                %li
+                  = history.formatted_history
+
+      .card-footer.d-flex
+        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
