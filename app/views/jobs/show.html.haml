@@ -5,20 +5,26 @@
         %h1= @job.title
         #status_display= @job.get_status
 
-        = simple_form_for(@job) do |f|
+        - if @job.status != "failed"
+          = simple_form_for(@job) do |f|
 
-          .status-drop-down
-            = f.label :status, "Select status"
-            = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
-                  class: "form-select";
+            .status-drop-down
+              = f.label :status, "Change status"
+              = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
+                    class: "form-select";
 
-          #custom_status_field{ style: "display: none;" }
-            = f.label :custom_status, "Enter custom status"
-            = f.text_field :custom_status, class: "form-control"
+            #custom_status_field{ style: "display: none;" }
+              = f.label :custom_status, "Enter custom status"
+              = f.text_field :custom_status, class: "form-control"
 
-          #save_changes_button{ style: "display: none;" }
-            %button.btn.btn-primary{ type: 'submit' }
-              Update Status
+            #save_changes_button{ style: "display: none;" }
+              %button.btn.btn-primary{ type: 'submit' }
+                Update Status
+
+          #cancel_job_button
+            = button_to "Cancel Job", cancel_job_job_path(@job),
+              method: :patch,
+              class: "btn btn-danger"
 
       .card-body
         %dl.row.mb-0

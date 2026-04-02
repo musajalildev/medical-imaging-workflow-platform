@@ -1,5 +1,5 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ show edit update destroy ]
+  before_action :set_job, only: %i[ show edit update destroy cancel_job ]
 
   # GET /jobs
   def index
@@ -60,6 +60,15 @@ class JobsController < ApplicationController
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
       render :show, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /jobs/1/cancel_job
+  def cancel_job
+    if @job.update(status: :failed)
+      redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
+    else
+      redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
     end
   end
 
