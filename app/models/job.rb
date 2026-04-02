@@ -26,7 +26,7 @@ class Job < ApplicationRecord
   belongs_to :client, class_name: 'User'
   belongs_to :operator, class_name: 'User', optional: true
   
-  STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed, :custom ]
+  STATUSES = [ :pending, :assigned, :in_progress, :complete, :custom, :cancelled ]
   enum :status, STATUSES
 
   # get all the status history for this job, ordered by most recent first

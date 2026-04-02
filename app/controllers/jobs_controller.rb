@@ -65,7 +65,7 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/cancel_job
   def cancel_job
-    if @job.update(status: :failed)
+    if @job.update(status: :cancelled)
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity

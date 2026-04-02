@@ -5,12 +5,12 @@
         %h1= @job.title
         #status_display= @job.get_status
 
-        - if @job.status != "failed"
+        - if @job.status != "cancelled"
           = simple_form_for(@job) do |f|
 
             .status-drop-down
               = f.label :status, "Change status"
-              = f.select :status, Job::STATUSES[1..].map { |s| [s.to_s.humanize, s] },
+              = f.select :status, Job::STATUSES[1...-1].map { |s| [s.to_s.humanize, s] },
                     class: "form-select";
 
             #custom_status_field{ style: "display: none;" }
@@ -24,7 +24,8 @@
           #cancel_job_button
             = button_to "Cancel Job", cancel_job_job_path(@job),
               method: :patch,
-              class: "btn btn-danger"
+              class: "btn btn-danger",
+              data: { turbo_confirm: 'Are you sure you want to cancel this job?' }
 
       .card-body
         %dl.row.mb-0
