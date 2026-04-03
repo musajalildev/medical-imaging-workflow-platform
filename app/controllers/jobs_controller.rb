@@ -1,5 +1,5 @@
 class JobsController < ApplicationController
-  before_action :set_job, only: %i[ show edit update destroy cancel_job ]
+  before_action :set_job, only: %i[ show edit update destroy complete_job update_status cancel_job ]
 
   # GET /jobs
   def index
@@ -33,6 +33,16 @@ class JobsController < ApplicationController
 
   # PATCH/PUT /jobs/1
   def update
+    if @job.update(job_params)
+      redirect_to @job, notice: "Job was successfully updated.", status: :see_other
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /jobs/1/update_status
+  def update_status
+
     updated_params = job_params
 
     # normalize custom status
@@ -43,29 +53,45 @@ class JobsController < ApplicationController
       updated_params[:custom_status] = nil
     end
 
-    old_status = @job.get_status
-    new_status = updated_params[:status] == "custom" ? updated_params[:custom_status] : updated_params[:status]
-
-    # create a job status history record if the status is changing
-    if old_status != new_status
-      JobStatusHistory.create!(
-        job: @job,
-        old_status: @job.get_status,
-        new_status: new_status,
-        initiator: current_user
-      )
-    end
+    # save old and new status for creating job status history record after update
+    old_status = @job.get_status_for_display
+    # returns humanized version of custom status if status is custom, otherwise returns humanized version of status enum
+    new_status = (updated_params[:status] == "custom" ? updated_params[:custom_status] : updated_params[:status]).to_s.humanize
 
     if @job.update(updated_params)
+      
+      # create a job status history record if the status is changing
+      if old_status != new_status
+        JobStatusHistory.create!(
+          job: @job,
+          old_status: old_status,
+          new_status: new_status,
+          initiator: current_user
+        )
+        # send email to client if job status changed
+        UserMailer.send_job_status_change_email(@job).deliver_later
+      end
+
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      render :show, status: :unprocessable_entity
+      redirect_to @job, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /jobs/1/complete_job
+  def complete_job
+    if @job.update(status: :complete)
+      UserMailer.send_job_completed_email(@job).deliver_later
+      redirect_to @job, notice: "Job was successfully completed.", status: :see_other
+    else
+      redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
     end
   end
 
   # PATCH /jobs/1/cancel_job
   def cancel_job
     if @job.update(status: :cancelled)
+      UserMailer.send_job_cancelled_email(@job).deliver_later
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity

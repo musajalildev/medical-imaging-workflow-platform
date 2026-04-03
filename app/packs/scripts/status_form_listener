@@ -27,7 +27,7 @@ document.addEventListener("turbo:load", () => {
     const STATUS_DISPLAY = document.getElementById("status_display");
     if (!STATUS_DISPLAY || !SAVE_CHANGES_BUTTON) return;
 
-    const hasStatusChanged = JOB_STATUS.value != STATUS_DISPLAY.textContent.toLowerCase();
+    const hasStatusChanged = JOB_STATUS.options[JOB_STATUS.selectedIndex].text != STATUS_DISPLAY.textContent;
     // implication a custom status implies that the value must be non-empty, but if the status is not custom, then we don't care about the value of the custom status input
     const doesCustomStatusHaveValue = !(JOB_STATUS.value == "custom") || CUSTOM_STATUS_INPUT.value !== "";
     // implicaition if it is a custom status, then the value must be different to the status display, but if it is not a custom status, then we don't care about the value of the custom status input

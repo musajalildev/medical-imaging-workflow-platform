@@ -17,6 +17,8 @@ Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :jobs do
     member do
+      patch :update_status
+      patch :complete_job
       patch :cancel_job
     end
   end

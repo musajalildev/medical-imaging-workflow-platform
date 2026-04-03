@@ -3,14 +3,14 @@
     .card
       .card-header
         %h1= @job.title
-        #status_display= @job.get_status
+        #status_display= @job.get_status_for_display
 
-        - if @job.status != "cancelled"
-          = simple_form_for(@job) do |f|
+        - if !(@job.status == "cancelled" || @job.status == "complete")
+          = simple_form_for(@job, url: update_status_job_path(@job), method: :patch) do |f|
 
             .status-drop-down
               = f.label :status, "Change status"
-              = f.select :status, Job::STATUSES[1...-1].map { |s| [s.to_s.humanize, s] },
+              = f.select :status, Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] },
                     class: "form-select";
 
             #custom_status_field{ style: "display: none;" }
@@ -18,14 +18,19 @@
               = f.text_field :custom_status, class: "form-control"
 
             #save_changes_button{ style: "display: none;" }
-              %button.btn.btn-primary{ type: 'submit' }
-                Update Status
+              = f.submit "Update Status", class: "btn btn-primary"
+
+          #complete_job_button
+            = button_to "Mark as Complete", complete_job_path(@job),
+              method: :patch,
+              class: "btn btn-danger",
+              data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be abl to edit it.' }
 
           #cancel_job_button
             = button_to "Cancel Job", cancel_job_job_path(@job),
               method: :patch,
               class: "btn btn-danger",
-              data: { turbo_confirm: 'Are you sure you want to cancel this job?' }
+              data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be abl to edit it.' }
 
       .card-body
         %dl.row.mb-0
