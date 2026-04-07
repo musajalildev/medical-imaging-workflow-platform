@@ -8,7 +8,7 @@ class UserMailer < ApplicationMailer
   def send_job_status_change_email(job)
     @user = job.client
     @job = job
-    mail(to: 'bdgrassie1@sheffield.ac.uk', subject: "Your job status has changed to #{@job.status}")
+    mail(to: @user.email, subject: "Your job status has changed to #{@job.status}")
   end
 
   # send client an email when their job is cancelled

@@ -21,16 +21,16 @@
               = f.submit "Update Status", class: "btn btn-primary"
 
           #complete_job_button
-            = button_to "Mark as Complete", complete_job_path(@job),
+            = button_to "Mark as Complete", complete_job_job_path(@job),
               method: :patch,
               class: "btn btn-danger",
-              data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be abl to edit it.' }
+              data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
           #cancel_job_button
             = button_to "Cancel Job", cancel_job_job_path(@job),
               method: :patch,
               class: "btn btn-danger",
-              data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be abl to edit it.' }
+              data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
 
       .card-body
         %dl.row.mb-0

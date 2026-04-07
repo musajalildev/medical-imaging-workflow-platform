@@ -24,11 +24,10 @@
 #
 FactoryBot.define do
   factory :job do
-    client { nil }
-    operator { nil }
-    status { 1 }
-    title { "MyString" }
-    description { "MyString" }
-    date_of_creation { "2026-03-15 14:55:52" }
+    association :client, factory: [:user, :client]
+    association :operator, factory: [:user, :operator]
+    title { "Test Job" }
+    description { "This is a test job." }
+    status { :assigned }
   end
 end

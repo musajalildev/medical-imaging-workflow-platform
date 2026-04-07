@@ -22,9 +22,9 @@
 #
 FactoryBot.define do
   factory :job_status_history do
-    job { nil }
-    old_status { 1 }
-    new_status { 1 }
-    initiator { nil }
+    association :job
+    old_status { 0 }
+    new_status { job.status }
+    initiator { job.operator || job.client }
   end
 end
