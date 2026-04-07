@@ -31,7 +31,7 @@ RSpec.describe JobStatusHistory, type: :model do
     let(:history) { JobStatusHistory.create!(job: job, old_status: :pending, new_status: :assigned, initiator: operator) }
 
     it 'returns a formatted string with initiator email, old status, new status, and timestamp' do
-      expect(history.formatted_history).to eq("operator@example.com changed status from Pending to Assigned at #{history.created_at.strftime("%Y-%m-%d %H:%M:%S")}")
+      expect(history.formatted_history).to eq("operator@example.com changed status from Pending to Assigned on #{history.created_at.strftime("%Y/%m/%d, at %H:%M")}")
     end
 
     it 'humanizes the old and new status' do
@@ -42,7 +42,7 @@ RSpec.describe JobStatusHistory, type: :model do
     it 'includes the correct timestamp' do
       time = Time.new(2024, 2, 12, 9, 5, 3)
       allow(history).to receive(:created_at).and_return(time)
-      expect(history.formatted_history).to include("2024-02-12 09:05:03")
+      expect(history.formatted_history).to include("2024/02/12, at 09:05")
     end
 
     it "handles different initiators correctly" do
