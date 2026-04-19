@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       patch :update_status
       patch :complete_job
       patch :cancel_job
+      patch :self_assign
     end
   end
   resources :reports

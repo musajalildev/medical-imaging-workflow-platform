@@ -3,7 +3,18 @@ class JobsController < ApplicationController
 
   # GET /jobs
   def index
-    @jobs = Job.all
+    # Checks for operator role
+    if current_user&.operator?
+      @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
+      if @tab == "unassigned"
+        @jobs = Job.where(operator_id: nil)
+      else
+        @jobs = Job.where(operator_id: current_user.id)
+      end
+    else
+      @jobs = Job.all
+      @tab = "all"
+    end
   end
 
   # GET /jobs/1
@@ -75,6 +86,23 @@ class JobsController < ApplicationController
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
       redirect_to @job, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /jobs/1/self_assign
+  def self_assign
+    if @job.operator_id.nil?
+      @job.update!(operator: current_user, status: :assigned)
+      # Automatically update job status when assigned
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: @job.status_before_last_save || "pending",
+        new_status: "assigned",
+        initiator: current_user
+      ) if @job.saved_change_to_operator_id?
+      redirect_to jobs_path(tab: "assigned"), notice: "Job assigned to you.", status: :see_other
+    else
+      redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
     end
   end
 

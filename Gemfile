@@ -45,7 +45,9 @@ gem 'draper'
 gem 'shakapacker', '9.5.0'
 
 gem 'devise'
-gem 'epi_cas', git: 'git@git.shefcompsci.org.uk:gems/epi_cas.git'
+#gem 'epi_cas', git: 'git@git.shefcompsci.org.uk:gems/epi_cas.git'
+gem 'epi_cas', git: 'https://git.shefcompsci.org.uk/gems/epi_cas.git'
+
 gem 'cancancan'
 
 gem 'whenever'

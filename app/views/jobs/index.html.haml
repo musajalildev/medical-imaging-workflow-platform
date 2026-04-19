@@ -3,6 +3,11 @@
     %span Listing Jobs
 
     = link_to 'New Job', new_job_path, class: 'btn btn-outline-secondary ms-auto'
+  - if current_user&.operator?
+    .card-body.border-bottom
+      .btn-group
+        = link_to "My jobs", jobs_path(tab: "assigned"), class: "btn btn-outline-secondary #{'active' if @tab == 'assigned'}"
+        = link_to "Unassigned jobs", jobs_path(tab: "unassigned"), class: "btn btn-outline-secondary #{'active' if @tab == 'unassigned'}"
 
   %table.table
     %thead
@@ -27,4 +32,6 @@
             .btn-toolbar.float-end
               = link_to 'Show', job, class: 'btn btn-outline-secondary btn-sm'
               = link_to 'Edit', edit_job_path(job), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
+                = link_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'
               = link_to 'Destroy', job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'
