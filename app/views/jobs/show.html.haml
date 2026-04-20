@@ -1,5 +1,9 @@
 .row.justify-content-center
   .col-sm-8.col-lg-6
+    - output_file = @job.image_files.detect(&:output_file?)
+    - regular_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
+    - file_slots = regular_files.first(2)
+    - file_slots << nil while file_slots.length < 2
     .card
       .card-header
         Job details
@@ -16,7 +20,55 @@
           %dt.col-md-3 Description:
           %dd.col-md-9= @job.description
           %dt.col-md-3 Date of creation:
-          %dd.col-md-9= @job.date_of_creation
+          %dd.col-md-9= @job.created_at
+
+        .mt-4
+          %h2.h5 Job Input Files
+          .d-flex.gap-2.flex-wrap
+            - file_1_url = file_slots[0]&.file_path
+            - file_1_id = file_slots[0]&.drive_file_id
+            - if file_1_url.present?
+              - if current_user&.admin?
+                = button_to 'Delete PDF file', remove_file_path(image_file_id: file_slots[0].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete PDF file from Google Drive?' } }
+              - if file_1_id.present?
+                = link_to 'Download PDF file', download_file_path(file_id: file_1_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %span.badge.text-bg-secondary No PDF file yet.
+            - else
+              %span.badge.text-bg-secondary No PDF file yet.
+
+            - file_2_url = file_slots[1]&.file_path
+            - file_2_id = file_slots[1]&.drive_file_id
+            - if file_2_url.present?
+              - if current_user&.admin?
+                = button_to 'Delete DICOM file', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete DICOM file from Google Drive?' } }
+              - if file_2_id.present?
+                = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %span.badge.text-bg-secondary No DICOM file yet.
+            - else
+              %span.badge.text-bg-secondary No DICOM file yet.
+
+        .mt-4
+          %h2.h5 Ouptut file
+
+          - if current_user&.operator?
+            = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'd-flex flex-column gap-2 mb-3' do
+              %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
+              %button.btn.btn-outline-primary{ type: 'submit' } Upload Report file
+
+          .d-flex.gap-2.flex-wrap
+            - output_url = output_file&.file_path
+            - output_id = output_file&.drive_file_id
+            - if output_url.present?
+              - if current_user&.admin?
+                = button_to 'Delete Report file', remove_file_path(image_file_id: output_file.id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete Report file from Google Drive?' } }
+              - if output_id.present?
+                = link_to 'Download Report file', download_file_path(file_id: output_id), class: 'btn btn-primary', data: { turbo: false }
+              - else
+                %span.badge.text-bg-secondary No Report file yet.
+            - else
+              %span.badge.text-bg-secondary No Report file yet.
       .card-footer.d-flex
         = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
