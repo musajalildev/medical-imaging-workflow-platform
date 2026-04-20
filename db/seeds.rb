@@ -25,7 +25,7 @@ Job.create!([
   { title: 'Genomic variant calling', description: 'Identify SNPs and indels across 300 patient whole-genome samples.', status: :assigned, client: client, operator: operator },
   { title: 'Drug interaction simulation', description: 'Molecular docking simulation for candidate compounds against target protein.', status: :in_progress, client: client, operator: operator },
   { title: 'CT scan batch processing', description: 'Process and reconstruct 1000 CT scans for lung nodule detection pipeline.', status: :complete, client: client, operator: operator },
-  { title: 'Protein structure prediction', description: 'AlphaFold2 structure prediction for 50 novel disease-related proteins.', status: :failed, client: client },
+  { title: 'Protein structure prediction', description: 'AlphaFold2 structure prediction for 50 novel disease-related proteins.', status: :cancelled, client: client },
 ])
 
 if Rails.env.development?
@@ -49,7 +49,7 @@ if Rails.env.development?
 		{ title: "Genomic variant calling",       description: "Identify SNPs and indels across 300 patient whole-genome samples.",                        status: :assigned,    client: dev_client, operator: dev_operator },
 		{ title: "Drug interaction simulation",   description: "Molecular docking simulation for candidate compounds against target protein.",             status: :in_progress, client: dev_client, operator: dev_operator },
 		{ title: "CT scan batch processing",      description: "Process and reconstruct 1000 CT scans for lung nodule detection pipeline.",                status: :complete,    client: dev_client, operator: dev_operator },
-		{ title: "Protein structure prediction",  description: "AlphaFold2 structure prediction for 50 novel disease-related proteins.",                   status: :failed,      client: dev_client },
+		{ title: "Protein structure prediction",  description: "AlphaFold2 structure prediction for 50 novel disease-related proteins.",                   status: :cancelled,      client: dev_client },
 		{ title: "Retinal image classification",  description: "Train CNN classifier on 10k retinal fundus images for diabetic retinopathy grading.",      status: :pending,     client: client },
 		{ title: "Pathology slide analysis",      description: "Whole-slide image tiling and feature extraction for tumour grading.",                      status: :in_progress, client: client, operator: dev_operator },
 	].each do |attrs|

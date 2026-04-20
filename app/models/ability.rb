@@ -37,6 +37,9 @@ class Ability
       can :manage, Job
     elsif user.operator?
       can :read, Job
+      can :update_status, Job, operator_id: user.id
+      can :cancel_job, Job, operator_id: user.id
+      can :complete_job, Job, operator_id: user.id
     elsif user.client?
       can :read, Job, client_id: user.id
     end

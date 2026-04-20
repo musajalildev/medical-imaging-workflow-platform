@@ -1,5 +1,5 @@
 GIT
-  remote: https://git.shefcompsci.org.uk/gems/epi_cas.git
+  remote: git@git.shefcompsci.org.uk:gems/epi_cas.git
   revision: 206155284bf01dcb7490fafcf105d5488099ce3b
   specs:
     epi_cas (2.1.4)
