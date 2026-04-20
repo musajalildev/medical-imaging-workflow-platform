@@ -25,7 +25,7 @@
             - sort_label = params[:sort] == 'asc' ? '↑ Date' : '↓ Date'
             = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab, :_method, :authenticity_token).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
             - if params[:status].present? || params[:search].present? || params[:sort].present?
-              = link_to 'Clear', jobs_path, class: 'btn btn-link btn-sm'
+              = link_to 'Clear', jobs_path(tab: @tab), class: 'btn btn-link btn-sm'
 
     .card-body.py-2
       .d-flex.align-items-center.gap-3
