@@ -5,7 +5,7 @@
         %h1= @job.title
         #status_display= @job.get_status_for_display
 
-        - if !(@job.status == "cancelled" || @job.status == "complete")
+        - if !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending")
           = simple_form_for(@job, url: update_status_job_path(@job), method: :patch) do |f|
 
             .status-drop-down
