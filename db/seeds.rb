@@ -21,14 +21,22 @@ if Rails.env.development?
 end
 
 client = User.create(email: "client@example.com")
-operator = User.create(email: "operator@example.com")
+operator = User.find_by(username: "dev_operator") || User.create(email: "operator@example.com")
 
 job = Job.create(
   client: client,
-  operator: operator,
+  operator: nil,
   title: "Test Job",
   description: "This is a test job.",
-  status: :complete
+  status: :pending
+)
+
+assigned_job = Job.create(
+	client: client,
+	operator: operator,  # ← Assign to the operator
+	title: "Assigned Test Job",
+	description: "This is an assigned test job.",
+	status: :assigned
 )
 
 JobStatusHistory.create(

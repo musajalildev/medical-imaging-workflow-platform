@@ -33,5 +33,5 @@
               = link_to 'Show', job, class: 'btn btn-outline-secondary btn-sm'
               = link_to 'Edit', edit_job_path(job), class: 'btn btn-outline-secondary ms-1 btn-sm'
               - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
-                = link_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'
+                = button_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'
               = link_to 'Destroy', job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'
