@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_24_133214) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_03_153845) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,8 +40,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_24_133214) do
 
   create_table "job_status_histories", force: :cascade do |t|
     t.bigint "job_id", null: false
-    t.integer "old_status", null: false
-    t.integer "new_status", null: false
+    t.string "old_status", null: false
+    t.string "new_status", null: false
     t.bigint "initiator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

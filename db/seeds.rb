@@ -59,3 +59,43 @@ if Rails.env.development?
 	end
 	puts "Seeded #{Job.count} dev jobs"
 end
+
+client = User.create(email: "client@example.com")
+operator = User.find_by(username: "dev_operator") || User.create(email: "operator@example.com")
+
+job = Job.create(
+  client: client,
+  operator: nil,
+  title: "Test Job",
+  description: "This is a test job.",
+  status: :pending
+)
+
+assigned_job = Job.create(
+	client: client,
+	operator: operator,  # ← Assign to the operator
+	title: "Assigned Test Job",
+	description: "This is an assigned test job.",
+	status: :assigned
+)
+
+JobStatusHistory.create(
+  job: job,
+  old_status: :pending,
+  new_status: :assigned,
+  initiator: operator
+)
+
+JobStatusHistory.create(
+  job: job,
+  old_status: :assigned,
+  new_status: :in_progress,
+  initiator: operator
+)
+
+JobStatusHistory.create(
+  job: job,
+  old_status: :in_progress,
+  new_status: :complete,
+  initiator: operator
+)

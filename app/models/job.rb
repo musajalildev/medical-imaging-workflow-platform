@@ -25,7 +25,21 @@
 class Job < ApplicationRecord
   belongs_to :client, class_name: 'User'
   belongs_to :operator, class_name: 'User', optional: true
-  STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
   
+  STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled ]
   enum :status, STATUSES
+
+  # get all the status history for this job, ordered by most recent first
+  def status_histories
+    JobStatusHistory.where(job: self).order(created_at: :desc)
+  end
+
+  # get status for display, using custom status if status is set to custom
+  def get_status_for_display
+    if status == "custom"
+      custom_status
+    else
+      status.to_s.humanize
+    end
+  end
 end

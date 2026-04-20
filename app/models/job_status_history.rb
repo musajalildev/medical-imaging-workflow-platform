@@ -3,8 +3,8 @@
 # Table name: job_status_histories
 #
 #  id           :bigint           not null, primary key
-#  new_status   :integer          not null
-#  old_status   :integer          not null
+#  new_status   :string           not null
+#  old_status   :string           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  initiator_id :bigint           not null
@@ -24,6 +24,8 @@ class JobStatusHistory < ApplicationRecord
   belongs_to :job
   belongs_to :initiator, class_name: 'User'
 
-  enum :old_status, Job::STATUSES, prefix: :old
-  enum :new_status, Job::STATUSES, prefix: :new
+  # get formatted status history for display
+  def formatted_history
+    "#{initiator.email} changed status from #{old_status.humanize} to #{new_status.humanize} on #{created_at.strftime("%Y/%m/%d, at %H:%M")}"
+  end
 end

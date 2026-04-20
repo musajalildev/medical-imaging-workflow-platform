@@ -25,6 +25,41 @@
 require 'rails_helper'
 
 RSpec.describe Job, type: :model do
+  describe '#status_histories' do
+    let(:client) { User.create!(email: "client@example.com") }
+    let(:operator) { User.create!(email: "operator@example.com") }
+    let(:job) { Job.create!(client: client, operator: operator, title: "Test Job", description: "This is a test job.", status: :pending) }
+
+    it 'returns the correct status histories' do
+      history1 = JobStatusHistory.create!(job: job, old_status: :pending, new_status: :assigned, initiator: operator)
+      history2 = JobStatusHistory.create!(job: job, old_status: :assigned, new_status: :in_progress, initiator: operator)
+
+      expect(job.status_histories).to include(history1)
+      expect(job.status_histories).to include(history2)
+    end
+
+    it 'returns status histories in the correct order' do
+      history1 = JobStatusHistory.create!(job: job, old_status: :pending, new_status: :assigned, initiator: operator, created_at: 1.day.ago)
+      history2 = JobStatusHistory.create!(job: job, old_status: :assigned, new_status: :in_progress, initiator: operator, created_at: Time.now)
+
+      expect(job.status_histories.first).to eq(history2)
+      expect(job.status_histories.second).to eq(history1)
+    end
+
+    it 'returns an empty array if there are no status histories' do
+      expect(job.status_histories).to be_empty
+    end
+
+    it 'only returns status histories for the correct job' do
+      other_job = Job.create!(client: client, operator: operator, title: "Other Job", description: "This is another job.", status: :pending)
+      history1 = JobStatusHistory.create!(job: job, old_status: :pending, new_status: :assigned, initiator: operator)
+      history2 = JobStatusHistory.create!(job: other_job, old_status: :pending, new_status: :assigned, initiator: operator)
+
+      expect(job.status_histories).to include(history1)
+      expect(job.status_histories).not_to include(history2)
+    end
+  end
+
   let(:client) { create(:user) }
 
   describe 'creation' do

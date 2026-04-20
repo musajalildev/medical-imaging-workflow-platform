@@ -1,9 +1,16 @@
 -# frozen_string_literal: true
 = simple_form_for(@job) do |f|
   .card-body
-    = f.association :client, wrapper_html: { class: 'mb-3' }
     = f.association :operator, wrapper_html: { class: 'mb-3' }
-    = f.input :status, wrapper_html: { class: 'mb-3' }
+    = f.label :status
+    = f.select :status, Job::STATUSES.map { |s| [s.to_s.humanize, s] },
+           {},
+           class: "form-select";
+           
+    #custom_status_field{ style: "display: none;" }
+      = f.label :custom_status, "Enter custom status"
+      = f.text_field :custom_status, class: "form-control"
+
     = f.input :title, wrapper_html: { class: 'mb-3' }
     = f.input :description, wrapper_html: { class: 'mb-3' }
     = f.input :created_at, wrapper_html: { class: 'mb-3' } # fixed method error
