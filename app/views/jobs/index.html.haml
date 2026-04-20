@@ -22,7 +22,7 @@
             %button{ type: 'submit', class: 'btn btn-outline-secondary btn-sm' } Search
             - next_sort = params[:sort] == 'asc' ? 'desc' : 'asc'
             - sort_label = params[:sort] == 'asc' ? '↑ Date' : '↓ Date'
-            = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
+            = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab, :_method, :authenticity_token).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
             - if params[:status].present? || params[:search].present? || params[:sort].present?
               = link_to 'Clear', jobs_path, class: 'btn btn-link btn-sm'
 
@@ -61,3 +61,5 @@
             %td= link_to 'Details', job
             - if can?(:manage, Job)
               %td= link_to 'Manage', edit_job_path(job)
+            - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
+              %td= button_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'

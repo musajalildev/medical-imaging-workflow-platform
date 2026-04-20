@@ -11,8 +11,9 @@ class JobsController < ApplicationController
       else
         @jobs = Job.where(operator_id: current_user.id)
       end
-    else
-      permitted = params.permit(:status, :search, :search_by, :sort)
+    end
+
+    permitted = params.permit(:status, :search, :search_by, :sort, :_method, :authenticity_token, :tab)
 
     @jobs = @jobs.where(status: permitted[:status]) if permitted[:status].present?
 
@@ -34,8 +35,6 @@ class JobsController < ApplicationController
     sort_dir = permitted[:sort] == 'asc' ? :asc : :desc
     @jobs = @jobs.order(created_at: sort_dir)
     @total_count = @jobs.count
-      @tab = "all"
-    end
   end
 
   # GET /jobs/1
@@ -112,6 +111,7 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/self_assign
   def self_assign
+    puts "hello"
     if @job.operator_id.nil?
       @job.update!(operator: current_user, status: :assigned)
       # Automatically update job status when assigned
@@ -121,7 +121,7 @@ class JobsController < ApplicationController
         new_status: "assigned",
         initiator: current_user
       ) if @job.saved_change_to_operator_id?
-      redirect_to jobs_path(tab: "assigned"), notice: "Job assigned to you.", status: :see_other
+      redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
     end
