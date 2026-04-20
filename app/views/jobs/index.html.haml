@@ -1,4 +1,5 @@
 = form_with url: jobs_path, method: :get, local: true do |f|
+  = f.hidden_field :tab, value: @tab if @tab.present?
   .card
     .card-header
       .select-jobs
