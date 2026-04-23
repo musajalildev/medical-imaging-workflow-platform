@@ -4,8 +4,8 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output ]
-  before_action :check_client_role, only: %i[ new create edit update ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
+  before_action :check_client_role, only: %i[ new create update ]
 
   # GET /jobs
   def index
@@ -19,7 +19,7 @@ class JobsController < ApplicationController
       end
     end
 
-    permitted = params.permit(:status, :search, :search_by, :sort, :_method, :authenticity_token, :tab)
+    permitted = params.permit(:status, :search, :search_by, :sort, :_method, :authenticity_token, :tab, job: {})
 
     @jobs = @jobs.where(status: permitted[:status]) if permitted[:status].present?
 
@@ -223,7 +223,7 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :client_id, :operator_id, :status, :title, :description ])
+      params.expect(job: [ :client_id, :operator_id, :status, :title, :description, :custom_status ])
     end
 
     def attach_uploaded_file(job, ensure_placeholders: false)
@@ -337,6 +337,5 @@ class JobsController < ApplicationController
       unless current_user&.client?
         redirect_to jobs_path, alert: "Only clients can create or edit jobs."
       end
-      params.expect(job: [ :status, :custom_status ])
     end
 end

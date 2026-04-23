@@ -23,7 +23,7 @@
             %button{ type: 'submit', class: 'btn btn-outline-secondary btn-sm' } Search
             - next_sort = params[:sort] == 'asc' ? 'desc' : 'asc'
             - sort_label = params[:sort] == 'asc' ? '↑ Date' : '↓ Date'
-            = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab, :_method, :authenticity_token).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
+            = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab, :_method, :authenticity_token, job: {}).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
             - if params[:status].present? || params[:search].present? || params[:sort].present?
               = link_to 'Clear', jobs_path(tab: @tab), class: 'btn btn-link btn-sm'
 
