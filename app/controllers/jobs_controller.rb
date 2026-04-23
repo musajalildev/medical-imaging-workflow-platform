@@ -23,18 +23,6 @@ class JobsController < ApplicationController
   # GET /jobs/1/edit
   def edit
   end
-  
-  # GET /jobs/:id/update_status
-  def update_status
-    @job = Job.find(params[:id])
-  end
-
-  # PATCH /jobs/:id/update_status
-  def complete_update_status
-    @job = Job.find(params[:id])
-    @job.update(status: params[:job][:status])
-    redirect_to jobs_path
-  end
 
   # POST /jobs
   def create
