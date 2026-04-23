@@ -17,6 +17,12 @@ Rails.application.routes.draw do
   end
   resources :reports
   resources :notifications
+  resources :jobs do
+    post :upload_output, on: :member
+  end
+  post '/files/upload', to: 'files#upload'
+  get '/files/:file_id/download', to: 'files#download', as: :download_file
+  delete '/files/:image_file_id/remove', to: 'files#remove', as: :remove_file
   mount EpiCas::Engine, at: "/"
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

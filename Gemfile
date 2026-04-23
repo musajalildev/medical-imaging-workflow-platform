@@ -56,6 +56,8 @@ gem 'delayed_job_active_record'
 gem 'daemons'
 
 gem 'sanitize_email'
+gem 'google-apis-drive_v3'
+gem 'googleauth'
 
 gem 'sentry-ruby'
 gem 'sentry-rails'

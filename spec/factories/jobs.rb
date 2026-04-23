@@ -24,10 +24,10 @@
 #
 FactoryBot.define do
   factory :job do
-    association :client, factory: [:user, :client]
-    association :operator, factory: [:user, :operator]
+    client { association :user, role: :client }
+    operator { association :user, role: :operator }
+    status { :pending }
     title { "Test Job" }
-    description { "This is a test job." }
-    status { :assigned }
+    description { "Test Description" }
   end
 end
