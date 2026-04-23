@@ -1,6 +1,0 @@
-%h1 Update Job Status
-
-
-= simple_form_for @job, url: complete_update_status_job_path(@job.id), method: :patch do |f|
-    = f.input :status, as: :select, collection: Job::STATUSES.map { |s| [s.to_s.humanize, s] }
-    = f.submit 'Confirm' , class: 'btn btn-primary'
