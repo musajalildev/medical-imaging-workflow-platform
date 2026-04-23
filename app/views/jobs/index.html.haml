@@ -27,4 +27,6 @@
             .btn-toolbar.float-end
               = link_to 'Show', job, class: 'btn btn-outline-secondary btn-sm'
               = link_to 'Edit', edit_job_path(job), class: 'btn btn-outline-secondary ms-1 btn-sm'
+              - if current_user == job.operator
+                = link_to 'Update Status' , update_status_job_path(job), class: 'btn btn-outline-primary ms-1 btn-sm'
               = link_to 'Destroy', job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'

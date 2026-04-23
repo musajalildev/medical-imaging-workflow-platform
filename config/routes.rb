@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   resources :notifications
   resources :jobs do
     post :upload_output, on: :member
+    get :update_status, on: :member
+    patch :complete_update_status, on: :member
+
   end
   post '/files/upload', to: 'files#upload'
   get '/files/:file_id/download', to: 'files#download', as: :download_file

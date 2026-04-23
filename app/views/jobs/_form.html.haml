@@ -3,7 +3,7 @@
   .card-body
     = f.association :client, wrapper_html: { class: 'mb-3' }
     = f.association :operator, wrapper_html: { class: 'mb-3' }
-    = f.input :status, wrapper_html: { class: 'mb-3' }
+    = f.input :status, as: :select, collection: Job::STATUSES.map { |s| [s.to_s.humanize, s] }, wrapper_html: { class: 'mb-3' }
     = f.input :title, wrapper_html: { class: 'mb-3' }
     = f.input :description, wrapper_html: { class: 'mb-3' }
 
