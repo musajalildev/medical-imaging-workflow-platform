@@ -60,6 +60,7 @@ class JobsController < ApplicationController
   # POST /jobs
   def create
     @job = Job.new(job_params)
+    @job.client = current_user
 
     if @job.save
       attach_uploaded_file(@job, ensure_placeholders: true)
@@ -223,7 +224,7 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      params.expect(job: [ :client_id, :operator_id, :status, :title, :description, :custom_status ])
+        params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
     end
 
     def attach_uploaded_file(job, ensure_placeholders: false)

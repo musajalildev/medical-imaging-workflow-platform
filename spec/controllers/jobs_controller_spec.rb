@@ -98,13 +98,14 @@ RSpec.describe JobsController, type: :controller do
               job: {
                 title: "Test Job",
                 description: "Test Description",
-                client_id: client_user.id,
                 operator_id: operator_user.id,
                 status: "pending"
               },
               uploaded_files_json: "[]"
             }
           }.to change(Job, :count).by(1)
+
+          expect(Job.last.client_id).to eq(client_user.id)
         end
       end
 
