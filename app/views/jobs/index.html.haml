@@ -39,10 +39,9 @@
       %thead
         %tr
           %th Client
-          %th Job Submitted
+          %th Created At
           %th Operator
           %th Status
-          %th
           %th
       %tbody
         - @jobs.each do |job|
@@ -50,17 +49,7 @@
             %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
             %td= job.created_at.strftime('%d %b, %Y ')
             %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
-            %td
-              - if can?(:manage, job)
-                = form_with url: job_path(job), method: :patch, local: true do |pf|
-                  = pf.select 'job[status]',
-                      Job::STATUSES.map { |s| [s.to_s.humanize, s] },
-                      { selected: job.status },
-                      class: 'form-select form-select-sm', onchange: 'this.form.submit()'
-              - else
-                = job.status.to_s.humanize
+            %td= job.status.to_s.humanize
             %td= link_to 'Details', job
-            - if can?(:manage, Job)
-              %td= link_to 'Manage', edit_job_path(job)
             - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
               %td= button_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'
