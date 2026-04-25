@@ -59,7 +59,7 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    @job = Job.new(job_params)
+    @job = Job.new(create_job_params)
     @job.client = current_user
 
     if @job.save
@@ -72,7 +72,7 @@ class JobsController < ApplicationController
 
   # PATCH/PUT /jobs/1
   def update
-    if @job.update(job_params)
+    if @job.update(update_job_params)
       attach_uploaded_file(@job, ensure_placeholders: false)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
@@ -83,7 +83,7 @@ class JobsController < ApplicationController
   # PATCH /jobs/1/update_status
   def update_status
 
-    updated_params = job_params
+    updated_params = status_job_params
 
     # normalize custom status
     updated_params[:custom_status] = updated_params[:custom_status]&.strip
@@ -223,8 +223,16 @@ class JobsController < ApplicationController
     end
 
     # Only allow a list of trusted parameters through.
-    def job_params
-        params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
+    def create_job_params
+      params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
+    end
+
+    def update_job_params
+      params.expect(job: [ :operator_id, :title, :description ])
+    end
+
+    def status_job_params
+      params.expect(job: [ :status, :custom_status ])
     end
 
     def attach_uploaded_file(job, ensure_placeholders: false)

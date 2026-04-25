@@ -166,6 +166,22 @@ RSpec.describe JobsController, type: :controller do
           job.reload
           expect(job.title).to eq("Updated Title")
         end
+
+        it "does not allow client to change status through update" do
+          job.update!(client: client_user, status: :pending)
+
+          patch :update, params: {
+            id: job.id,
+            job: {
+              title: "Updated Title",
+              status: "complete"
+            },
+            uploaded_files_json: "[]"
+          }
+
+          job.reload
+          expect(job.status).to eq("pending")
+        end
       end
 
       context "when user is an operator" do
