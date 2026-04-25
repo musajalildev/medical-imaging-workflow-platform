@@ -32,17 +32,5 @@ FactoryBot.define do
     sequence(:username) { |n| "user#{n}" }
     role { :client }
     sign_in_count { 0 }
-
-    trait :client do
-      role { :client }
-    end
-
-    trait :operator do
-      role { :operator }
-    end
-
-    trait :admin do
-      role { :admin }
-    end
   end
 end
