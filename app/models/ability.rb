@@ -43,6 +43,9 @@ class Ability
       can :self_assign, Job
     elsif user.client?
       can :read, Job, client_id: user.id
+      can :create, Job
+      can :update, Job, client_id: user.id
+      can :edit, Job, client_id: user.id
     end
     
   end
