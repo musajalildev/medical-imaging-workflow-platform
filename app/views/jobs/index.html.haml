@@ -52,4 +52,4 @@
             %td= job.status.to_s.humanize
             %td= link_to 'Details', job
             - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
-              %td= button_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'
+              %td= link_to 'Self assign', self_assign_job_path(job), data: { turbo_method: :patch }, class: 'btn btn-outline-primary ms-1 btn-sm'

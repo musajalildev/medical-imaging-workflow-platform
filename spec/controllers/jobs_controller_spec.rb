@@ -200,5 +200,33 @@ RSpec.describe JobsController, type: :controller do
         end
       end
     end
+
+    describe "PATCH #self_assign" do
+      let(:client_owner) { create(:user, role: :client) }
+      let(:unassigned_job) { create(:job, client: client_owner, operator: nil, status: :pending) }
+
+      context "when user is an operator" do
+        before { allow(controller).to receive(:current_user).and_return(operator_user) }
+
+        it "assigns the operator to the job" do
+          patch :self_assign, params: { id: unassigned_job.id }
+
+          unassigned_job.reload
+          expect(unassigned_job.operator_id).to eq(operator_user.id)
+          expect(unassigned_job.status).to eq("assigned")
+          expect(response).to redirect_to(jobs_path(tab: "unassigned"))
+          expect(flash[:notice]).to match(/Job assigned to you/)
+        end
+
+        it "does not reassign an already assigned job" do
+          already_assigned = create(:job, client: client_owner, operator: create(:user, role: :operator), status: :assigned)
+
+          patch :self_assign, params: { id: already_assigned.id }
+
+          expect(response).to redirect_to(jobs_path(tab: "unassigned"))
+          expect(flash[:alert]).to match(/Job is already assigned/)
+        end
+      end
+    end
   end
 end
