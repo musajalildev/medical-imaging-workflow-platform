@@ -29,9 +29,9 @@
                     = f.submit "Update status", class: "btn btn-primary btn-sm"
 
           .job-header-actions
-            - if can?(:complete_job, @job) && @job.status != "complete" || can?(:cancel_job, @job) && @job.status != "cancelled"
+            - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
               .job-action-row
-                - if can?(:complete_job, @job) && @job.status != "complete"
+                - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?)
                   #complete_job_button
                     = button_to "Mark as Complete", complete_job_job_path(@job),
                       method: :patch,
@@ -39,7 +39,7 @@
                       form: { class: 'job-action-form' },
                       data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
-                - if can?(:cancel_job, @job) && @job.status != "cancelled"
+                - if can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
                   #cancel_job_button
                     = button_to "Cancel Job", cancel_job_job_path(@job),
                       method: :patch,
