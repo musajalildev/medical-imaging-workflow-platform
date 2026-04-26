@@ -57,6 +57,13 @@
             %dd.col-md-9= @job.operator.email
 
         .job-file-panel.mt-4
+          %h2.h5.mb-3 Description
+          - if @job.description.present?
+            %p.mb-0= @job.description
+          - else
+            %p.text-muted.small.mb-0.fst-italic No description provided.
+
+        .job-file-panel.mt-4
           %h2.h5.mb-3 Job input files
           .d-flex.gap-2.flex-wrap
             - file_1_url = file_slots[0]&.file_path
