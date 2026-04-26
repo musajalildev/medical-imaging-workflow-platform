@@ -61,6 +61,8 @@ class JobsController < ApplicationController
   def create
     @job = Job.new(job_params)
     @job.client = current_user
+    @job.status = :pending
+    @job.operator = nil
 
     if @job.save
       attach_uploaded_file(@job, ensure_placeholders: true)
