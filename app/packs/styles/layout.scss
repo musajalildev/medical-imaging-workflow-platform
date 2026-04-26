@@ -262,6 +262,12 @@ body {
   margin-bottom: 0.75rem;
 }
 
+@media (min-width: 768px) {
+  .job-meta-list {
+    padding-left: 30px;
+  }
+}
+
 .job-output-form {
   max-width: 28rem;
 }
