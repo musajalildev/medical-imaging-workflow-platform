@@ -2,7 +2,7 @@ require "google/apis/drive_v3"
 require "googleauth"
 
 class JobsController < ApplicationController
-  load_and_authorize_resource
+  load_and_authorize_resource param_method: :job_params
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
   before_action :check_client_role, only: %i[ new create edit update ]
@@ -59,7 +59,7 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    @job = Job.new(create_job_params)
+    @job = Job.new(job_params)
     @job.client = current_user
 
     if @job.save
@@ -72,7 +72,7 @@ class JobsController < ApplicationController
 
   # PATCH/PUT /jobs/1
   def update
-    if @job.update(update_job_params)
+    if @job.update(job_params)
       attach_uploaded_file(@job, ensure_placeholders: false)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
@@ -83,7 +83,7 @@ class JobsController < ApplicationController
   # PATCH /jobs/1/update_status
   def update_status
 
-    updated_params = status_job_params
+    updated_params = job_params
 
     # normalize custom status
     updated_params[:custom_status] = updated_params[:custom_status]&.strip
@@ -223,16 +223,15 @@ class JobsController < ApplicationController
     end
 
     # Only allow a list of trusted parameters through.
-    def create_job_params
-      params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
-    end
-
-    def update_job_params
-      params.expect(job: [ :operator_id, :title, :description ])
-    end
-
-    def status_job_params
-      params.expect(job: [ :status, :custom_status ])
+    def job_params
+      case action_name  
+      when "create"
+        params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
+      when "update"
+        params.expect(job: [ :operator_id, :title, :description ])
+      when "update_status"
+        params.expect(job: [ :status, :custom_status ])
+      end
     end
 
     def attach_uploaded_file(job, ensure_placeholders: false)
