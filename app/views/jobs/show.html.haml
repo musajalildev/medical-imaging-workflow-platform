@@ -8,13 +8,16 @@
       .card-header
         %h1= @job.title
         #status_display= @job.get_status_for_display
+        - can_manage_job = can?(:manage, Job)
+        - can_use_status_dropdown = can?(:update_status, @job) && (can_manage_job || !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending"))
 
-        - if !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending")
+        - if can_use_status_dropdown
           = simple_form_for(@job, url: update_status_job_path(@job), method: :patch) do |f|
 
             .status-drop-down
               = f.label :status, "Change status"
-              = f.select :status, Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] },
+              - status_options = can_manage_job ? Job::STATUSES.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
+              = f.select :status, status_options,
                     class: "form-select";
 
             #custom_status_field{ style: "display: none;" }
@@ -24,12 +27,14 @@
             #save_changes_button{ style: "display: none;" }
               = f.submit "Update Status", class: "btn btn-primary"
 
+        - if can?(:complete_job, @job) && @job.status != "complete"
           #complete_job_button
             = button_to "Mark as Complete", complete_job_job_path(@job),
               method: :patch,
               class: "btn btn-danger",
               data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
+        - if can?(:cancel_job, @job) && @job.status != "cancelled"
           #cancel_job_button
             = button_to "Cancel Job", cancel_job_job_path(@job),
               method: :patch,
@@ -75,7 +80,7 @@
         .mt-4
           %h2.h5 Ouptut file
 
-          - if current_user&.operator?
+          - if can?(:upload_output, @job)
             = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'd-flex flex-column gap-2 mb-3' do
               %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
               %button.btn.btn-outline-primary{ type: 'submit' } Upload Report file

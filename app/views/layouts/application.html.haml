@@ -34,6 +34,8 @@
               Home
           - if user_signed_in?
             .d-flex.align-items-center.gap-2.ms-auto
+              - if current_user&.client?
+                = link_to 'Create Job', new_job_path, class: 'btn btn-primary btn-sm'
               %span.text-muted.small
                 = "Signed in as #{current_user.username}"
               - if Rails.env.development?
