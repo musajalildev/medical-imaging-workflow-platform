@@ -46,6 +46,7 @@ class JobsController < ApplicationController
   # GET /jobs/1
   def show
     @user = current_user
+    @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
   end
 
   # GET /jobs/new

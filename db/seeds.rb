@@ -6,28 +6,6 @@
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
 
-client = User.find_or_create_by!(email: 'client@example.com') do |u|
-  u.role = :client
-  u.username = 'client_user'
-	u.givenname = 'Mosh'
-	u.sn='Pit'
-end
-
-operator = User.find_or_create_by!(email: 'operator@example.com') do |u|
-  u.role = :operator
-  u.username = 'operator_user'
-	u.givenname = 'DED'
-	u.sn= 'Write'
-end
-
-Job.create!([
-  { title: 'MRI brain segmentation', description: 'Automated segmentation of 500 MRI brain scans using FreeSurfer.', status: :pending, client: client },
-  { title: 'Genomic variant calling', description: 'Identify SNPs and indels across 300 patient whole-genome samples.', status: :assigned, client: client, operator: operator },
-  { title: 'Drug interaction simulation', description: 'Molecular docking simulation for candidate compounds against target protein.', status: :in_progress, client: client, operator: operator },
-  { title: 'CT scan batch processing', description: 'Process and reconstruct 1000 CT scans for lung nodule detection pipeline.', status: :complete, client: client, operator: operator },
-  { title: 'Protein structure prediction', description: 'AlphaFold2 structure prediction for 50 novel disease-related proteins.', status: :cancelled, client: client },
-])
-
 if Rails.env.development?
 	[
 		{ username: "dev_admin",    role: :admin,    givenname: "Dev",    sn: "Admin",    email: "dev_admin@example.com" },
@@ -50,8 +28,8 @@ if Rails.env.development?
 		{ title: "Drug interaction simulation",   description: "Molecular docking simulation for candidate compounds against target protein.",             status: :in_progress, client: dev_client, operator: dev_operator },
 		{ title: "CT scan batch processing",      description: "Process and reconstruct 1000 CT scans for lung nodule detection pipeline.",                status: :complete,    client: dev_client, operator: dev_operator },
 		{ title: "Protein structure prediction",  description: "AlphaFold2 structure prediction for 50 novel disease-related proteins.",                   status: :cancelled,      client: dev_client },
-		{ title: "Retinal image classification",  description: "Train CNN classifier on 10k retinal fundus images for diabetic retinopathy grading.",      status: :pending,     client: client },
-		{ title: "Pathology slide analysis",      description: "Whole-slide image tiling and feature extraction for tumour grading.",                      status: :in_progress, client: client, operator: dev_operator },
+		{ title: "Retinal image classification",  description: "Train CNN classifier on 10k retinal fundus images for diabetic retinopathy grading.",      status: :pending,     client: dev_client },
+		{ title: "Pathology slide analysis",      description: "Whole-slide image tiling and feature extraction for tumour grading.",                      status: :in_progress, client: dev_client, operator: dev_operator },
 	].each do |attrs|
 		Job.find_or_create_by(title: attrs[:title], client: attrs[:client]) do |j|
 			j.assign_attributes(attrs)
@@ -59,43 +37,3 @@ if Rails.env.development?
 	end
 	puts "Seeded #{Job.count} dev jobs"
 end
-
-client = User.create(email: "client@example.com")
-operator = User.find_by(username: "dev_operator") || User.create(email: "operator@example.com")
-
-job = Job.create(
-  client: client,
-  operator: nil,
-  title: "Test Job",
-  description: "This is a test job.",
-  status: :pending
-)
-
-assigned_job = Job.create(
-	client: client,
-	operator: operator,  # ← Assign to the operator
-	title: "Assigned Test Job",
-	description: "This is an assigned test job.",
-	status: :assigned
-)
-
-JobStatusHistory.create(
-  job: job,
-  old_status: :pending,
-  new_status: :assigned,
-  initiator: operator
-)
-
-JobStatusHistory.create(
-  job: job,
-  old_status: :assigned,
-  new_status: :in_progress,
-  initiator: operator
-)
-
-JobStatusHistory.create(
-  job: job,
-  old_status: :in_progress,
-  new_status: :complete,
-  initiator: operator
-)
