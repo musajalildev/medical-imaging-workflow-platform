@@ -34,14 +34,14 @@
           #complete_job_button
             = button_to "Mark as Complete", complete_job_job_path(@job),
               method: :patch,
-              class: "btn btn-danger",
+              class: "btn btn-success",
               data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
         - if can?(:cancel_job, @job) && @job.status != "cancelled"
           #cancel_job_button
             = button_to "Cancel Job", cancel_job_job_path(@job),
               method: :patch,
-              class: "btn btn-danger",
+              class: "btn btn-outline-danger",
               data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
 
       .card-body
@@ -64,9 +64,9 @@
               - if file_1_id.present?
                 = link_to 'Download PDF file', download_file_path(file_id: file_1_id), class: 'btn btn-primary', data: { turbo: false }
               - else
-                %span.badge.text-bg-secondary No PDF file yet.
+                %span.file-missing-indicator PDF not uploaded yet
             - else
-              %span.badge.text-bg-secondary No PDF file yet.
+              %span.file-missing-indicator PDF not uploaded yet
 
             - file_2_url = file_slots[1]&.file_path
             - file_2_id = file_slots[1]&.drive_file_id
@@ -76,9 +76,9 @@
               - if file_2_id.present?
                 = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
               - else
-                %span.badge.text-bg-secondary No DICOM file yet.
+                %span.file-missing-indicator DICOM not uploaded yet
             - else
-              %span.badge.text-bg-secondary No DICOM file yet.
+              %span.file-missing-indicator DICOM not uploaded yet
 
         .job-file-panel.mt-4
           %h2.h5.mb-3 Output file
@@ -97,17 +97,20 @@
               - if output_id.present?
                 = link_to 'Download Report file', download_file_path(file_id: output_id), class: 'btn btn-primary', data: { turbo: false }
               - else
-                %span.badge.text-bg-secondary No Report file yet.
+                %span.file-missing-indicator Report not uploaded yet
             - else
-              %span.badge.text-bg-secondary No Report file yet.
+              %span.file-missing-indicator Report not uploaded yet
 
         .job-file-panel.mt-4
           %h4.mb-3 Status history
           .status-history-box
-            %ul.list-unstyled.mb-0
-              - @job.status_histories.each do |history|
-                %li.status-history-item
-                  = history.formatted_history
+            - if @job.status_histories.any?
+              %ul.list-unstyled.mb-0
+                - @job.status_histories.each do |history|
+                  %li.status-history-item
+                    = history.formatted_history
+            - else
+              %p.text-muted.small.mb-0.fst-italic No status changes recorded yet.
 
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         -if can?(:manage, Job)
