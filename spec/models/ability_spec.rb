@@ -11,6 +11,7 @@ RSpec.describe Ability, type: :model do
   let(:own_job)   { Job.create!(title: 'Own Job',   status: :pending, client: client_user) }
   let(:other_job) { Job.create!(title: 'Other Job', status: :pending, client: other_client) }
   let(:assigned_to_operator) { Job.create!(title: 'Assigned Job', status: :assigned, client: other_client, operator: operator_user) }
+  let(:completed_assigned_job) { Job.create!(title: 'Completed Assigned Job', status: :complete, client: other_client, operator: operator_user) }
 
   describe 'unauthenticated user' do
     subject(:ability) { Ability.new(nil) }
@@ -40,6 +41,7 @@ RSpec.describe Ability, type: :model do
     it { is_expected.to     be_able_to(:read, own_job) }
     it { is_expected.to     be_able_to(:read, other_job) }
     it { is_expected.to     be_able_to(:upload_output, assigned_to_operator) }
+    it { is_expected.not_to be_able_to(:upload_output, completed_assigned_job) }
     it { is_expected.not_to be_able_to(:upload_output, other_job) }
     it { is_expected.not_to be_able_to(:manage, own_job) }
     it { is_expected.not_to be_able_to(:update, own_job) }
