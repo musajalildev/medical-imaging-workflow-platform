@@ -2,7 +2,7 @@ require "google/apis/drive_v3"
 require "googleauth"
 
 class JobsController < ApplicationController
-  load_and_authorize_resource param_method: :job_params
+  load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
   before_action :check_client_role, only: %i[ new create edit update ]
@@ -176,6 +176,16 @@ class JobsController < ApplicationController
   def upload_output
     unless current_user&.operator?
       redirect_to @job, alert: "Only operators can upload output files."
+      return
+    end
+
+    if @job.complete?
+      redirect_to @job, alert: "Completed jobs cannot accept report uploads."
+      return
+    end
+
+    unless can?(:upload_output, @job)
+      redirect_to @job, alert: "You are not authorized to upload report files for this job."
       return
     end
 

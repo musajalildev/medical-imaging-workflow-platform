@@ -17,8 +17,8 @@
 
     = capybara_lockstep if defined?(Capybara::Lockstep)
 
-    = stylesheet_pack_tag 'styles', media: 'all'
-    = javascript_pack_tag 'application'
+    = stylesheet_pack_tag 'styles', media: 'all', data: { turbo_track: 'reload' }
+    = javascript_pack_tag 'application', data: { turbo_track: 'reload' }
 
   %body
     %header.navbar.navbar-expand-lg.bg-light.mb-3

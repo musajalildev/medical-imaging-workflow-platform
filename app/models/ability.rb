@@ -40,7 +40,7 @@ class Ability
       can :update_status, Job, operator_id: user.id
       can :cancel_job, Job, operator_id: user.id
       can :complete_job, Job, operator_id: user.id
-      can :upload_output, Job, operator_id: user.id
+      can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
       can :self_assign, Job
     elsif user.client?
       can :read, Job, client_id: user.id
