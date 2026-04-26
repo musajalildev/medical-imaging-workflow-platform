@@ -6,43 +6,46 @@
     - file_slots << nil while file_slots.length < 2
     .card.job-card
       .card-header
-        .d-flex.align-items-start.justify-content-between.gap-3.flex-wrap
-          %div
+        .job-header-bar
+          .job-header-main
             %span.job-form-section__eyebrow Job overview
             %h1.h3.mb-2= @job.title
             #status_display.job-status-pill= @job.get_status_for_display
-        - can_manage_job = can?(:manage, Job)
-        - can_use_status_dropdown = can?(:update_status, @job) && (can_manage_job || !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending"))
+          - can_manage_job = can?(:manage, Job)
+          - can_use_status_dropdown = can?(:update_status, @job) && (can_manage_job || !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending"))
+          .job-header-actions
+            - if can_use_status_dropdown
+              .status-control-card
+                = simple_form_for(@job, url: update_status_job_path(@job), method: :patch, html: { class: 'status-inline-form' }) do |f|
+                  .status-drop-down
+                    = f.label :status, "Change status"
+                    - status_options = can_manage_job ? Job::STATUSES.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
+                    = f.select :status, status_options, class: "form-select"
 
-        - if can_use_status_dropdown
-          = simple_form_for(@job, url: update_status_job_path(@job), method: :patch) do |f|
+                  #custom_status_field{ style: "display: none;" }
+                    = f.label :custom_status, "Enter custom status"
+                    = f.text_field :custom_status, class: "form-control"
 
-            .status-drop-down
-              = f.label :status, "Change status"
-              - status_options = can_manage_job ? Job::STATUSES.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
-              = f.select :status, status_options,
-                    class: "form-select";
+                  #save_changes_button{ style: "display: none;" }
+                    = f.submit "Update status", class: "btn btn-primary btn-sm"
 
-            #custom_status_field{ style: "display: none;" }
-              = f.label :custom_status, "Enter custom status"
-              = f.text_field :custom_status, class: "form-control"
+            - if can?(:complete_job, @job) && @job.status != "complete" || can?(:cancel_job, @job) && @job.status != "cancelled"
+              .job-action-row
+                - if can?(:complete_job, @job) && @job.status != "complete"
+                  #complete_job_button
+                    = button_to "Mark as Complete", complete_job_job_path(@job),
+                      method: :patch,
+                      class: "btn btn-success btn-sm",
+                      form: { class: 'job-action-form' },
+                      data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
-            #save_changes_button{ style: "display: none;" }
-              = f.submit "Update Status", class: "btn btn-primary"
-
-        - if can?(:complete_job, @job) && @job.status != "complete"
-          #complete_job_button
-            = button_to "Mark as Complete", complete_job_job_path(@job),
-              method: :patch,
-              class: "btn btn-success",
-              data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
-
-        - if can?(:cancel_job, @job) && @job.status != "cancelled"
-          #cancel_job_button
-            = button_to "Cancel Job", cancel_job_job_path(@job),
-              method: :patch,
-              class: "btn btn-outline-danger",
-              data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
+                - if can?(:cancel_job, @job) && @job.status != "cancelled"
+                  #cancel_job_button
+                    = button_to "Cancel Job", cancel_job_job_path(@job),
+                      method: :patch,
+                      class: "btn btn-outline-danger btn-sm",
+                      form: { class: 'job-action-form' },
+                      data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
 
       .card-body
         %dl.row.mb-0.job-meta-list
