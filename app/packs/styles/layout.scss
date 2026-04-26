@@ -159,20 +159,13 @@ body {
   display: grid;
   gap: 0.65rem;
   justify-items: end;
-}
-
-.status-control-card {
-  padding: 0.75rem;
-  border-radius: 0.85rem;
-  border: 1px solid rgba(74, 144, 226, 0.18);
-  background: rgba(244, 247, 250, 0.9);
-  box-shadow: 0 8px 20px rgba(0, 51, 102, 0.08);
+  align-content: start;
 }
 
 .status-inline-form {
   display: grid;
   gap: 0.5rem;
-  min-width: 15rem;
+  min-width: 14rem;
 }
 
 .job-action-row {
@@ -180,11 +173,16 @@ body {
   align-items: center;
   gap: 0.55rem;
   justify-content: flex-end;
-  width: 100%;
+  width: auto;
+  margin-top: calc(3.5rem + 15px);
 }
 
 .job-action-form {
   margin: 0;
+}
+
+.status-under-pill {
+  margin-top: 0.8rem;
 }
 
 .job-form {
@@ -360,8 +358,10 @@ body {
     margin-bottom: 0;
   }
 
-  select.form-select {
-    width: 100%;
+  .status-filter-select {
+    width: auto;
+    min-width: 10rem;
+    max-width: 14rem;
     font-size: 0.875rem;
     border-color: rgba(0, 51, 102, 0.2);
 
@@ -403,6 +403,7 @@ body {
 
   .job-action-row {
     justify-content: stretch;
+    margin-top: 0;
   }
 
   .job-action-row .btn {
