@@ -1,30 +1,55 @@
-.card
-  .card-header.d-flex.align-items-center
-    %span Listing Jobs
+= form_with url: jobs_path, method: :get, local: true do |f|
+  = f.hidden_field :tab, value: @tab if @tab.present?
+  .card
+    .card-header
+      .select-jobs
+        - if current_user&.operator?
+          .card-body.border-bottom
+            .btn-group
+              = link_to "My jobs", jobs_path(tab: "assigned"), class: "btn btn-outline-secondary #{'active' if @tab == 'assigned'}"
+              = link_to "Unassigned jobs", jobs_path(tab: "unassigned"), class: "btn btn-outline-secondary #{'active' if @tab == 'unassigned'}"
 
-    = link_to 'New Job', new_job_path, class: 'btn btn-outline-secondary ms-auto'
 
-  %table.table
-    %thead
-      %tr
-        %th Client
-        %th Operator
-        %th Status
-        %th Title
-        %th Description
-        %th Date of creation
-        %th
-    %tbody
-      - @jobs.each do |job|
+      .filter
+        .d-flex.align-items-center.gap-2.flex-wrap
+          %span.fw-semibold Jobs
+          %span.badge.bg-secondary= @total_count
+          .ms-auto.d-flex.align-items-center.gap-2.flex-wrap
+            = f.select :search_by,
+                [['All fields', ''], ['Title', 'title'], ['Client', 'client'], ['Operator', 'operator']],
+                { selected: params[:search_by] },
+                class: 'form-select form-select-sm', style: 'width: auto'
+            = f.text_field :search, value: params[:search], placeholder: 'Search...', class: 'form-control form-control-sm', style: 'width: 180px'
+            %button{ type: 'submit', class: 'btn btn-outline-secondary btn-sm' } Search
+            - next_sort = params[:sort] == 'asc' ? 'desc' : 'asc'
+            - sort_label = params[:sort] == 'asc' ? '↑ Date' : '↓ Date'
+            = link_to sort_label, jobs_path(params.permit(:search, :search_by, :status, :sort, :tab, :_method, :authenticity_token, job: {}).merge(sort: next_sort)), class: "btn btn-outline-secondary btn-sm#{' active' if params[:sort].present?}"
+            - if params[:status].present? || params[:search].present? || params[:sort].present?
+              = link_to 'Clear', jobs_path(tab: @tab), class: 'btn btn-link btn-sm'
+
+    .card-body.py-2
+      .d-flex.align-items-center.gap-3
+        = f.select :status,
+            Job::STATUSES.map { |s| [s.to_s.humanize, s] },
+            { include_blank: 'All Statuses', selected: params[:status] },
+            class: 'form-select form-select-sm', style: 'width: auto', onchange: 'this.form.submit()'
+        %p.text-muted.mb-0.small= "Showing #{@jobs.count} of #{@total_count}"
+
+    %table.table.mb-0
+      %thead
         %tr
-          %td= job.client
-          %td= job.operator
-          %td= job.status
-          %td= job.title
-          %td= job.description
-          %td= job.created_at
-          %td
-            .btn-toolbar.float-end
-              = link_to 'Show', job, class: 'btn btn-outline-secondary btn-sm'
-              = link_to 'Edit', edit_job_path(job), class: 'btn btn-outline-secondary ms-1 btn-sm'
-              = link_to 'Destroy', job, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-danger ms-1 btn-sm'
+          %th Client
+          %th Created At
+          %th Operator
+          %th Status
+          %th
+      %tbody
+        - @jobs.each do |job|
+          %tr
+            %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
+            %td= job.created_at.strftime('%d %b, %Y ')
+            %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
+            %td= job.status.to_s.humanize
+            %td= link_to 'Details', job
+            - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
+              %td= button_to 'Self assign', self_assign_job_path(job), method: :patch, class: 'btn btn-outline-primary ms-1 btn-sm'

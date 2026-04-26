@@ -3,8 +3,8 @@
 # Table name: job_status_histories
 #
 #  id           :bigint           not null, primary key
-#  new_status   :integer          not null
-#  old_status   :integer          not null
+#  new_status   :string           not null
+#  old_status   :string           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  initiator_id :bigint           not null
@@ -22,9 +22,9 @@
 #
 FactoryBot.define do
   factory :job_status_history do
-    job { nil }
-    old_status { 1 }
-    new_status { 1 }
-    initiator { nil }
+    association :job
+    old_status { 0 }
+    new_status { job.status }
+    initiator { job.operator || job.client }
   end
 end

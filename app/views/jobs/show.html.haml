@@ -6,21 +6,44 @@
     - file_slots << nil while file_slots.length < 2
     .card
       .card-header
-        Job details
+        %h1= @job.title
+        #status_display= @job.get_status_for_display
+
+        - if !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending")
+          = simple_form_for(@job, url: update_status_job_path(@job), method: :patch) do |f|
+
+            .status-drop-down
+              = f.label :status, "Change status"
+              = f.select :status, Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] },
+                    class: "form-select";
+
+            #custom_status_field{ style: "display: none;" }
+              = f.label :custom_status, "Enter custom status"
+              = f.text_field :custom_status, class: "form-control"
+
+            #save_changes_button{ style: "display: none;" }
+              = f.submit "Update Status", class: "btn btn-primary"
+
+          #complete_job_button
+            = button_to "Mark as Complete", complete_job_job_path(@job),
+              method: :patch,
+              class: "btn btn-danger",
+              data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
+
+          #cancel_job_button
+            = button_to "Cancel Job", cancel_job_job_path(@job),
+              method: :patch,
+              class: "btn btn-danger",
+              data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
+
       .card-body
         %dl.row.mb-0
-          %dt.col-md-3 Client:
-          %dd.col-md-9= @job.client
-          %dt.col-md-3 Operator:
-          %dd.col-md-9= @job.operator
-          %dt.col-md-3 Status:
-          %dd.col-md-9= @job.status
-          %dt.col-md-3 Title:
-          %dd.col-md-9= @job.title
-          %dt.col-md-3 Description:
-          %dd.col-md-9= @job.description
-          %dt.col-md-3 Date of creation:
-          %dd.col-md-9= @job.created_at
+          - if @user.role != "client" 
+            %dt.col-md-3 Client:
+            %dd.col-md-9= @job.client.email
+          - if (current_user.role != "operator" and @job.status != "pending")
+            %dt.col-md-3 Operator:
+            %dd.col-md-9= @job.operator.email
 
         .mt-4
           %h2.h5 Job Input Files
@@ -69,6 +92,15 @@
                 %span.badge.text-bg-secondary No Report file yet.
             - else
               %span.badge.text-bg-secondary No Report file yet.
+
+        %h4 Status history
+        .status-history-box
+          %ul
+            - @job.status_histories.each do |history|
+              %li
+                = history.formatted_history
+
       .card-footer.d-flex
-        = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
+        -if can?(:manage, Job)
+          = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
