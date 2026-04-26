@@ -1,5 +1,8 @@
-.row.justify-content-center
-  .col-sm-8.col-lg-6
-    .card
-      .card-header New Job
-      = render 'create_form'
+.row.justify-content-center.job-shell
+  .col-sm-10.col-lg-8
+    .card.job-card
+      .card-header
+        %span.job-form-section__eyebrow New job
+        %h1.h4.mb-1 Create a processing request
+        %p.text-muted.small.mb-0 Add a title, describe the work, and attach the input files.
+      = render 'form'

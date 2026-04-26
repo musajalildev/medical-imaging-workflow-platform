@@ -1,13 +1,16 @@
-.row.justify-content-center
-  .col-sm-8.col-lg-6
+.row.justify-content-center.job-shell
+  .col-sm-10.col-lg-8
     - output_file = @job.image_files.detect(&:output_file?)
     - regular_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
     - file_slots = regular_files.first(2)
     - file_slots << nil while file_slots.length < 2
-    .card
+    .card.job-card
       .card-header
-        %h1= @job.title
-        #status_display= @job.get_status_for_display
+        .d-flex.align-items-start.justify-content-between.gap-3.flex-wrap
+          %div
+            %span.job-form-section__eyebrow Job overview
+            %h1.h3.mb-2= @job.title
+            #status_display.job-status-pill= @job.get_status_for_display
         - can_manage_job = can?(:manage, Job)
         - can_use_status_dropdown = can?(:update_status, @job) && (can_manage_job || !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending"))
 
@@ -42,16 +45,16 @@
               data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
 
       .card-body
-        %dl.row.mb-0
+        %dl.row.mb-0.job-meta-list
           - if @user.role != "client" 
-            %dt.col-md-3 Client:
+            %dt.col-md-3 Client
             %dd.col-md-9= @job.client.email
           - if (current_user.role != "operator" and @job.status != "pending")
-            %dt.col-md-3 Operator:
+            %dt.col-md-3 Operator
             %dd.col-md-9= @job.operator.email
 
-        .mt-4
-          %h2.h5 Job Input Files
+        .job-file-panel.mt-4
+          %h2.h5.mb-3 Job input files
           .d-flex.gap-2.flex-wrap
             - file_1_url = file_slots[0]&.file_path
             - file_1_id = file_slots[0]&.drive_file_id
@@ -77,13 +80,13 @@
             - else
               %span.badge.text-bg-secondary No DICOM file yet.
 
-        .mt-4
-          %h2.h5 Ouptut file
+        .job-file-panel.mt-4
+          %h2.h5.mb-3 Output file
 
           - if can?(:upload_output, @job) && !@job.complete?
-            = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'd-flex flex-column gap-2 mb-3' do
+            = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'job-output-form d-flex flex-column gap-2 mb-3' do
               %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
-              %button.btn.btn-outline-primary{ type: 'submit' } Upload Report file
+              %button.btn.btn-outline-primary.align-self-start{ type: 'submit' } Upload report file
 
           .d-flex.gap-2.flex-wrap
             - output_url = output_file&.file_path
@@ -98,14 +101,15 @@
             - else
               %span.badge.text-bg-secondary No Report file yet.
 
-        %h4 Status history
-        .status-history-box
-          %ul
-            - @job.status_histories.each do |history|
-              %li
-                = history.formatted_history
+        .job-file-panel.mt-4
+          %h4.mb-3 Status history
+          .status-history-box
+            %ul.list-unstyled.mb-0
+              - @job.status_histories.each do |history|
+                %li.status-history-item
+                  = history.formatted_history
 
-      .card-footer.d-flex
+      .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         -if can?(:manage, Job)
           = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
         = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
