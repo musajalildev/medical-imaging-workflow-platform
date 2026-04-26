@@ -20,23 +20,24 @@
     = stylesheet_pack_tag 'styles', media: 'all', data: { turbo_track: 'reload' }
     = javascript_pack_tag 'application', data: { turbo_track: 'reload' }
 
-  %body
-    %header.navbar.navbar-expand-lg.bg-light.mb-3
-      .container-fluid
-        = link_to '#', class: 'navbar-brand' do
+  %body.app-shell
+    %header.navbar.navbar-expand-lg.app-header
+      .container-fluid.app-container
+        = link_to '#', class: 'navbar-brand d-flex align-items-center gap-2 fw-semibold' do
           = image_pack_tag 'images/logo.png', height: 40
+          %span Project
         %button.navbar-toggler{ type: :button, data: { bs_toggle: :collapse, bs_target: '#navbar-content' }, aria: { controls: 'navbar-content', expanded: 'false', label: 'Toggle navigation' } }
           %span.navbar-toggler-icon
         #navbar-content.navbar-collapse.collapse
-          %nav.navbar-nav
-            = link_to '/', class: 'active nav-link' do
+          %nav.navbar-nav.align-items-center.gap-2
+            = link_to '/', class: 'active nav-link px-3' do
               %i.bi-house-fill
               Home
           - if user_signed_in?
-            .d-flex.align-items-center.gap-2.ms-auto
+            .d-flex.align-items-center.gap-2.ms-auto.flex-wrap
               - if current_user&.client?
                 = link_to 'Create Job', new_job_path, class: 'btn btn-primary btn-sm'
-              %span.text-muted.small
+              %span.text-muted.small.fw-medium
                 = "Signed in as #{current_user.username}"
               - if Rails.env.development?
                 = button_to 'Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
@@ -44,16 +45,17 @@
                 = button_to 'Sign out', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
 
     - if flash.present?
-      .container-fluid.flash-messages
+      .container-fluid.app-container.flash-messages.py-2
         - flash.each do |message_type, message|
           - next unless message_type == 'alert' || message_type == 'notice'
-          .alert{ class: "alert-#{ message_type == 'notice' ? 'success' : 'danger' }" }= message
+          .alert.shadow-sm.border-0{ class: "alert-#{ message_type == 'notice' ? 'success' : 'danger' }" }= message
 
-    %main
-      .container-fluid
+    %main.app-main.py-3.py-lg-4
+      .container-fluid.app-container
         = yield
 
-    %footer
-      .container-fluid
-        .d-flex.p-3
-          Footer text
+    %footer.app-footer
+      .container-fluid.app-container
+        .d-flex.p-3.align-items-center.justify-content-between.flex-wrap.gap-2
+          %span.text-muted.small Project workspace
+          %span.text-muted.small Software Hut
