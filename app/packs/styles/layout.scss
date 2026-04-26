@@ -342,36 +342,6 @@ body {
   font-weight: 500;
 }
 
-// Status change dropdown
-.status-drop-down {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 0;
-
-  label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #35506b;
-    margin-bottom: 0;
-  }
-
-  .status-filter-select {
-    width: auto;
-    min-width: 10rem;
-    max-width: 14rem;
-    font-size: 0.875rem;
-    border-color: rgba(0, 51, 102, 0.2);
-
-    &:focus {
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-    }
-  }
-}
-
 #custom_status_field {
   display: grid;
   gap: 0.3rem;
@@ -388,6 +358,33 @@ body {
 #save_changes_button {
   display: flex;
   justify-content: flex-end;
+}
+
+select#job_status {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  display: block;
+  width: 12.75rem;
+  min-height: 2.35rem;
+  padding: 0.42rem 2.25rem 0.42rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  appearance: none;
+  background-color: var(--bs-body-bg);
+  background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.8rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    outline: 0;
+  }
 }
 
 @media (max-width: 767px) {

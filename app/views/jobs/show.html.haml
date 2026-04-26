@@ -16,10 +16,10 @@
             - if can_use_status_dropdown
               .status-under-pill
                 = simple_form_for(@job, url: update_status_job_path(@job), method: :patch, html: { class: 'status-inline-form' }) do |f|
-                  .status-drop-down
-                    = f.label :status, "Change status"
+                  .d-flex.align-items-center.gap-3.flex-wrap
                     - status_options = can_manage_job ? Job::STATUSES.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
-                    = f.select :status, status_options, class: "form-select form-select-sm status-filter-select"
+                    = f.select :status, status_options, class: "form-select status-change-select"
+                    %p.text-muted.mb-0.small Change status
 
                   #custom_status_field{ style: "display: none;" }
                     = f.label :custom_status, "Enter custom status"
