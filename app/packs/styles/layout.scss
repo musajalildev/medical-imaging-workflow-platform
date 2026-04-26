@@ -111,3 +111,127 @@ body {
   border-top: 1px solid rgba(0, 51, 102, 0.08);
   background: rgba(255, 255, 255, 0.58);
 }
+
+.job-shell {
+  margin-top: 0.5rem;
+}
+
+.job-card .card-header {
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.job-card .card-body {
+  padding: 1.5rem;
+}
+
+.job-card .card-footer {
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.job-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.job-form-section {
+  padding: 1.25rem;
+  border: 1px solid rgba(0, 51, 102, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.job-form-section__header {
+  margin-bottom: 1rem;
+}
+
+.job-form-section__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  color: #4a90e2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.job-form-section__title {
+  color: #003366;
+}
+
+.job-form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-field,
+.job-upload-status,
+.job-file-panel {
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background: rgba(244, 247, 250, 0.85);
+  border: 1px solid rgba(74, 144, 226, 0.12);
+}
+
+.job-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.12);
+  color: #003366;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.job-meta-list dt {
+  color: #35506b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.job-meta-list dd {
+  margin-bottom: 0.75rem;
+}
+
+.job-output-form {
+  max-width: 28rem;
+}
+
+.status-history-box {
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+.status-history-item + .status-history-item {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+@media (min-width: 768px) {
+  .job-form-grid,
+  .job-upload-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .job-form-grid .input.text,
+  .job-form-grid .input.string,
+  .job-form-grid .input.file,
+  .job-form-grid .input.select {
+    grid-column: span 2;
+  }
+}
