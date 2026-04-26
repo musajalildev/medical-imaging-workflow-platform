@@ -26,10 +26,9 @@ class Job < ApplicationRecord
   belongs_to :client, class_name: "User"
   belongs_to :operator, class_name: "User", optional: true
   has_many :image_files, dependent: :destroy
-  STATUSES = [ :pending, :assigned, :in_progress, :complete, :failed ]
 
   before_validation :set_default_status
-  
+
   STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled ]
   enum :status, STATUSES
 
