@@ -104,6 +104,16 @@ body {
 
 .btn-link {
   text-decoration: none;
+  color: #4a90e2;
+  padding: 0.35rem 0.8rem;
+  border-radius: 0.8rem;
+  transition: background-color 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: rgba(74, 144, 226, 0.12);
+    color: #003366;
+    text-decoration: none;
+  }
 }
 
 .app-footer {
@@ -231,7 +241,84 @@ body {
   .job-form-grid .input.text,
   .job-form-grid .input.string,
   .job-form-grid .input.file,
-  .job-form-grid .input.select {
+  .job-form-grid .input.select,
+  .job-form-grid .job-description-wrapper {
     grid-column: span 2;
+  }
+}
+
+// Description textarea
+.job-description-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+// Styled progress bar
+.upload-progress-styled {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 51, 102, 0.1);
+  overflow: hidden;
+  appearance: none;
+
+  &::-webkit-progress-bar {
+    background: rgba(0, 51, 102, 0.1);
+    border-radius: 999px;
+  }
+
+  &::-webkit-progress-value {
+    background: linear-gradient(90deg, #4a90e2, #003366);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  &::-moz-progress-bar {
+    background: linear-gradient(90deg, #4a90e2, #003366);
+    border-radius: 999px;
+  }
+}
+
+// File not uploaded indicator
+.file-missing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px dashed rgba(0, 51, 102, 0.22);
+  background: rgba(244, 247, 250, 0.85);
+  color: #8096a7;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+// Status change dropdown
+.status-drop-down {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #35506b;
+    margin-bottom: 0;
+  }
+
+  select.form-select {
+    max-width: 220px;
+    font-size: 0.875rem;
+    border-color: rgba(0, 51, 102, 0.2);
+
+    &:focus {
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    }
   }
 }
