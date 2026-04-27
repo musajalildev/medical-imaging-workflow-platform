@@ -2,7 +2,7 @@ require "google/apis/drive_v3"
 require "googleauth"
 
 class JobsController < ApplicationController
-  load_and_authorize_resource param_method: :job_params
+  load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
   before_action :check_client_role, only: %i[ new create edit update ]
@@ -179,6 +179,16 @@ class JobsController < ApplicationController
       return
     end
 
+    if @job.complete?
+      redirect_to @job, alert: "Completed jobs cannot accept report uploads."
+      return
+    end
+
+    unless can?(:upload_output, @job)
+      redirect_to @job, alert: "You are not authorized to upload report files for this job."
+      return
+    end
+
     file = params[:output_file]
     if file.blank?
       redirect_to @job, alert: "Please select an output file."
@@ -238,7 +248,11 @@ class JobsController < ApplicationController
 
     def attach_uploaded_file(job, ensure_placeholders: false)
       uploaded_files = JSON.parse(params[:uploaded_files_json].presence || "[]")
-      if uploaded_files.blank?
+      valid_uploaded_files = uploaded_files.first(2).select do |uploaded|
+        uploaded["file_id"].present? || uploaded["file_url"].present?
+      end
+
+      if valid_uploaded_files.blank?
         if ensure_placeholders
           existing_non_output = job.image_files.reject(&:output_file?).count
           [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
@@ -246,7 +260,7 @@ class JobsController < ApplicationController
         return
       end
 
-      uploaded_files.first(2).each do |uploaded|
+      valid_uploaded_files.each do |uploaded|
         file_id = uploaded["file_id"].presence
         file_url = uploaded["file_url"].presence
         file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)

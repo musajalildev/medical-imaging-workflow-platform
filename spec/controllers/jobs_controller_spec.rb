@@ -244,5 +244,18 @@ RSpec.describe JobsController, type: :controller do
         end
       end
     end
+
+    describe "POST #upload_output" do
+      let(:job) { create(:job, client: client_user, operator: operator_user, status: :complete) }
+
+      before { allow(controller).to receive(:current_user).and_return(operator_user) }
+
+      it "rejects uploads for completed jobs" do
+        post :upload_output, params: { id: job.id }
+
+        expect(response).to redirect_to(job_path(job))
+        expect(flash[:alert]).to match(/Completed jobs cannot accept report uploads/)
+      end
+    end
   end
 end
