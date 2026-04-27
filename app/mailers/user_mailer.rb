@@ -1,5 +1,4 @@
 class UserMailer < ApplicationMailer
-  default from: 'noreplay@example.com'
   layout 'mailer'
 
   # client emails
