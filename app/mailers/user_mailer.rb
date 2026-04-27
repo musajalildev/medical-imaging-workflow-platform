@@ -26,17 +26,21 @@ class UserMailer < ApplicationMailer
 
   # operator emails
 
-  # send operator an email when a job is assigned to them
-  def send_job_assigned_email(job)
-    @user = job.operator
+  # send client an email when a job is accepted by an operator
+  def send_job_accepted_email(job)
+    @user = job.client
     @job = job
-    mail(to: @user.email, subject: "You have been assigned to job #{@job.title}")
+    mail(to: @user.email, subject: "An operator has accepted your job")
   end
+
+  # operator emails
 
   # send operator an email when a new job is created
   def send_new_job_email(job)
-    @user = job.operator
+    @user = User.where(role: :operator)
     @job = job
-    mail(to: @user.email, subject: "A new job #{@job.title} has become available")
+    @user.each do |operator|
+      mail(to: operator.email, subject: "A new job has become available")
+    end
   end
 end

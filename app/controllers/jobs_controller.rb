@@ -67,6 +67,7 @@ class JobsController < ApplicationController
 
     if @job.save
       attach_uploaded_file(@job, ensure_placeholders: true)
+      UserMailer.send_new_job_email(@job).deliver_later
       redirect_to @job, notice: "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -123,7 +124,6 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/self_assign
   def self_assign
-    puts "hello"
     if @job.operator_id.nil?
       @job.update!(operator: current_user, status: :assigned)
       # Automatically update job status when assigned
@@ -133,6 +133,7 @@ class JobsController < ApplicationController
         new_status: "assigned",
         initiator: current_user
       ) if @job.saved_change_to_operator_id?
+      UserMailer.send_job_accepted_email(@job).deliver_later
       redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
