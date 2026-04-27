@@ -10,7 +10,7 @@ if Rails.env.development?
 	[
 		{ username: "dev_admin",    role: :admin,    givenname: "Dev",    sn: "Admin",    email: "dev_admin@example.com" },
 		{ username: "dev_operator", role: :operator, givenname: "Dev",    sn: "Operator", email: "dev_operator@example.com" },
-		{ username: "dev_client",   role: :client,   givenname: "Dev",    sn: "Client",   email: "dev_client@example.com" },
+		{ username: "dev_client",   role: :client,   givenname: "Dev",    sn: "Client",   email: "bdgrassie1@sheffield.ac.uk" },
 		{ username: "dev_owner",    role: :owner,    givenname: "Dev",    sn: "Owner",    email: "dev_owner@example.com" },
 	].each do |attrs|
 		User.find_or_create_by(username: attrs[:username]) do |u|
