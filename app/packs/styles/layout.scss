@@ -84,6 +84,20 @@ body {
   border-top: 1px solid rgba(0, 51, 102, 0.08);
 }
 
+.jobs-tabs-strip {
+  position: relative;
+}
+
+.jobs-tabs-strip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: auto;
+  bottom: 0;
+  width: 33%;
+  border-bottom: 1px solid rgba(0, 51, 102, 0.12);
+}
+
 .table {
   --bs-table-bg: transparent;
 }
