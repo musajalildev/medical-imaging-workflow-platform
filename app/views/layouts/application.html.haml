@@ -43,9 +43,12 @@
               %span.text-muted.small.fw-medium
                 = "Signed in as #{current_user.username}"
               - if Rails.env.development?
-                = button_to 'Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
-              - else
-                = button_to 'Sign out', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
+                = button_to '(DEV)Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
+              = button_to 'Sign out', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
+          - else
+            .d-flex.align-items-center.gap-2.ms-auto.flex-wrap
+              = link_to 'Sign in', new_user_session_path,
+                class: 'btn btn-primary btn-sm'
 
     - if flash.present?
       .container-fluid.app-container.flash-messages.py-2
