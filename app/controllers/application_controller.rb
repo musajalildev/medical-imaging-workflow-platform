@@ -10,6 +10,10 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :update_headers_to_disable_caching
 
+  rescue_from CanCan::AccessDenied do |_exception|
+    redirect_to jobs_path, alert: "You are not authorized to access this page."
+  end
+
   private
      def dev_auto_login
        return unless Rails.env.development?
