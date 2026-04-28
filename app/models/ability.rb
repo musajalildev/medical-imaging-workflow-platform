@@ -41,11 +41,17 @@ class Ability
     end
 
     if user.admin?
-      can :assign_role, User, role: ["unassigned",  "client", "operator"]
+      admin_accesible_user_roles = ["unassigned",  "client", "operator"]
+      can :read, User, role: admin_accesible_user_roles
+      can :assign_role, User, role: admin_accesible_user_roles
+      can :update, User, role: admin_accesible_user_roles
+      
     end
 
     if user.owner?
-      can :assign_role, User, role: ["unassigned", "client",  "operator",  "admin"]
+      can :read, User
+      can :assign_role, User
+      can :update, User
     end
     
   end

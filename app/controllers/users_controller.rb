@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-
+  authorize_resource
   def index
     @users = User.accessible_by(current_ability, :assign_role)
                 .order(:role, :email)

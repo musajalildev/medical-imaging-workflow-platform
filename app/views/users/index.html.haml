@@ -8,10 +8,12 @@
         input_html: { value: params.dig(:search, :q), placeholder: "Email or username" }
 
     .flex-grow-0
+      - visible_roles = User.roles.keys.select { |r| can?(:read, User.new(role: r)) }
+
       = f.input :role,
         label: "Filter by role",
-        collection: User.roles.keys,
-        include_blank: "All roles",
+        collection: visible_roles ,
+        include_blank: "none",
         selected: params.dig(:search, :role)
 
     .flex-grow-0
