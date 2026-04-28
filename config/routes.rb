@@ -25,7 +25,8 @@ Rails.application.routes.draw do
   delete '/files/:image_file_id/remove', to: 'files#remove', as: :remove_file
   mount EpiCas::Engine, at: "/"
   devise_for :users
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
+  get '/landing', to: 'pages#landing'
 
   # Defines the root path route ("/")
   root "pages#home"
