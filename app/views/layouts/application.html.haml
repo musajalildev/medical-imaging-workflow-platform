@@ -38,6 +38,8 @@
               Jobs
             - if user_signed_in? && current_user&.client?
               = link_to 'Create Job', new_job_path, class: 'btn btn-primary btn-sm navbar-create-job ms-lg-2'
+            - if user_signed_in? && (current_user&.admin? || current_user&.owner?)
+              = link_to 'Users', users_path, class: 'btn btn-primary btn-sm navbar-create-job ms-lg-2'
           - if user_signed_in?
             .d-flex.align-items-center.gap-2.ms-auto.flex-wrap
               %span.text-muted.small.fw-medium
