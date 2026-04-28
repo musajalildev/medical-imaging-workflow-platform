@@ -19,4 +19,26 @@
 #
 class ImageFile < ApplicationRecord
   belongs_to :job
+
+  def drive_metadata
+    JSON.parse(file_type)
+  rescue JSON::ParserError, TypeError
+    {}
+  end
+
+  def drive_file_id
+    drive_metadata["file_id"].presence || file_path.to_s[/\/d\/([^\/?]+)/, 1] || file_path.to_s[/[?&]id=([^&]+)/, 1]
+  end
+
+  def mime_type_value
+    drive_metadata["mime_type"].presence
+  end
+
+  def slot
+    drive_metadata["slot"].presence
+  end
+
+  def output_file?
+    slot == "output"
+  end
 end

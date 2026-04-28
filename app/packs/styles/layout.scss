@@ -6,8 +6,424 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.92), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(244, 247, 250, 0.94));
+  color: #4b5563;
 
   footer {
     margin-top: auto;
+  }
+}
+
+.app-shell {
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+.app-container {
+  max-width: 1180px;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  margin-bottom: 0;
+  padding: 0.75rem 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 51, 102, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 51, 102, 0.08);
+}
+
+.app-header .navbar-brand {
+  color: #003366;
+}
+
+.app-header .nav-link {
+  border-radius: 999px;
+  color: #35506b;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.app-header .nav-link:hover,
+.app-header .nav-link.active {
+  background: rgba(74, 144, 226, 0.14);
+  color: #003366;
+}
+
+.app-header .navbar-create-job {
+  padding-inline: 0.95rem;
+}
+
+.app-main {
+  flex: 1;
+}
+
+.flash-messages .alert {
+  border-radius: 1rem;
+}
+
+.card {
+  border: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgba(0, 51, 102, 0.08);
+}
+
+.card-header,
+.card-footer {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+.card-footer {
+  border-top: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+.jobs-tabs-strip {
+  position: relative;
+}
+
+.jobs-tabs-strip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: auto;
+  bottom: 0;
+  width: 33%;
+  border-bottom: 1px solid rgba(0, 51, 102, 0.12);
+}
+
+.table {
+  --bs-table-bg: transparent;
+}
+
+.table thead th {
+  color: #35506b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.table tbody td {
+  vertical-align: middle;
+}
+
+.form-control,
+.form-select,
+.btn {
+  border-radius: 0.8rem;
+}
+
+.btn-link {
+  text-decoration: none;
+  color: #4a90e2;
+  padding: 0.35rem 0.8rem;
+  border-radius: 0.8rem;
+  transition: background-color 0.18s ease, color 0.18s ease;
+
+  &:hover {
+    background: rgba(74, 144, 226, 0.12);
+    color: #003366;
+    text-decoration: none;
+  }
+}
+
+.app-footer {
+  margin-top: 2rem;
+  border-top: 1px solid rgba(0, 51, 102, 0.08);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.job-shell {
+  margin-top: 0.5rem;
+}
+
+.job-card .card-header {
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.job-card .card-body {
+  padding: 1.5rem;
+}
+
+.job-card .card-footer {
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.job-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.job-header-main {
+  min-width: 16rem;
+}
+
+.job-header-actions {
+  margin-left: auto;
+  display: grid;
+  gap: 0.65rem;
+  justify-items: end;
+  align-content: start;
+}
+
+.status-inline-form {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 14rem;
+}
+
+.job-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  width: auto;
+  margin-top: calc(3.5rem + 15px);
+}
+
+.job-action-form {
+  margin: 0;
+}
+
+.status-under-pill {
+  margin-top: 28px;
+}
+
+.job-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.job-form-section {
+  padding: 1.25rem;
+  border: 1px solid rgba(0, 51, 102, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.job-form-section__header {
+  margin-bottom: 1rem;
+}
+
+.job-form-section__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  color: #4a90e2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.job-form-section__title {
+  color: #003366;
+}
+
+.job-form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.job-upload-field,
+.job-upload-status,
+.job-file-panel {
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background: rgba(244, 247, 250, 0.85);
+  border: 1px solid rgba(74, 144, 226, 0.12);
+}
+
+.job-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.12);
+  color: #003366;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.job-meta-list dt {
+  color: #35506b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.job-meta-list dd {
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .job-meta-list {
+    padding-left: 30px;
+  }
+}
+
+.job-output-form {
+  max-width: 28rem;
+}
+
+.status-history-box {
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+.status-history-item + .status-history-item {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 51, 102, 0.08);
+}
+
+@media (min-width: 768px) {
+  .job-form-grid,
+  .job-upload-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .job-form-grid .input.text,
+  .job-form-grid .input.string,
+  .job-form-grid .input.file,
+  .job-form-grid .input.select,
+  .job-form-grid .job-description-wrapper {
+    grid-column: span 2;
+  }
+}
+
+// Description textarea
+.job-description-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+// Styled progress bar
+.upload-progress-styled {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 51, 102, 0.1);
+  overflow: hidden;
+  appearance: none;
+
+  &::-webkit-progress-bar {
+    background: rgba(0, 51, 102, 0.1);
+    border-radius: 999px;
+  }
+
+  &::-webkit-progress-value {
+    background: linear-gradient(90deg, #4a90e2, #003366);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  &::-moz-progress-bar {
+    background: linear-gradient(90deg, #4a90e2, #003366);
+    border-radius: 999px;
+  }
+}
+
+// File not uploaded indicator
+.file-missing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1.5px dashed rgba(0, 51, 102, 0.22);
+  background: rgba(244, 247, 250, 0.85);
+  color: #8096a7;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+#custom_status_field {
+  display: grid;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #35506b;
+  }
+}
+
+#save_changes_button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+select#job_status {
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  display: block;
+  width: 12.75rem;
+  min-height: 2.35rem;
+  padding: 0.42rem 2.25rem 0.42rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  appearance: none;
+  background-color: var(--bs-body-bg);
+  background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.8rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    outline: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .job-header-actions {
+    margin-left: 0;
+    justify-items: stretch;
+    width: 100%;
+  }
+
+  .status-inline-form {
+    min-width: 0;
+  }
+
+  .job-action-row {
+    justify-content: stretch;
+    margin-top: 0;
+  }
+
+  .job-action-row .btn {
+    width: 100%;
   }
 }

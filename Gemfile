@@ -46,6 +46,8 @@ gem 'shakapacker', '9.5.0'
 
 gem 'devise'
 gem 'epi_cas', git: 'git@git.shefcompsci.org.uk:gems/epi_cas.git'
+#gem 'epi_cas', git: 'https://git.shefcompsci.org.uk/gems/epi_cas.git'
+
 gem 'cancancan'
 
 gem 'whenever'
@@ -54,6 +56,8 @@ gem 'delayed_job_active_record'
 gem 'daemons'
 
 gem 'sanitize_email'
+gem 'google-apis-drive_v3'
+gem 'googleauth'
 
 gem 'sentry-ruby'
 gem 'sentry-rails'

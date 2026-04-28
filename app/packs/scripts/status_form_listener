@@ -1,0 +1,54 @@
+document.addEventListener("turbo:load", () => {
+  // variables are out here i either they are accesesed in multiple functions or they need to be accessed in the event listeners
+
+  // the dropdown to select the status of the job
+  const JOB_STATUS = document.getElementById("job_status"); // has event listener
+  // the text in the custom status input field
+  const CUSTOM_STATUS_INPUT = document.getElementById("job_custom_status"); //has event listener
+
+  if (!JOB_STATUS || !CUSTOM_STATUS_INPUT) return;
+
+  const toggleCustomStatusField = () => {
+    // the field to input a custom status
+    const CUSTOM_STATUS_FIELD = document.getElementById("custom_status_field");
+    if (!CUSTOM_STATUS_FIELD) return;
+
+    if (JOB_STATUS.value === "custom") {
+      CUSTOM_STATUS_FIELD.style.display = "block";
+    } else {
+      CUSTOM_STATUS_FIELD.style.display = "none";
+    }
+  };
+
+  const toggleSaveButton = () => {
+    // the button to save changes
+    const SAVE_CHANGES_BUTTON = document.getElementById("save_changes_button");
+    // the current status of the job
+    const STATUS_DISPLAY = document.getElementById("status_display");
+    if (!STATUS_DISPLAY || !SAVE_CHANGES_BUTTON) return;
+
+    const hasStatusChanged = JOB_STATUS.options[JOB_STATUS.selectedIndex].text != STATUS_DISPLAY.textContent;
+    // implication a custom status implies that the value must be non-empty, but if the status is not custom, then we don't care about the value of the custom status input
+    const doesCustomStatusHaveValue = !(JOB_STATUS.value == "custom") || CUSTOM_STATUS_INPUT.value !== "";
+    // implicaition if it is a custom status, then the value must be different to the status display, but if it is not a custom status, then we don't care about the value of the custom status input
+    const isCustomStatusDifferent = !(JOB_STATUS.value == "custom") || (CUSTOM_STATUS_INPUT.value !== STATUS_DISPLAY.textContent);
+
+    if (hasStatusChanged && doesCustomStatusHaveValue && isCustomStatusDifferent) {
+      SAVE_CHANGES_BUTTON.style.display = "block";
+    }
+    else {
+      SAVE_CHANGES_BUTTON.style.display = "none";
+    }
+  };
+
+  JOB_STATUS.addEventListener("change", () => {
+    toggleSaveButton();
+    toggleCustomStatusField();
+  });
+
+  CUSTOM_STATUS_INPUT.addEventListener("input", toggleSaveButton);
+
+  // run on page load too
+  toggleSaveButton();
+  toggleCustomStatusField();
+});

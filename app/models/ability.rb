@@ -4,7 +4,7 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-    # Define abilities for the user here. For example:
+        # Define abilities for the user here. For example:
     #
     #   return unless user.present?
     #   can :read, :all
@@ -28,24 +28,41 @@ class Ability
     #
     # See the wiki for details:
     # https://github.com/CanCanCommunity/cancancan/blob/develop/docs/define_check_abilities.md
+    # 
+    #
+    return unless user.present?
 
-    return unless user
-    
-    if user.unassigned?
+    #
+    # JOB PERMISSIONS
+    #
+    if user.admin? || user.owner?
+      can :manage, Job
+
+    elsif user.operator?
+      can :read, Job
+      can :update_status, Job, operator_id: user.id
+      can :cancel_job, Job, operator_id: user.id
+      can :complete_job, Job, operator_id: user.id
+      can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
+      can :self_assign, Job
+
+    elsif user.client?
+      can :read, Job, client_id: user.id
+      can :create, Job
+      can :update, Job, client_id: user.id
+      can :edit, Job, client_id: user.id
+      can :cancel_job, Job, client_id: user.id
     end
 
-    if user.client?
-    end
-
-    if user.operator?
-    end
-
+    #
+    # USER MANAGEMENT PERMISSIONS
+    #
     if user.admin?
-      admin_accesible_user_roles = ["unassigned",  "client", "operator"]
-      can :read, User, role: admin_accesible_user_roles
-      can :assign_role, User, role: admin_accesible_user_roles
-      can :update, User, role: admin_accesible_user_roles
-      
+      admin_roles = ["unassigned", "client", "operator"]
+
+      can :read, User, role: admin_roles
+      can :assign_role, User, role: admin_roles
+      can :update, User, role: admin_roles
     end
 
     if user.owner?
@@ -53,6 +70,5 @@ class Ability
       can :assign_role, User
       can :update, User
     end
-    
   end
 end

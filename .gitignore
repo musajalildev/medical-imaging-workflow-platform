@@ -59,3 +59,6 @@ yarn-debug.log*
 .byebug_history
 
 /vendor/webdrivers
+
+Dockerfile
+docker-compose.yml
