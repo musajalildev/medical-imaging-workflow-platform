@@ -1,0 +1,28 @@
+.card.mx-auto.mt-4{ style: 'max-width: 600px' }
+  .card-header
+    %h4.mb-0= @user.username
+
+  .card-body
+    .mb-3
+      %span.text-muted.small USERNAME
+      %p.fw-medium= @user.username
+
+    .mb-3
+      %span.text-muted.small EMAIL
+      %p.fw-medium= @user.email
+
+    .mb-3
+      %span.text-muted.small ROLE
+      %p
+        %span.badge{ class: "bg-#{@user.role == 'unassigned' ? 'warning' : 'success'}" }
+          = @user.role.humanize
+
+    - if @user.role == "unassigned"
+      %hr
+      %h6.mb-3 Assign Role
+      = simple_form_for @user, method: :patch do |f|
+        = f.input :role, as: :select, collection: [['Client', 'client'], ['Operator', 'operator']], wrapper_html: { class: 'mb-3' }
+        = f.submit 'Assign Role', class: 'btn btn-primary'
+
+  .card-footer
+    = link_to 'Back to Users', users_path, class: 'btn btn-outline-secondary btn-sm'
