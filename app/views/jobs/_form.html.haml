@@ -2,6 +2,13 @@
 - submit_label = @job.persisted? ? 'Update Job' : 'Create Job'
 - submit_note = @job.persisted? ? 'Update the job details and attached inputs.' : 'Add the job details and upload the required input files.'
 = simple_form_for(@job) do |f|
+  - if @job.errors.any?
+    .alert.alert-danger.mx-3.mt-3
+      %ul.mb-0
+        - @job.errors.full_messages.each do |msg|
+          %li= msg
+  #client-side-errors.alert.alert-danger.mx-3.mt-3{ style: 'display:none;' }
+    %ul.mb-0
   .card-body.job-form
     .job-form-section
       .job-form-section__header
