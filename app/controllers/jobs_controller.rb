@@ -65,7 +65,21 @@ class JobsController < ApplicationController
     @job.status = :pending
     @job.operator = nil
 
-    if @job.save
+    uploaded_files = begin
+      JSON.parse(params[:uploaded_files_json].presence || "[]")
+    rescue JSON::ParserError
+      []
+    end
+    valid_uploaded_files = uploaded_files.first(2).select do |f|
+      f["file_id"].present? || f["file_url"].present?
+    end
+
+    @job.valid?
+    if valid_uploaded_files.length < 2
+      @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+    end
+
+    if @job.errors.empty? && @job.save
       attach_uploaded_file(@job, ensure_placeholders: true)
       UserMailer.send_new_job_email(@job).deliver_later
       redirect_to @job, notice: "Job was successfully created."
