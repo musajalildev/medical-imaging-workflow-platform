@@ -17,7 +17,6 @@ Rails.application.routes.draw do
   end
   resources :reports
   resources :notifications
-  resources :users, only: [:index, :show, :update]
   resources :jobs do
     post :upload_output, on: :member
   end

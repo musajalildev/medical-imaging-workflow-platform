@@ -36,10 +36,6 @@
             = link_to jobs_path, class: "nav-link px-3 #{'active' if current_page?(jobs_path)}" do
               %i.bi-kanban-fill
               Jobs
-          - if current_user&.admin? || current_user&.owner?
-            = link_to users_path, class: "nav-link px-3 #{'active' if current_page?(users_path)}" do
-              %i.bi-people-fill 
-              Users
             - if user_signed_in? && current_user&.client?
               = link_to 'Create Job', new_job_path, class: 'btn btn-primary btn-sm navbar-create-job ms-lg-2'
           - if user_signed_in?
