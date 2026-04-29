@@ -93,7 +93,7 @@
         .job-file-panel.mt-4
           %h2.h5.mb-3 Output file
 
-          - if can?(:upload_output, @job) && !@job.complete?
+          - if can?(:upload_output, @job) && !@job.complete? && !@job.cancelled?
             = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'job-output-form d-flex flex-column gap-2 mb-3' do
               %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
               %button.btn.btn-outline-primary.align-self-start{ type: 'submit' } Upload report file
