@@ -46,6 +46,7 @@ class JobsController < ApplicationController
   # GET /jobs/1
   def show
     @user = current_user
+    @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
   end
 
   # GET /jobs/new
@@ -64,8 +65,23 @@ class JobsController < ApplicationController
     @job.status = :pending
     @job.operator = nil
 
-    if @job.save
+    uploaded_files = begin
+      JSON.parse(params[:uploaded_files_json].presence || "[]")
+    rescue JSON::ParserError
+      []
+    end
+    valid_uploaded_files = uploaded_files.first(2).select do |f|
+      f["file_id"].present? || f["file_url"].present?
+    end
+
+    @job.valid?
+    if valid_uploaded_files.length < 2
+      @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+    end
+
+    if @job.errors.empty? && @job.save
       attach_uploaded_file(@job, ensure_placeholders: true)
+      UserMailer.send_new_job_email(@job).deliver_later
       redirect_to @job, notice: "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -122,7 +138,6 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/self_assign
   def self_assign
-    puts "hello"
     if @job.operator_id.nil?
       @job.update!(operator: current_user, status: :assigned)
       # Automatically update job status when assigned
@@ -132,6 +147,7 @@ class JobsController < ApplicationController
         new_status: "assigned",
         initiator: current_user
       ) if @job.saved_change_to_operator_id?
+      UserMailer.send_job_accepted_email(@job).deliver_later
       redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other

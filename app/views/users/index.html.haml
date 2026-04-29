@@ -1,0 +1,46 @@
+%h1 Manage Users
+
+= simple_form_for :search, url: users_path, method: :get, html: { class: "mb-3" } do |f|
+  .d-flex.align-items-end.gap-3
+    .flex-grow-1
+      = f.input :q,
+        label: "Search users",
+        input_html: { value: params.dig(:search, :q), placeholder: "Email or username" }
+
+    .flex-grow-0
+      - visible_roles = User.roles.keys.select { |r| can?(:read, User.new(role: r)) }
+
+      = f.input :role,
+        label: "Filter by role",
+        collection: visible_roles ,
+        include_blank: "none",
+        selected: params.dig(:search, :role)
+
+    .flex-grow-0
+      = f.button :submit, "Apply", class: "btn btn-primary btn-sm"
+
+
+%table.table.table-striped.mt-4
+  %thead
+    %tr
+      %th Username
+      %th Email
+      %th Role
+
+  %tbody
+    - @users.each do |user|
+      %tr
+        %td= user.username
+        %td= user.email
+        %td
+          - allowed_roles = User.roles.keys.select { |r| can?(:assign_role, User.new(role: r)) }
+
+          = simple_form_for user, url: user_path(user), method: :patch, html: { class: "role-form form-inline d-flex align-items-center" } do |f|
+            = f.input :role,
+              collection: allowed_roles,
+              selected: user.role,
+              label: false,
+              include_blank: false,
+              input_html: { class: "role-dropdown form-control form-control-sm w-auto d-inline-block" }
+
+            = f.button :submit, "Update", class: "apply-role-button btn btn-sm btn-primary ml-2"
