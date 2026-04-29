@@ -32,16 +32,15 @@
       %tr
         %td= user.username
         %td= user.email
-
         %td
           - allowed_roles = User.roles.keys.select { |r| can?(:assign_role, User.new(role: r)) }
 
-          = simple_form_for user, url: user_path(user), method: :patch, html: { class: "form-inline d-flex align-items-center" } do |f|
+          = simple_form_for user, url: user_path(user), method: :patch, html: { class: "role-form form-inline d-flex align-items-center" } do |f|
             = f.input :role,
               collection: allowed_roles,
               selected: user.role,
               label: false,
               include_blank: false,
-              input_html: { class: "form-control form-control-sm w-auto d-inline-block" }
+              input_html: { class: "role-dropdown form-control form-control-sm w-auto d-inline-block" }
 
-            = f.button :submit, "Update", class: "btn btn-sm btn-primary ml-2"
+            = f.button :submit, "Update", class: "apply-role-button btn btn-sm btn-primary ml-2"
