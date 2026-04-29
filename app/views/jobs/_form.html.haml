@@ -42,6 +42,8 @@
             %label.form-label.fw-semibold.mb-0{ for: 'upload-progress' } Upload progress
             %span#upload-status.text-muted.small Ready
           %progress#upload-progress.upload-progress-styled{ value: '0', max: '100' } 0%
+          .upload-progress-track
+            #upload-progress-bar.upload-progress-bar{ style: 'width: 0%' }
           #upload-progress-text.small.text-muted.mt-2 0%
 
     %input#uploaded-files-json{ type: 'hidden', name: 'uploaded_files_json', value: '[]' }

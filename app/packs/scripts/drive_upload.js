@@ -67,7 +67,7 @@ function getDriveUploadElements(form) {
     fileInput1: form.querySelector('#upload-file-input-1'),
     fileInput2: form.querySelector('#upload-file-input-2'),
     saveButton: form.querySelector('button[type="submit"]'),
-    progressBar: form.querySelector('#upload-progress'),
+    progressBar: form.querySelector('#upload-progress-bar'),
     progressText: form.querySelector('#upload-progress-text'),
     statusText: form.querySelector('#upload-status'),
     uploadedFilesJsonInput: form.querySelector('#uploaded-files-json')
@@ -84,7 +84,7 @@ function getFormState(form) {
 
 function setProgress(elements, percent) {
   if (elements.progressBar) {
-    elements.progressBar.value = percent;
+    elements.progressBar.style.width = `${percent}%`;
   }
 
   if (elements.progressText) {
