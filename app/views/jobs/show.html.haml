@@ -125,4 +125,4 @@
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         -if can?(:manage, Job)
           = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
-        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
+        = link_to 'Back', jobs_path(tab: @tab), class: 'btn btn-link ms-auto'
