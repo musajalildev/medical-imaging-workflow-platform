@@ -1,0 +1,48 @@
+%h1.mb-4
+  Sign up
+
+%p.mb-4
+  You have not yet been assigned a role by a system administrator. To ensure you get the role you are looking for, please submit the form below:
+
+.row.justify-content-left.mt-4
+  .col-md-8
+    .card.shadow-sm
+      .card-body.p-4
+        %form{ action: "/submit", method: "post" }
+
+          .mb-4
+            %label.form-label.fw-semibold Select Role:
+
+            .form-check.mt-2
+              %input.form-check-input{
+                type: "radio",
+                name: "role_selection",
+                id: "option_one",
+                value: "client"
+              }
+              %label.form-check-label.ms-1{ for: "option_one" }
+                Client (Submit Jobs)
+
+            .form-check.mt-2
+              %input.form-check-input{
+                type: "radio",
+                name: "role_selection",
+                id: "option_two",
+                value: "operator"
+              }
+              %label.form-check-label.ms-1{ for: "option_two" }
+                Operator (Work on Jobs)
+
+          .mb-4
+            %label.form-label.fw-semibold{ for: "text_input" }
+              Extra Comments:
+
+            %textarea.form-control{
+              id: "text_input",
+              name: "comment",
+              rows: "4",
+              placeholder: "Type here..."
+            }
+
+          %button.btn.btn-primary.px-4{ type: "submit" }
+            Submit

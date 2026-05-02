@@ -32,6 +32,7 @@ Rails.application.routes.draw do
   resources :users, only: [:index, :edit, :update]
 
   get '/landing', to: 'pages#landing'
+  get '/sign_up', to: 'pages#sign_up'
 
   # Defines the root path route ("/")
   root "pages#home"
