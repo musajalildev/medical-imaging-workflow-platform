@@ -1,5 +1,6 @@
 -# frozen_string_literal: true
-- submit_label = @job.persisted? ? 'Update Job' : 'Create Job'
+- is_draft = @job.persisted? && @job.draft?
+- submit_label = @job.new_record? ? 'Create Job' : (is_draft ? 'Update Draft' : 'Update Job')
 - submit_note = @job.persisted? ? 'Update the job details and attached inputs.' : 'Add the job details and upload the required input files.'
 = simple_form_for(@job) do |f|
   .card-body.job-form
@@ -42,4 +43,6 @@
   .card-footer.d-flex.align-items-center.gap-2.flex-wrap
     %button.btn.btn-primary.px-4{ type: 'submit' }
       = submit_label
+    - if @job.new_record?
+      %button.btn.btn-outline-secondary{ type: 'submit', name: 'save_as_draft', value: '1' } Save as Draft
     = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'

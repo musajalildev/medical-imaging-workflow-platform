@@ -4,18 +4,24 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
-  before_action :check_client_role, only: %i[ new create edit update ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft ]
+  before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
   def index
-    # Checks for operator role
     if current_user&.operator?
       @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
       if @tab == "unassigned"
-        @jobs = Job.where(operator_id: nil)
+        @jobs = Job.where(operator_id: nil).where.not(status: :draft)
       else
-        @jobs = Job.where(operator_id: current_user.id)
+        @jobs = Job.where(operator_id: current_user.id).where.not(status: :draft)
+      end
+    elsif current_user&.client?
+      @tab = params[:tab].presence_in(%w[active drafts]) || "active"
+      if @tab == "drafts"
+        @jobs = Job.where(client_id: current_user.id, status: :draft)
+      else
+        @jobs = Job.where(client_id: current_user.id).where.not(status: :draft)
       end
     end
 
@@ -61,12 +67,17 @@ class JobsController < ApplicationController
   def create
     @job = Job.new(job_params)
     @job.client = current_user
-    @job.status = :pending
     @job.operator = nil
 
+    if params[:save_as_draft].present?
+      @job.status = :draft
+    else
+      @job.status = :pending
+    end
+
     if @job.save
-      attach_uploaded_file(@job, ensure_placeholders: true)
-      redirect_to @job, notice: "Job was successfully created."
+      attach_uploaded_file(@job, ensure_placeholders: !@job.draft?)
+      redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -158,6 +169,21 @@ class JobsController < ApplicationController
     end
   end
 
+  # PATCH /jobs/1/submit_draft
+  def submit_draft
+    unless @job.draft?
+      redirect_to @job, alert: "This job is not a draft."
+      return
+    end
+
+    if @job.update(status: :pending)
+      attach_uploaded_file(@job, ensure_placeholders: true)
+      redirect_to @job, notice: "Job submitted successfully."
+    else
+      redirect_to @job, alert: "Failed to submit job."
+    end
+  end
+
   # DELETE /jobs/1
   def destroy
     purge_error = purge_job_files_from_drive
@@ -236,13 +262,15 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      case action_name  
+      case action_name
       when "create"
         params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
       when "update"
         params.expect(job: [ :operator_id, :title, :description ])
       when "update_status"
         params.expect(job: [ :status, :custom_status ])
+      when "submit_draft"
+        {}
       end
     end
 

@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       patch :complete_job
       patch :cancel_job
       patch :self_assign
+      patch :submit_draft
     end
   end
   resources :reports

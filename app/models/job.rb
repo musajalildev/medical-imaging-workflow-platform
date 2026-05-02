@@ -29,7 +29,7 @@ class Job < ApplicationRecord
 
   before_validation :set_default_status
 
-  STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled ]
+  STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft ]
   enum :status, STATUSES
 
   # get all the status history for this job, ordered by most recent first
