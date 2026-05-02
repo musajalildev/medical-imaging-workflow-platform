@@ -8,8 +8,7 @@
   .col-md-8
     .card.shadow-sm
       .card-body.p-4
-        %form{ action: "/submit", method: "post" }
-
+        = form_with url: send_sign_up_email_path, method: :post do
           .mb-4
             %label.form-label.fw-semibold Select Role:
 

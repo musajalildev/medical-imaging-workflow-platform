@@ -29,15 +29,16 @@ class PagesController < ApplicationController
   end
 
   def send_sign_up_email
-    if ! params[:role_selection].present?
+    if !params[:role_selection].present?
       redirect_to sign_up_path, alert: "Please select a role."
       return
 
     else
       role = params[:role_selection]
       comment = params[:comment]
-      UserMailer.with(email: params[:email], role: role, comment: comment).sign_up_email.deliver_later
-      redirect_to sign_up_path, notice: "Sign-up email sent successfully!"
+      puts "Sending sign-up email with role: #{role} and comment: #{comment}"
+      UserMailer.with(email: current_user.email, role: role, comment: comment).send_sign_up_email.deliver_later
+      redirect_to sign_up_path, notice: "Sign up email sent successfully!"
     end
   end
 

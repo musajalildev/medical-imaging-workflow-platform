@@ -47,12 +47,15 @@ class UserMailer < ApplicationMailer
   # admin emails
 
   # send admin an email when a user signs up
-  def sign_up_email(email, role, comment)
-    @user = User.where(role: :admin || :owner)
-    @role = role
-    @comment = comment
-    @user.each do |admin|
-      mail(to: admin.email, subject: "New user sign-up: #{@user.email}")
-    end
+  def send_sign_up_email
+    @user = User.where(role: [:admin, :owner])
+    @role = params[:role]
+    @comment = params[:comment]
+    @email = params[:email]
+
+    mail(
+      to: @user.pluck(:email),
+      subject: "New sign-up role request"
+    )
   end
 end

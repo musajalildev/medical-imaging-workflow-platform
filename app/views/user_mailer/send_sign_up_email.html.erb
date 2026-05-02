@@ -1,9 +1,9 @@
 <p>Hello,</p>
 
 <% if @role == "client" %>
-  <p> A new user <strong><%= @user.email %></strong> has signed up for the system to be a client. </p>
+  <p> A new user <strong><%= @email %></strong> has signed up for the system to be a client. </p>
 <% else %>
-  <p> A new user <strong><%= @user.email %></strong> has signed up for the system to be an operator. </p>
+  <p> A new user <strong><%= @email %></strong> has signed up for the system to be an operator. </p>
 <% end %>
 
 <p>Additional comments from the user:</p>
