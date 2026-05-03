@@ -34,5 +34,5 @@ Rails.application.routes.draw do
   get '/landing', to: 'pages#landing'
 
   # Defines the root path route ("/")
-  root "pages#home"
+  root "pages#landing"
 end
