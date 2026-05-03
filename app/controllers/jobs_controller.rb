@@ -5,8 +5,6 @@ class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
   before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
-  before_action :check_client_role, only: %i[ new create edit update ]
-
   # GET /jobs
   def index
     # Checks for operator role
