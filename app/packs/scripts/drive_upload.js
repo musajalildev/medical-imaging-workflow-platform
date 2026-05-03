@@ -181,8 +181,15 @@ document.addEventListener('submit', async (event) => {
   }
 
   const state = getFormState(form);
-  if (state.submittingAfterUpload) {
-    return;
+  if (!state.submittingAfterUpload) {
+    const confirmed = window.confirm(
+      'You are about to create this job, are you sure? You will no longer be able to edit it.'
+    );
+
+    if (!confirmed) {
+      event.preventDefault();
+      return;
+    }
   }
 
   const elements = getDriveUploadElements(form);
