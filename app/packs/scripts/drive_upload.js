@@ -66,7 +66,7 @@ function getDriveUploadElements(form) {
   return {
     fileInput1: form.querySelector('#upload-file-input-1'),
     fileInput2: form.querySelector('#upload-file-input-2'),
-    saveButton: form.querySelector('button[type="submit"]'),
+    submitButtons: form.querySelectorAll('button[type="submit"]'),
     progressBar: form.querySelector('#upload-progress'),
     progressText: form.querySelector('#upload-progress-text'),
     statusText: form.querySelector('#upload-status'),
@@ -111,9 +111,7 @@ function resetSelectionState(form) {
     elements.uploadedFilesJsonInput.value = EMPTY_UPLOADS_JSON;
   }
 
-  if (elements.saveButton) {
-    elements.saveButton.disabled = false;
-  }
+  elements.submitButtons.forEach((btn) => { btn.disabled = false; });
 
   setProgress(elements, 0);
   setStatus(elements, 'Ready');
@@ -185,6 +183,7 @@ document.addEventListener('submit', async (event) => {
     return;
   }
 
+  const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
   const selectedSlots = [
     { slot: 1, file: elements.fileInput1?.files?.[0] },
@@ -212,9 +211,7 @@ document.addEventListener('submit', async (event) => {
     elements.uploadedFilesJsonInput.value = EMPTY_UPLOADS_JSON;
   }
 
-  if (elements.saveButton) {
-    elements.saveButton.disabled = true;
-  }
+  elements.submitButtons.forEach((btn) => { btn.disabled = true; });
 
   setProgress(elements, 0);
   setStatus(elements, 'Uploading files before save...');
@@ -246,13 +243,20 @@ document.addEventListener('submit', async (event) => {
 
     setProgress(elements, 100);
     setStatus(elements, 'Upload complete, saving job...');
+
+    if (submitter && submitter.name) {
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = submitter.name;
+      hiddenInput.value = submitter.value || '';
+      form.appendChild(hiddenInput);
+    }
+
     state.submittingAfterUpload = true;
     form.submit();
   } catch (error) {
     setStatus(elements, error.message || 'Upload failed');
-    if (elements.saveButton) {
-      elements.saveButton.disabled = false;
-    }
+    elements.submitButtons.forEach((btn) => { btn.disabled = false; });
   }
 }, true);
 

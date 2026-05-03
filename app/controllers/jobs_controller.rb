@@ -161,6 +161,12 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/cancel_job
   def cancel_job
+    if @job.draft?
+      @job.destroy!
+      redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
+      return
+    end
+
     if @job.update(status: :cancelled)
       UserMailer.send_job_cancelled_email(@job).deliver_later
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other

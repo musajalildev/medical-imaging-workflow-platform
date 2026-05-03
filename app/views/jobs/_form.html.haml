@@ -2,6 +2,10 @@
 - is_draft = @job.persisted? && @job.draft?
 - submit_label = @job.new_record? ? 'Create Job' : (is_draft ? 'Update Draft' : 'Update Job')
 - submit_note = @job.persisted? ? 'Update the job details and attached inputs.' : 'Add the job details and upload the required input files.'
+- if @job.persisted?
+  - existing_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
+  - existing_slots = existing_files.first(2)
+  - existing_slots << nil while existing_slots.length < 2
 = simple_form_for(@job) do |f|
   .card-body.job-form
     .job-form-section
@@ -24,12 +28,24 @@
           .job-upload-field
             %label.form-label.fw-semibold{ for: 'upload-file-input-1' } PDF file
             %input#upload-file-input-1.form-control{ type: 'file', accept: '.pdf,application/pdf' }
-            %p.form-text.mb-0 Attach the document or instructions for the job.
+            - if @job.persisted? && existing_slots[0]&.drive_file_id.present?
+              %p.form-text.mb-0
+                Currently uploaded &mdash;
+                = link_to 'view PDF', download_file_path(file_id: existing_slots[0].drive_file_id), data: { turbo: false }, target: '_blank'
+                %span.text-muted (selecting a new file will replace it)
+            - else
+              %p.form-text.mb-0 Attach the document or instructions for the job.
 
           .job-upload-field
             %label.form-label.fw-semibold{ for: 'upload-file-input-2' } DICOM file
             %input#upload-file-input-2.form-control{ type: 'file', accept: '.dcm,application/dicom' }
-            %p.form-text.mb-0 Attach the imaging dataset used as input.
+            - if @job.persisted? && existing_slots[1]&.drive_file_id.present?
+              %p.form-text.mb-0
+                Currently uploaded &mdash;
+                = link_to 'view DICOM', download_file_path(file_id: existing_slots[1].drive_file_id), data: { turbo: false }, target: '_blank'
+                %span.text-muted (selecting a new file will replace it)
+            - else
+              %p.form-text.mb-0 Attach the imaging dataset used as input.
 
         .job-upload-status
           .d-flex.justify-content-between.align-items-center.flex-wrap.gap-2.mb-2

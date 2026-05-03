@@ -36,9 +36,9 @@
                   class: "btn btn-primary btn-sm",
                   form: { class: 'job-action-form' },
                   data: { turbo_confirm: 'Submit this job? It will enter the queue for operators.' }
-            - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
+            - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
               .job-action-row
-                - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?)
+                - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)
                   #complete_job_button
                     = button_to "Mark as Complete", complete_job_job_path(@job),
                       method: :patch,
@@ -48,11 +48,13 @@
 
                 - if can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
                   #cancel_job_button
-                    = button_to "Cancel Job", cancel_job_job_path(@job),
+                    - cancel_label = @job.draft? ? "Delete Draft" : "Cancel Job"
+                    - cancel_confirm = @job.draft? ? "Delete this draft? This cannot be undone." : "Are you sure you want to cancel this job? You will no longer be able to edit it."
+                    = button_to cancel_label, cancel_job_job_path(@job),
                       method: :patch,
                       class: "btn btn-outline-danger btn-sm",
                       form: { class: 'job-action-form' },
-                      data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
+                      data: { turbo_confirm: cancel_confirm }
 
       .card-body
         %dl.row.mb-0.job-meta-list
