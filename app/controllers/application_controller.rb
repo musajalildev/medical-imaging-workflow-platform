@@ -22,6 +22,15 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # tells devise where to redirect the user after signing in
+  def after_sign_in_path_for(resource)
+    if resource.unassigned?
+      sign_up_path
+    else
+      jobs_path
+    end
+  end
+
 
   private
      def dev_auto_login
