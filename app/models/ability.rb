@@ -51,7 +51,7 @@ class Ability
       can :create, Job
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
-      can :cancel_job, Job, client_id: user.id
+      can :cancel_job, Job, client_id: user.id, status: [:pending]
     end
 
     #

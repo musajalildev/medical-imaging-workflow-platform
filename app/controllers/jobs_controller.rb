@@ -156,8 +156,17 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/complete_job
   def complete_job
+    # save old status for status history record after update
+    old_status = @job.get_status_for_display
+
     if @job.update(status: :complete)
       UserMailer.send_job_completed_email(@job).deliver_later
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "complete",
+        initiator: current_user
+      )
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
       redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
@@ -166,8 +175,20 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/cancel_job
   def cancel_job
+    # save old status for status history record after update
+    old_status = @job.get_status_for_display
+
     if @job.update(status: :cancelled)
-      UserMailer.send_job_cancelled_email(@job).deliver_later
+      # only send email to client that their job was cancelled after it has been assigned to an operator
+      if @job.operator.present?
+        UserMailer.send_job_cancelled_email(@job).deliver_later
+      end
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "cancelled",
+        initiator: current_user
+      )
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
