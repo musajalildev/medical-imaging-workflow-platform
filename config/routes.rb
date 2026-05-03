@@ -36,5 +36,5 @@ Rails.application.routes.draw do
   post "send_sign_up_email", to: "pages#send_sign_up_email", as: :send_sign_up_email
 
   # Defines the root path route ("/")
-  root "pages#home"
+  root "pages#landing"
 end
