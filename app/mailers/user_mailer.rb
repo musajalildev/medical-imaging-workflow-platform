@@ -43,4 +43,19 @@ class UserMailer < ApplicationMailer
       mail(to: operator.email, subject: "A new job has become available")
     end
   end
+
+  # admin emails
+
+  # send admin an email when a user signs up
+  def send_sign_up_email
+    @user = User.where(role: [:admin, :owner])
+    @role = params[:role]
+    @comment = params[:comment]
+    @email = params[:email]
+
+    mail(
+      to: @user.pluck(:email),
+      subject: "New sign-up role request"
+    )
+  end
 end
