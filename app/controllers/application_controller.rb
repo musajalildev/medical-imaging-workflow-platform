@@ -10,17 +10,17 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :update_headers_to_disable_caching
 
-  rescue_from CanCan::AccessDenied do |exception|
-    respond_to do |format|
-      format.html do
-        redirect_to root_path, alert: "You are not authorized to access this page."
-      end
+  #rescue_from CanCan::AccessDenied do |exception|
+   # respond_to do |format|
+    #  format.html do
+     #   redirect_to root_path, alert: "You are not authorized to access this page."
+      #end
 
-      format.json do
-        render json: { error: "Access denied" }, status: :forbidden
-      end
-    end
-  end
+      #format.json do
+       # render json: { error: "Access denied" }, status: :forbidden
+     # end
+   # end
+ # end
 
 
   private

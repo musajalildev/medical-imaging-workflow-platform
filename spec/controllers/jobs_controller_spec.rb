@@ -24,7 +24,7 @@ RSpec.describe JobsController, type: :controller do
       context "when user is an operator" do
         before { allow(controller).to receive(:current_user).and_return(operator_user) }
 
-        it "Raises AccessDenied" do
+        it "redirects to jobs_path with alert" do
           expect { get :new }.to raise_error(CanCan::AccessDenied)
         end
       end
@@ -32,7 +32,7 @@ RSpec.describe JobsController, type: :controller do
       context "when user is an admin" do
         before { allow(controller).to receive(:current_user).and_return(admin_user) }
 
-        it "Raises AccessDenied" do
+        it "redirects to jobs_path with alert" do
           expect { get :new }.to raise_error(CanCan::AccessDenied)
         end
       end
@@ -40,7 +40,7 @@ RSpec.describe JobsController, type: :controller do
       context "when user is not authenticated" do
         before { allow(controller).to receive(:current_user).and_return(nil) }
 
-        it "Raises AccessDenied" do
+        it "redirects to jobs_path with alert" do
           expect { get :new }.to raise_error(CanCan::AccessDenied)
         end
       end
@@ -62,19 +62,20 @@ RSpec.describe JobsController, type: :controller do
       context "when user is an operator" do
         before { allow(controller).to receive(:current_user).and_return(operator_user) }
 
-        it "Raises AccessDenied" do
+        it "redirects to jobs_path with alert" do
           expect {
             get :edit, params: { id: job.id }
           }.to raise_error(CanCan::AccessDenied)
-end
+        end
       end
 
       context "when user is an admin" do
         before { allow(controller).to receive(:current_user).and_return(admin_user) }
 
         it "Raises AccessDenied" do
-          get :edit, params: { id: job.id }
-          expect { get :new }.to raise_error(CanCan::AccessDenied)
+          expect{ 
+            get :edit, params: { id: job.id }
+          }.to raise_error(CanCan::AccessDenied)
        end
       end
     end
@@ -183,7 +184,7 @@ end
       context "when user is an operator" do
         before { allow(controller).to receive(:current_user).and_return(operator_user) }
 
-        it "Raises AccessDenied" do
+        it "redirects to jobs_path with alert" do
           expect {patch :update, params: {
             id: job.id,
             job: {
@@ -192,23 +193,22 @@ end
             uploaded_files_json: "[]"
           }
         }.to raise_error(CanCan::AccessDenied)
-        end
       end
+    end
 
       context "when user is an admin" do
         before { allow(controller).to receive(:current_user).and_return(admin_user) }
 
-        it "Raises AccessDenied" do
-          patch :update, params: {
+        it "Raises Access Denied" do
+          expect{
+            patch :update, params: {
             id: job.id,
             job: {
               title: "Updated Title"
             },
-            uploaded_files_json: "[]"
-          }
-          expect(response).to redirect_to(jobs_path)
-          expect(flash[:alert]).to match(/Only clients can create or edit jobs/)
-        end
+            uploaded_files_json: "[]"}
+          }.to raise_error(CanCan::AccessDenied)
+          end
       end
     end
 

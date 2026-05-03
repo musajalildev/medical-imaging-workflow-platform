@@ -42,6 +42,7 @@ class Ability
       can :manage, Job
       cannot :new, Job
       cannot :create, Job
+      cannot :update, Job
 
 
     elsif user.operator?
