@@ -25,4 +25,21 @@ class PagesController < ApplicationController
     @completion_rate = total_closed.positive? ? ((@completed_jobs.to_f / total_closed) * 100).round(1) : 0
   end
 
+  def sign_up
+  end
+
+  def send_sign_up_email
+    if !params[:role_selection].present?
+      redirect_to sign_up_path, alert: "Please select a role."
+      return
+
+    else
+      role = params[:role_selection]
+      comment = params[:comment]
+      puts "Sending sign-up email with role: #{role} and comment: #{comment}"
+      UserMailer.with(email: current_user.email, role: role, comment: comment).send_sign_up_email.deliver_later
+      redirect_to sign_up_path, notice: "Sign up email sent successfully!"
+    end
+  end
+
 end
