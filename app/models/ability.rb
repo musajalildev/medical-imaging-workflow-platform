@@ -4,7 +4,7 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-    # Define abilities for the user here. For example:
+        # Define abilities for the user here. For example:
     #
     #   return unless user.present?
     #   can :read, :all
@@ -32,9 +32,12 @@ class Ability
     #
     return unless user.present?
 
-    #defining abilities for job list
+    #
+    # JOB PERMISSIONS
+    #
     if user.admin? || user.owner?
       can :manage, Job
+
     elsif user.operator?
       can :read, Job
       cannot :read, Job, status: Job.statuses[:draft]
@@ -43,14 +46,31 @@ class Ability
       can :complete_job, Job, operator_id: user.id
       can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
       can :self_assign, Job
+
     elsif user.client?
       can :read, Job, client_id: user.id
       can :create, Job
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
-      can :cancel_job, Job, client_id: user.id
+      can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
     end
-    
+
+    #
+    # USER MANAGEMENT PERMISSIONS
+    #
+    if user.admin?
+      admin_roles = ["unassigned", "client", "operator"]
+
+      can :read, User, role: admin_roles
+      can :assign_role, User, role: admin_roles
+      can :update, User, role: admin_roles
+    end
+
+    if user.owner?
+      can :read, User
+      can :assign_role, User
+      can :update, User
+    end
   end
 end

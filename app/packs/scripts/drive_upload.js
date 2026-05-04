@@ -84,7 +84,7 @@ function getFormState(form) {
 
 function setProgress(elements, percent) {
   if (elements.progressBar) {
-    elements.progressBar.value = percent;
+    elements.progressBar.style.width = `${percent}%`;
   }
 
   if (elements.progressText) {
@@ -185,11 +185,51 @@ document.addEventListener('submit', async (event) => {
 
   const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
+
+  // Validate required text fields before starting any upload
+  const titleInput = form.querySelector('#job_title');
+  const descriptionInput = form.querySelector('#job_description');
+  const missingFields = [];
+  if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
+  if (descriptionInput && !descriptionInput.value.trim()) missingFields.push('Description can\'t be blank');
+  if (missingFields.length > 0) {
+    event.preventDefault();
+    const errorBox = form.querySelector('#client-side-errors');
+    if (errorBox) {
+      const ul = errorBox.querySelector('ul');
+      ul.innerHTML = missingFields.map((msg) => `<li>${msg}</li>`).join('');
+      errorBox.style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    return;
+  }
+
+  // Clear any previous client-side errors
+  const errorBox = form.querySelector('#client-side-errors');
+  if (errorBox) errorBox.style.display = 'none';
+
   const selectedSlots = [
     { slot: 1, file: elements.fileInput1?.files?.[0] },
     { slot: 2, file: elements.fileInput2?.files?.[0] }
   ];
   const files = selectedSlots.filter((entry) => entry.file);
+
+  const fileErrors = [];
+  if (!selectedSlots[0].file) fileErrors.push("PDF file can't be blank");
+  if (!selectedSlots[1].file) fileErrors.push("DICOM file can't be blank");
+
+  if (fileErrors.length > 0) {
+    event.preventDefault();
+    const errorBox = form.querySelector('#client-side-errors');
+    if (errorBox) {
+      const ul = errorBox.querySelector('ul');
+      ul.innerHTML = fileErrors.map((msg) => `<li>${msg}</li>`).join('');
+      errorBox.style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    return;
+  }
+
   const validationError = selectedSlots
     .map((entry) => validateFileBySlot(entry.slot, entry.file))
     .find(Boolean);
@@ -197,11 +237,6 @@ document.addEventListener('submit', async (event) => {
   if (validationError) {
     event.preventDefault();
     setStatus(elements, validationError);
-    return;
-  }
-
-  if (files.length === 0) {
-    setStatus(elements, 'No files selected, saving job...');
     return;
   }
 
@@ -225,7 +260,7 @@ document.addEventListener('submit', async (event) => {
       setStatus(elements, `Uploading ${index + 1}/${files.length}: ${file.name}`);
 
       const response = await uploadFileWithXhr(file, selected.slot, (filePercent) => {
-        const overallPercent = Math.round(((index + (filePercent / 100)) / files.length) * 100);
+        const overallPercent = Math.min(Math.round(((index + (filePercent / 100)) / files.length) * 100), 99);
         setProgress(elements, overallPercent);
       });
 
@@ -241,7 +276,7 @@ document.addEventListener('submit', async (event) => {
       elements.uploadedFilesJsonInput.value = JSON.stringify(uploadedFiles);
     }
 
-    setProgress(elements, 100);
+    setProgress(elements, 99);
     setStatus(elements, 'Upload complete, saving job...');
 
     if (submitter && submitter.name) {

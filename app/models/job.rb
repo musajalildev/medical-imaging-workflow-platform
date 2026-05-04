@@ -29,6 +29,10 @@ class Job < ApplicationRecord
 
   before_validation :set_default_status
 
+
+  validates :title, presence: true
+  validates :description, presence: true
+
   STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft ]
   enum :status, STATUSES
 

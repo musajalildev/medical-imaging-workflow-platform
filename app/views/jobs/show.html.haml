@@ -102,7 +102,7 @@
         .job-file-panel.mt-4
           %h2.h5.mb-3 Output file
 
-          - if can?(:upload_output, @job) && !@job.complete?
+          - if can?(:upload_output, @job) && !@job.complete? && !@job.cancelled?
             = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'job-output-form d-flex flex-column gap-2 mb-3' do
               %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
               %button.btn.btn-outline-primary.align-self-start{ type: 'submit' } Upload report file
@@ -128,10 +128,11 @@
                 - @job.status_histories.each do |history|
                   %li.status-history-item
                     = history.formatted_history
-            - else
-              %p.text-muted.small.mb-0.fst-italic No status changes recorded yet.
+            %ul.list-unstyled.mb-0
+              %li.status-history-item
+                = "Job created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
 
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         - if can?(:manage, Job) || (@job.draft? && can?(:edit, @job))
           = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
-        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
+        = link_to 'Back', jobs_path(tab: @tab), class: 'btn btn-link ms-auto'

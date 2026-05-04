@@ -1,0 +1,47 @@
+%h1.mb-4 Job Management System
+
+.row.mb-4
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-primary.mb-2= @total_jobs
+        %p.mb-0.fw-semibold Total Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-success.mb-2= @completed_jobs
+        %p.mb-0.fw-semibold Completed Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-danger.mb-2= @cancelled_jobs
+        %p.mb-0.fw-semibold Cancelled Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-warning.mb-2= @pending_jobs
+        %p.mb-0.fw-semibold Pending Jobs
+
+.row.mb-4
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-info.mb-2= @active_jobs
+        %p.mb-0.fw-semibold Active Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-secondary.mb-2= @avg_completion_time
+        %p.mb-0.fw-semibold Avg Completion Time (days)
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-success.mb-2= "#{@completion_rate}%"
+        %p.mb-0.fw-semibold Completion Rate
+
+.row.justify-content-center.mt-4
+  .col-md-8
+    .card.shadow-sm
+      .card-body.text-center
+        %h5.mb-3 Welcome to Our Job Management Platform
+        %p.mb-4 Streamline your workflow with our comprehensive job management system. Create, assign, and track jobs efficiently.

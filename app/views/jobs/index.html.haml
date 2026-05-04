@@ -56,7 +56,7 @@
             %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
             %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
             %td= job.status.to_s.humanize
-            %td= job.created_at.strftime('%d %b %Y ')
-            %td= link_to 'Details', job
+            %td= job.created_at.strftime('%d %b, %Y ')
+            %td= link_to 'Details', job_path(job, tab: @tab)
             - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?
               %td= link_to 'Self assign', self_assign_job_path(job), data: { turbo_method: :patch }, class: 'btn btn-outline-primary ms-1 btn-sm'

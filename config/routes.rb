@@ -5,6 +5,9 @@ Rails.application.routes.draw do
       end
     end
 
+  
+  resources :complete_jobs
+  resources :cancelled_jobs
   resources :image_files
   resources :job_status_histories
   resources :jobs do
@@ -27,7 +30,12 @@ Rails.application.routes.draw do
   mount EpiCas::Engine, at: "/"
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  resources :users, only: [:index, :edit, :update]
+
+  get '/landing', to: 'pages#landing'
+  get '/sign_up', to: 'pages#sign_up'
+  post "send_sign_up_email", to: "pages#send_sign_up_email", as: :send_sign_up_email
 
   # Defines the root path route ("/")
-  root "pages#home"
+  root "pages#landing"
 end

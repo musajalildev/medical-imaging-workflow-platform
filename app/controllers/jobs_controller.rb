@@ -52,6 +52,7 @@ class JobsController < ApplicationController
   # GET /jobs/1
   def show
     @user = current_user
+    @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
   end
 
   # GET /jobs/new
@@ -75,8 +76,23 @@ class JobsController < ApplicationController
       @job.status = :pending
     end
 
-    if @job.save
+    uploaded_files = begin
+      JSON.parse(params[:uploaded_files_json].presence || "[]")
+    rescue JSON::ParserError
+      []
+    end
+    valid_uploaded_files = uploaded_files.first(2).select do |f|
+      f["file_id"].present? || f["file_url"].present?
+    end
+
+    @job.valid?
+    if valid_uploaded_files.length < 2
+      @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+    end
+
+    if @job.errors.empty? && @job.save
       attach_uploaded_file(@job, ensure_placeholders: !@job.draft?)
+      UserMailer.send_new_job_email(@job).deliver_later
       redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -133,7 +149,6 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/self_assign
   def self_assign
-    puts "hello"
     if @job.operator_id.nil?
       @job.update!(operator: current_user, status: :assigned)
       # Automatically update job status when assigned
@@ -143,6 +158,7 @@ class JobsController < ApplicationController
         new_status: "assigned",
         initiator: current_user
       ) if @job.saved_change_to_operator_id?
+      UserMailer.send_job_accepted_email(@job).deliver_later
       redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
@@ -151,8 +167,17 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/complete_job
   def complete_job
+    # save old status for status history record after update
+    old_status = @job.get_status_for_display
+
     if @job.update(status: :complete)
       UserMailer.send_job_completed_email(@job).deliver_later
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "complete",
+        initiator: current_user
+      )
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
       redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
@@ -161,6 +186,9 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/cancel_job
   def cancel_job
+    # save old status for status history record after update
+    old_status = @job.get_status_for_display
+
     if @job.draft?
       @job.destroy!
       redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
@@ -168,7 +196,16 @@ class JobsController < ApplicationController
     end
 
     if @job.update(status: :cancelled)
-      UserMailer.send_job_cancelled_email(@job).deliver_later
+      # only send email to client that their job was cancelled after it has been assigned to an operator
+      if @job.operator.present?
+        UserMailer.send_job_cancelled_email(@job).deliver_later
+      end
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "cancelled",
+        initiator: current_user
+      )
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
