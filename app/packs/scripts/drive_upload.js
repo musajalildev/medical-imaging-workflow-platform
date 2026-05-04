@@ -186,22 +186,28 @@ document.addEventListener('submit', async (event) => {
   const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
 
+  const isDraftSave = submitter?.name === 'save_as_draft';
+  const isDraftForm = form.querySelector('#drive-upload')?.dataset.isDraft === 'true';
+  const skipValidation = isDraftSave || isDraftForm;
+
   // Validate required text fields before starting any upload
-  const titleInput = form.querySelector('#job_title');
-  const descriptionInput = form.querySelector('#job_description');
-  const missingFields = [];
-  if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
-  if (descriptionInput && !descriptionInput.value.trim()) missingFields.push('Description can\'t be blank');
-  if (missingFields.length > 0) {
-    event.preventDefault();
-    const errorBox = form.querySelector('#client-side-errors');
-    if (errorBox) {
-      const ul = errorBox.querySelector('ul');
-      ul.innerHTML = missingFields.map((msg) => `<li>${msg}</li>`).join('');
-      errorBox.style.display = '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!skipValidation) {
+    const titleInput = form.querySelector('#job_title');
+    const descriptionInput = form.querySelector('#job_description');
+    const missingFields = [];
+    if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
+    if (descriptionInput && !descriptionInput.value.trim()) missingFields.push('Description can\'t be blank');
+    if (missingFields.length > 0) {
+      event.preventDefault();
+      const errorBox = form.querySelector('#client-side-errors');
+      if (errorBox) {
+        const ul = errorBox.querySelector('ul');
+        ul.innerHTML = missingFields.map((msg) => `<li>${msg}</li>`).join('');
+        errorBox.style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
     }
-    return;
   }
 
   // Clear any previous client-side errors
@@ -214,23 +220,16 @@ document.addEventListener('submit', async (event) => {
   ];
   const files = selectedSlots.filter((entry) => entry.file);
 
-  //skip validation if saving as a draft or editing an existing draft.
-  const isDraftSave = submitter?.name === 'save_as_draft';
-  const isDraftForm = form.querySelector('#drive-upload')?.dataset.isDraft === 'true';
-  const skipValidation = isDraftSave || isDraftForm;
+  const hasExistingPdf = form.querySelectorAll('.job-upload-field')[0]?.dataset.hasFile === 'true';
+  const hasExistingDicom = form.querySelectorAll('.job-upload-field')[1]?.dataset.hasFile === 'true';
+
   const fileErrors = [];
-
-  //TODO: testing
-  const pdfField = form.querySelectorAll('.job-upload-field')[0];
-  const dicomField = form.querySelectorAll('.job-upload-field')[1];
-
   if (!skipValidation) {
-    if (!selectedSlots[0].file )
+    if (!selectedSlots[0].file && !hasExistingPdf)
       fileErrors.push("PDF file can't be blank");
-    if (!selectedSlots[1].file )
+    if (!selectedSlots[1].file && !hasExistingDicom)
       fileErrors.push("DICOM file can't be blank");
   }
-  //testing 
 
   if (fileErrors.length > 0) {
     event.preventDefault();

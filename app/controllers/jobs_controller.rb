@@ -91,9 +91,8 @@ class JobsController < ApplicationController
     @job.valid?
     unless params[:save_as_draft].present?
       Rails.logger.info("Validation starting")
-      has_pdf = valid_uploaded_files.any? { |f| f["slot"].to_i == 1 }
-      has_dicom = valid_uploaded_files.any? { |f| f["slot"].to_i == 2 }
-      if  !(has_pdf && has_dicom)
+
+      if  valid_uploaded_files.length < 2
         @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
       end
     end
