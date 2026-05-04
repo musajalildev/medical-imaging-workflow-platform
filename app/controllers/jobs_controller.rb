@@ -90,9 +90,10 @@ class JobsController < ApplicationController
 
     @job.valid?
     unless params[:save_as_draft].present?
-      has_pdf = valid_uploaded_files.any? { |f| f["file_type"].to_s.downcase.include?("pdf") }
-      has_dicom = valid_uploaded_files.any? { |f| f["file_type"].to_s.downcase.include?("dicom") }
-      unless has_pdf && has_dicom
+      Rails.logger.info("Validation starting")
+      has_pdf = valid_uploaded_files.any? { |f| f["slot"].to_i == 1 }
+      has_dicom = valid_uploaded_files.any? { |f| f["slot"].to_i == 2 }
+      if  !(has_pdf && has_dicom)
         @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
       end
     end
@@ -102,7 +103,7 @@ class JobsController < ApplicationController
       UserMailer.send_new_job_email(@job).deliver_later unless @job.draft?
       redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -226,9 +227,9 @@ class JobsController < ApplicationController
       return
     end
 
-    input_files = @job.image_files.reject(&:output_file?)
-    has_pdf = input_files.any? { |f| f.mime_type_value.to_s.downcase.include?("pdf") }
-    has_dicom = input_files.any? { |f| f.mime_type_value.to_s.downcase.include?("dicom") }
+    input_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
+    has_pdf = input_files[0]&.file_path.present?
+    has_dicom = input_files[1]&.file_path.present?
 
     unless has_pdf && has_dicom
       redirect_to @job, alert: "Both input files (PDF and DICOM) must be uploaded before submitting."

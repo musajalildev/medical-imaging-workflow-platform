@@ -214,21 +214,20 @@ document.addEventListener('submit', async (event) => {
   ];
   const files = selectedSlots.filter((entry) => entry.file);
 
-  //skip validation if the client action was saving as a draft.
+  //skip validation if saving as a draft or editing an existing draft.
   const isDraftSave = submitter?.name === 'save_as_draft';
+  const isDraftForm = form.querySelector('#drive-upload')?.dataset.isDraft === 'true';
+  const skipValidation = isDraftSave || isDraftForm;
   const fileErrors = [];
 
   //TODO: testing
   const pdfField = form.querySelectorAll('.job-upload-field')[0];
   const dicomField = form.querySelectorAll('.job-upload-field')[1];
 
-  const hasExistingPdf = pdfField?.dataset.hasFile === 'true';
-  const hasExistingDicom = dicomField?.dataset.hasFile === 'true';
-
-  if (!isDraftSave) {
-    if (!selectedSlots[0].file && !hasExistingPdf) 
+  if (!skipValidation) {
+    if (!selectedSlots[0].file )
       fileErrors.push("PDF file can't be blank");
-    if (!selectedSlots[1].file && !hasExistingDicom) 
+    if (!selectedSlots[1].file )
       fileErrors.push("DICOM file can't be blank");
   }
   //testing 
