@@ -30,9 +30,9 @@
         %h2.job-form-section__title.mb-1 Upload source files
         %p.text-muted.small.mb-0 Selected files upload automatically before the job is saved.
 
-      #drive-upload.job-upload-panel
+      #drive-upload.job-upload-panel{ data: { is_draft: is_draft } }
         .job-upload-grid
-          .job-upload-field
+          .job-upload-field{ data: { has_file: (@job.persisted? && existing_slots[0]&.drive_file_id.present?).to_s } } 
             %label.form-label.fw-semibold{ for: 'upload-file-input-1' } PDF file
             %input#upload-file-input-1.form-control{ type: 'file', accept: '.pdf,application/pdf' }
             - if @job.persisted? && existing_slots[0]&.drive_file_id.present?
@@ -43,7 +43,7 @@
             - else
               %p.form-text.mb-0 Attach the document or instructions for the job.
 
-          .job-upload-field
+          .job-upload-field{ data: { has_file: (@job.persisted? && existing_slots[1]&.drive_file_id.present?).to_s } } 
             %label.form-label.fw-semibold{ for: 'upload-file-input-2' } DICOM file
             %input#upload-file-input-2.form-control{ type: 'file', accept: '.dcm,application/dicom' }
             - if @job.persisted? && existing_slots[1]&.drive_file_id.present?

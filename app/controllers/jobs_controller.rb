@@ -70,10 +70,13 @@ class JobsController < ApplicationController
     @job.client = current_user
     @job.operator = nil
 
+    # Only save_as_draft button can change status
     if params[:save_as_draft].present?
       @job.status = :draft
+      Rails.logger.info('job has been set as draft!!!!') # Uncomment for logging if needed
     else
       @job.status = :pending
+      Rails.logger.info ("Job has been submitted, validation should occur")
     end
 
     uploaded_files = begin
@@ -86,13 +89,17 @@ class JobsController < ApplicationController
     end
 
     @job.valid?
-    if valid_uploaded_files.length < 2
-      @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+    unless params[:save_as_draft].present?
+      has_pdf = valid_uploaded_files.any? { |f| f["file_type"].to_s.downcase.include?("pdf") }
+      has_dicom = valid_uploaded_files.any? { |f| f["file_type"].to_s.downcase.include?("dicom") }
+      unless has_pdf && has_dicom
+        @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+      end
     end
 
     if @job.errors.empty? && @job.save
       attach_uploaded_file(@job, ensure_placeholders: !@job.draft?)
-      UserMailer.send_new_job_email(@job).deliver_later
+      UserMailer.send_new_job_email(@job).deliver_later unless @job.draft?
       redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
       render :new, status: :unprocessable_entity
@@ -216,6 +223,15 @@ class JobsController < ApplicationController
   def submit_draft
     unless @job.draft?
       redirect_to @job, alert: "This job is not a draft."
+      return
+    end
+
+    input_files = @job.image_files.reject(&:output_file?)
+    has_pdf = input_files.any? { |f| f.mime_type_value.to_s.downcase.include?("pdf") }
+    has_dicom = input_files.any? { |f| f.mime_type_value.to_s.downcase.include?("dicom") }
+
+    unless has_pdf && has_dicom
+      redirect_to @job, alert: "Both input files (PDF and DICOM) must be uploaded before submitting."
       return
     end
 
