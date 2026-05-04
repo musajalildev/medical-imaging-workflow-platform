@@ -67,7 +67,7 @@ function getDriveUploadElements(form) {
     fileInput1: form.querySelector('#upload-file-input-1'),
     fileInput2: form.querySelector('#upload-file-input-2'),
     submitButtons: form.querySelectorAll('button[type="submit"]'),
-    progressBar: form.querySelector('#upload-progress'),
+    progressBar: form.querySelector('#upload-progress-bar'),
     progressText: form.querySelector('#upload-progress-text'),
     statusText: form.querySelector('#upload-status'),
     uploadedFilesJsonInput: form.querySelector('#uploaded-files-json')
