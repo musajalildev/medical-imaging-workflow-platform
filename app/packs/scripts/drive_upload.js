@@ -191,8 +191,8 @@ document.addEventListener('submit', async (event) => {
   const skipValidation = isDraftSave || isDraftForm;
 
   // Validate required text fields before starting any upload
+  const titleInput = form.querySelector('#job_title');
   if (!skipValidation) {
-    const titleInput = form.querySelector('#job_title');
     const descriptionInput = form.querySelector('#job_description');
     const missingFields = [];
     if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
