@@ -186,9 +186,12 @@ document.addEventListener('submit', async (event) => {
   const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
 
+  // Determine if we should skip validation based on the type of submission
   const isDraftSave = submitter?.name === 'save_as_draft';
   const isDraftForm = form.querySelector('#drive-upload')?.dataset.isDraft === 'true';
-  const skipValidation = isDraftSave || isDraftForm;
+
+  const isDraftUpdate = submitter?.name === 'update_draft';
+  const skipValidation = isDraftSave || isDraftUpdate || (isDraftForm && !submitter?.name);
 
   // Validate required text fields before starting any upload
   const titleInput = form.querySelector('#job_title');
