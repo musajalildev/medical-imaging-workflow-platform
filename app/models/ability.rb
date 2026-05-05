@@ -40,6 +40,7 @@ class Ability
 
     elsif user.operator?
       can :read, Job
+      cannot :read, Job, status: Job.statuses[:draft]
       can :update_status, Job, operator_id: user.id
       can :cancel_job, Job, operator_id: user.id
       can :complete_job, Job, operator_id: user.id
@@ -52,6 +53,7 @@ class Ability
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
+      can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
     end
 
     #

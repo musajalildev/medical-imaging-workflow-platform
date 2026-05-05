@@ -4,18 +4,24 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
-  before_action :check_client_role, only: %i[ new create edit update ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft ]
+  before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
   def index
-    # Checks for operator role
     if current_user&.operator?
       @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
       if @tab == "unassigned"
-        @jobs = Job.where(operator_id: nil)
+        @jobs = Job.where(operator_id: nil).where.not(status: :draft)
       else
-        @jobs = Job.where(operator_id: current_user.id)
+        @jobs = Job.where(operator_id: current_user.id).where.not(status: :draft)
+      end
+    elsif current_user&.client?
+      @tab = params[:tab].presence_in(%w[active drafts]) || "active"
+      if @tab == "drafts"
+        @jobs = Job.where(client_id: current_user.id, status: :draft)
+      else
+        @jobs = Job.where(client_id: current_user.id).where.not(status: :draft)
       end
     end
 
@@ -62,8 +68,16 @@ class JobsController < ApplicationController
   def create
     @job = Job.new(job_params)
     @job.client = current_user
-    @job.status = :pending
     @job.operator = nil
+
+    # Only save_as_draft button can change status
+    if params[:save_as_draft].present?
+      @job.status = :draft
+      Rails.logger.info('job has been set as draft!!!!') # Uncomment for logging if needed
+    else
+      @job.status = :pending
+      Rails.logger.info ("Job has been submitted, validation should occur")
+    end
 
     uploaded_files = begin
       JSON.parse(params[:uploaded_files_json].presence || "[]")
@@ -75,16 +89,20 @@ class JobsController < ApplicationController
     end
 
     @job.valid?
-    if valid_uploaded_files.length < 2
-      @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+    unless params[:save_as_draft].present?
+      Rails.logger.info("Validation starting")
+
+      if  valid_uploaded_files.length < 2
+        @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
+      end
     end
 
     if @job.errors.empty? && @job.save
-      attach_uploaded_file(@job, ensure_placeholders: true)
-      UserMailer.send_new_job_email(@job).deliver_later
-      redirect_to @job, notice: "Job was successfully created."
+      attach_uploaded_file(@job, ensure_placeholders: !@job.draft?)
+      UserMailer.send_new_job_email(@job).deliver_later unless @job.draft?
+      redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -178,6 +196,12 @@ class JobsController < ApplicationController
     # save old status for status history record after update
     old_status = @job.get_status_for_display
 
+    if @job.draft?
+      @job.destroy!
+      redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
+      return
+    end
+
     if @job.update(status: :cancelled)
       # only send email to client that their job was cancelled after it has been assigned to an operator
       if @job.operator.present?
@@ -192,6 +216,30 @@ class JobsController < ApplicationController
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /jobs/1/submit_draft
+  def submit_draft
+    unless @job.draft?
+      redirect_to @job, alert: "This job is not a draft."
+      return
+    end
+
+    input_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
+    has_pdf = input_files[0]&.file_path.present?
+    has_dicom = input_files[1]&.file_path.present?
+
+    unless has_pdf && has_dicom
+      redirect_to @job, alert: "Both input files (PDF and DICOM) must be uploaded before submitting."
+      return
+    end
+
+    if @job.update(status: :pending)
+      attach_uploaded_file(@job, ensure_placeholders: true)
+      redirect_to @job, notice: "Job submitted successfully."
+    else
+      redirect_to @job, alert: "Failed to submit job."
     end
   end
 
@@ -273,13 +321,15 @@ class JobsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def job_params
-      case action_name  
+      case action_name
       when "create"
         params.expect(job: [ :operator_id, :status, :title, :description, :custom_status ])
       when "update"
         params.expect(job: [ :operator_id, :title, :description ])
       when "update_status"
         params.expect(job: [ :status, :custom_status ])
+      when "submit_draft"
+        {}
       end
     end
 
