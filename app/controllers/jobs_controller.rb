@@ -58,10 +58,12 @@ class JobsController < ApplicationController
   # GET /jobs/new
   def new
     @job = Job.new
+    @submit_action = "create_job"
   end
 
   # GET /jobs/1/edit
   def edit
+    @submit_action = "update_draft"
   end
 
   # POST /jobs
