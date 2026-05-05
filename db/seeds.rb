@@ -6,6 +6,23 @@
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
 
+if Rails.env.production?
+	[
+		{username: "owner", role: :owner, email: "bdgrassie1@sheffield.ac.uk", givenname: "Ben", sn: "D Grassie"},
+		{username: "admin", role: :owner, email: "ejwood1@sheffield.ac.uk", givenname: "Ethan", sn: "Wood"},
+		{username: "admin", role: :owner, email: "iuteh-obuseh1@sheffield.ac.uk", givenname: "Ijeoma", sn: "Uteh-Obuseh"},
+		{username: "operator", role: :owner, email: "majalil1@sheffield.ac.uk", givenname: "Musa", sn: "A Jalil"},
+		{username: "operator", role: :owner, email: "okrasnovidov1@sheffield.ac.uk", givenname: "Alex", sn: "Krasnovidov"},
+		{username: "client", role: :owner, email: "rjones26@sheffield.ac.uk", givenname: "Ryan ", sn: "Jones"}
+
+	].each do |attrs|
+		User.find_or_create_by(email: attrs[:email]) do |u|
+			u.assign_attributes(attrs)
+		end
+	end
+	puts "Seeded #{User.count} users"
+end
+
 if Rails.env.development?
 	[
 		{ username: "dev_admin",    role: :admin,    givenname: "Dev",    sn: "Admin",    email: "dev_admin@example.com" },
