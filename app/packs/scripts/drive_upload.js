@@ -179,11 +179,32 @@ document.addEventListener('submit', async (event) => {
   }
 
   const state = getFormState(form);
-  if (state.submittingAfterUpload) {
-    return;
+
+  // get the submitter now as we will need it to identify if the dialogue needs to be for a job or draft
+  const submitter = event.submitter;
+
+  if (!state.submittingAfterUpload) {
+
+    // different confirmation message if this is a draft vs final submission
+    let confimationMessage = 'You are about to create this job, are you sure?\nYou will no longer be able to edit it.\nIt will be visible to operators immediately after submission.';
+    console.log(submitter?.name === 'save_as_draft');
+    if (submitter?.name === 'save_as_draft') {
+      confimationMessage = 'You are about to upload this job as a draft, are you sure?\nYou will be able to come back and edit it at any time.\nThe job will not be visible to operators until you choose to upload it.';
+    }
+
+    // no dialogue for updates, only for initial save or job creation
+    if (submitter?.name === 'create_job' || submitter?.name === 'save_as_draft') {
+      const confirmed = window.confirm(
+        confimationMessage
+      );
+
+      if (!confirmed) {
+        event.preventDefault();
+        return;
+      }
+    }
   }
 
-  const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
 
   // Determine if we should skip validation based on the type of submission
