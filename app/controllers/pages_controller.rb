@@ -29,14 +29,23 @@ class PagesController < ApplicationController
   end
 
   def send_sign_up_email
-    if !params[:role_selection].present?
+    # cache to prevent spamming admins with multiple emails if a user signs up multiple times in a short period
+    cache_key = "#{@email}_sign_up_email"
+
+    if Rails.cache.read(cache_key)
+      redirect_to sign_up_path, alert: "You can only send one sign-up email per week. Please wait for an admin to review your previous request."
+      return
+      
+    elsif !params[:role_selection].present?
       redirect_to sign_up_path, alert: "Please select a role."
       return
 
     else
       role = params[:role_selection]
       comment = params[:comment]
-      puts "Sending sign-up email with role: #{role} and comment: #{comment}"
+
+      # only cache if email is sent successfully to prevent blocking users if there is an issue with email delivery
+      Rails.cache.write(cache_key, true, expires_in: 7.day)
       UserMailer.with(email: current_user.email, role: role, comment: comment).send_sign_up_email.deliver_later
       redirect_to sign_up_path, notice: "Sign up email sent successfully!"
     end
