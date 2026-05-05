@@ -130,7 +130,8 @@
                     = history.formatted_history
             %ul.list-unstyled.mb-0
               %li.status-history-item
-                = "Job created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
+                - job_type = @job.status == "draft" ? "Draft" : "Job"
+                = job_type + " created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
 
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         - if can?(:manage, Job) || (@job.draft? && can?(:edit, @job))
