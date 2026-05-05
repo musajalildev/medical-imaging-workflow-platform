@@ -31,7 +31,7 @@ class Job < ApplicationRecord
 
 
   validates :title, presence: true
-  validates :description, presence: true, unless: :draft
+  validates :description, presence: true, unless: :draft?
 
   STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft ]
   enum :status, STATUSES
