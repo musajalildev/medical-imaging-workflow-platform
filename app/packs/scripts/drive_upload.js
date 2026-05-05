@@ -66,7 +66,7 @@ function getDriveUploadElements(form) {
   return {
     fileInput1: form.querySelector('#upload-file-input-1'),
     fileInput2: form.querySelector('#upload-file-input-2'),
-    saveButton: form.querySelector('button[type="submit"]'),
+    submitButtons: form.querySelectorAll('button[type="submit"]'),
     progressBar: form.querySelector('#upload-progress-bar'),
     progressText: form.querySelector('#upload-progress-text'),
     statusText: form.querySelector('#upload-status'),
@@ -111,9 +111,7 @@ function resetSelectionState(form) {
     elements.uploadedFilesJsonInput.value = EMPTY_UPLOADS_JSON;
   }
 
-  if (elements.saveButton) {
-    elements.saveButton.disabled = false;
-  }
+  elements.submitButtons.forEach((btn) => { btn.disabled = false; });
 
   setProgress(elements, 0);
   setStatus(elements, 'Ready');
@@ -192,24 +190,34 @@ document.addEventListener('submit', async (event) => {
     }
   }
 
+  const submitter = event.submitter;
   const elements = getDriveUploadElements(form);
+
+  // Determine if we should skip validation based on the type of submission
+  const isDraftSave = submitter?.name === 'save_as_draft';
+  const isDraftForm = form.querySelector('#drive-upload')?.dataset.isDraft === 'true';
+
+  const isDraftUpdate = submitter?.name === 'update_draft';
+  const skipValidation = isDraftSave || isDraftUpdate || (isDraftForm && !submitter?.name);
 
   // Validate required text fields before starting any upload
   const titleInput = form.querySelector('#job_title');
-  const descriptionInput = form.querySelector('#job_description');
-  const missingFields = [];
-  if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
-  if (descriptionInput && !descriptionInput.value.trim()) missingFields.push('Description can\'t be blank');
-  if (missingFields.length > 0) {
-    event.preventDefault();
-    const errorBox = form.querySelector('#client-side-errors');
-    if (errorBox) {
-      const ul = errorBox.querySelector('ul');
-      ul.innerHTML = missingFields.map((msg) => `<li>${msg}</li>`).join('');
-      errorBox.style.display = '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!skipValidation) {
+    const descriptionInput = form.querySelector('#job_description');
+    const missingFields = [];
+    if (titleInput && !titleInput.value.trim()) missingFields.push('Title can\'t be blank');
+    if (descriptionInput && !descriptionInput.value.trim()) missingFields.push('Description can\'t be blank');
+    if (missingFields.length > 0) {
+      event.preventDefault();
+      const errorBox = form.querySelector('#client-side-errors');
+      if (errorBox) {
+        const ul = errorBox.querySelector('ul');
+        ul.innerHTML = missingFields.map((msg) => `<li>${msg}</li>`).join('');
+        errorBox.style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
     }
-    return;
   }
 
   // Clear any previous client-side errors
@@ -222,9 +230,16 @@ document.addEventListener('submit', async (event) => {
   ];
   const files = selectedSlots.filter((entry) => entry.file);
 
+  const hasExistingPdf = form.querySelectorAll('.job-upload-field')[0]?.dataset.hasFile === 'true';
+  const hasExistingDicom = form.querySelectorAll('.job-upload-field')[1]?.dataset.hasFile === 'true';
+
   const fileErrors = [];
-  if (!selectedSlots[0].file) fileErrors.push("PDF file can't be blank");
-  if (!selectedSlots[1].file) fileErrors.push("DICOM file can't be blank");
+  if (!skipValidation) {
+    if (!selectedSlots[0].file && !hasExistingPdf)
+      fileErrors.push("PDF file can't be blank");
+    if (!selectedSlots[1].file && !hasExistingDicom)
+      fileErrors.push("DICOM file can't be blank");
+  }
 
   if (fileErrors.length > 0) {
     event.preventDefault();
@@ -254,9 +269,7 @@ document.addEventListener('submit', async (event) => {
     elements.uploadedFilesJsonInput.value = EMPTY_UPLOADS_JSON;
   }
 
-  if (elements.saveButton) {
-    elements.saveButton.disabled = true;
-  }
+  elements.submitButtons.forEach((btn) => { btn.disabled = true; });
 
   setProgress(elements, 0);
   setStatus(elements, 'Uploading files before save...');
@@ -288,13 +301,20 @@ document.addEventListener('submit', async (event) => {
 
     setProgress(elements, 99);
     setStatus(elements, 'Upload complete, saving job...');
+
+    if (submitter && submitter.name) {
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = submitter.name;
+      hiddenInput.value = submitter.value || '';
+      form.appendChild(hiddenInput);
+    }
+
     state.submittingAfterUpload = true;
     form.submit();
   } catch (error) {
     setStatus(elements, error.message || 'Upload failed');
-    if (elements.saveButton) {
-      elements.saveButton.disabled = false;
-    }
+    elements.submitButtons.forEach((btn) => { btn.disabled = false; });
   }
 }, true);
 
