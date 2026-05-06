@@ -65,6 +65,15 @@
             %dt.col-md-3 Operator
             %dd.col-md-9= @job.operator.email
 
+        - if @user.role == "operator"
+          #unassign_button
+            = button_to "Drop Job", unassign_job_path(@job),
+              method: :patch,
+              class: "btn btn-outline-danger btn-sm",
+              form: { class: 'job-action-form' },
+              data: { turbo_confirm: "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unnasigned jobs list. Are you sure?" }
+
+
         .job-file-panel.mt-4
           %h2.h5.mb-3 Description
           - if @job.description.present?

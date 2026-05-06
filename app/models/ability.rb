@@ -46,6 +46,7 @@ class Ability
       can :complete_job, Job, operator_id: user.id
       can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
       can :self_assign, Job
+      can :unassign, Job, operator_id: user.id
 
     elsif user.client?
       can :read, Job, client_id: user.id

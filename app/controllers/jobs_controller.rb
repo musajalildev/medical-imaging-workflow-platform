@@ -4,7 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft unassign ]
   before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
@@ -171,6 +171,24 @@ class JobsController < ApplicationController
       redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
+    end
+  end
+
+  # PATCH /jobs/1/unassign
+  def unassign
+    if @job.operator_id == current_user.id
+      old_status = @job.get_status_for_display
+      @job.update!(operator: nil, status: :pending)
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "pending",
+        initiator: current_user
+      )
+      #UserMailer.send_job_unassigned_email(@job).deliver_later
+      redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
+    else
+      redirect_to jobs_path(tab: "assigned"), alert: "You can only unassign jobs assigned to you.", status: :see_other
     end
   end
 
