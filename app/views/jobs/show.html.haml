@@ -16,17 +16,18 @@
             - if can_use_status_dropdown
               .status-under-pill
                 = simple_form_for(@job, url: update_status_job_path(@job), method: :patch, html: { class: 'status-inline-form' }) do |f|
-                  .d-flex.flex-column.gap-2
-                    %p.text-muted.mb-0.small.fw-semibold Change status
-                    - status_options = can_manage_job ? Job::STATUSES.reject { |s| s == :draft }.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
-                    = f.select :status, status_options, class: "form-select status-change-select"
+                  - if @job.operator.present?
+                    .d-flex.flex-column.gap-2
+                      %p.text-muted.mb-0.small.fw-semibold Change status
+                      - status_options = can_manage_job ? Job::STATUSES.reject { |s| s == :draft }.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
+                      = f.select :status, status_options, class: "form-select status-change-select"
 
-                  #custom_status_field{ style: "display: none;" }
-                    = f.label :custom_status, "Enter custom status"
-                    = f.text_field :custom_status, class: "form-control form-control-sm"
+                    #custom_status_field{ style: "display: none;" }
+                      = f.label :custom_status, "Enter custom status"
+                      = f.text_field :custom_status, class: "form-control form-control-sm"
 
-                  #save_changes_button{ style: "display: none;" }
-                    = f.submit "Update status", class: "btn btn-primary btn-sm"
+                    #save_changes_button{ style: "display: none;" }
+                      = f.submit "Update status", class: "btn btn-primary btn-sm"
 
           .job-header-actions
             - if @job.draft? && can?(:submit_draft, @job)
@@ -38,13 +39,14 @@
                   data: { turbo_confirm: 'Submit this job? It will enter the queue for operators.' }
             - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
               .job-action-row
-                - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)
-                  #complete_job_button
-                    = button_to "Mark as Complete", complete_job_job_path(@job),
-                      method: :patch,
-                      class: "btn btn-success btn-sm",
-                      form: { class: 'job-action-form' },
-                      data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
+                - if @job.operator.present?
+                  - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)
+                    #complete_job_button
+                      = button_to "Mark as Complete", complete_job_job_path(@job),
+                        method: :patch,
+                        class: "btn btn-success btn-sm",
+                        form: { class: 'job-action-form' },
+                        data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
                 - if can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
                   #cancel_job_button
