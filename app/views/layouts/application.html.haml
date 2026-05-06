@@ -25,11 +25,11 @@
       .container-fluid.app-container
         = link_to '#', class: 'navbar-brand d-flex align-items-center gap-2 fw-semibold' do
           = image_pack_tag 'images/logo.png', height: 40
-          %span Project
+          
         %button.navbar-toggler{ type: :button, data: { bs_toggle: :collapse, bs_target: '#navbar-content' }, aria: { controls: 'navbar-content', expanded: 'false', label: 'Toggle navigation' } }
           %span.navbar-toggler-icon
-        #navbar-content.navbar-collapse.collapse
-          %nav.navbar-nav.align-items-center.gap-2
+        #navbar-content.navbar-collapse.collapse.d-flex.w-100.justify-content-between.align-items-center
+          %nav.navbar-nav.d-flex.flex-row.align-items-center.gap-2
             - if user_signed_in?
               = link_to root_path, class: "nav-link px-3 #{'active' if current_page?(root_path)}" do
                 %i.bi-house-fill
@@ -44,17 +44,17 @@
                 = link_to users_path, class: "nav-link px-3 #{'active' if current_page?(users_path)}" do
                   %i.bi-people-fill.me-1
                   Users
-          - if user_signed_in?
-            .d-flex.align-items-center.gap-2.ms-auto.flex-wrap
-              %span.text-muted.small.fw-medium
+          .d-flex.align-items-center.gap-2.flex-wrap
+            - if user_signed_in?
+              %span.text-muted.small.fw-medium.me-2
                 = "Signed in as #{current_user.username}"
-              - if Rails.env.development?
-                = button_to '(DEV)Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
               = button_to 'Sign out', destroy_user_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
-          - else
-            .d-flex.align-items-center.gap-2.ms-auto.flex-wrap
-              = link_to 'Sign in', new_user_session_path,
-                class: 'btn btn-primary btn-sm'
+
+            - else
+              = link_to 'Sign in', new_user_session_path, class: 'btn btn-primary btn-sm'
+
+            - if Rails.env.development?
+              = button_to '(DEV) Switch user', dev_session_path, method: :delete, class: 'btn btn-outline-secondary btn-sm'
 
     - if flash.present?
       .container-fluid.app-container.flash-messages.py-2

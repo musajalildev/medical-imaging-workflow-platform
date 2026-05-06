@@ -38,8 +38,6 @@ class ApplicationController < ActionController::Base
        if (user_id = session[:dev_user_id])
          user = User.find_by(id: user_id)
          sign_in(user, store: false) if user && !user_signed_in?
-       elsif !devise_controller?
-         redirect_to new_dev_session_path
        end
      end
 

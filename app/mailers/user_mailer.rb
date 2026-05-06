@@ -30,6 +30,8 @@ class UserMailer < ApplicationMailer
     mail(to: @user.email, subject: "Your job #{@job.title} has been completed")
   end
 
+  # operator emails
+
   # send client an email when a job is accepted by an operator
   def send_job_accepted_email(job)
     @user = job.client
