@@ -19,7 +19,7 @@
                   - if @job.operator.present?
                     .d-flex.flex-column.gap-2
                       %p.text-muted.mb-0.small.fw-semibold Change status
-                      - status_options = can_manage_job ? Job::STATUSES.reject { |s| s == :draft }.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
+                      - status_options = can_manage_job ? Job::STATUSES.reject { |s| s == :draft || s == :cancelled || s == :complete }.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
                       = f.select :status, status_options, class: "form-select status-change-select"
 
                     #custom_status_field{ style: "display: none;" }

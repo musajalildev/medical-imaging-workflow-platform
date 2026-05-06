@@ -6,7 +6,7 @@ class UserMailer < ApplicationMailer
   # send client an email when their job status changes
   def send_job_status_change_email(job)
     @user = job.client
-    return if @user.empty?
+    return if @user.nil?
 
     @job = job
     mail(to: @user.email, subject: "Your job status has changed to #{@job.status}")
@@ -15,7 +15,7 @@ class UserMailer < ApplicationMailer
   # send client an email when their job is cancelled
   def send_job_cancelled_email(job)
     @user = job.client
-    return if @user.empty?
+    return if @user.nil?
 
     @job = job
     mail(to: @user.email, subject: "Your job #{@job.title} has been cancelled")
@@ -24,7 +24,7 @@ class UserMailer < ApplicationMailer
   # send client an email when their job is completed
   def send_job_completed_email(job)
     @user = job.client
-    return if @user.empty?
+    return if @user.nil?
 
     @job = job
     mail(to: @user.email, subject: "Your job #{@job.title} has been completed")
@@ -33,7 +33,7 @@ class UserMailer < ApplicationMailer
   # send client an email when a job is accepted by an operator
   def send_job_accepted_email(job)
     @user = job.client
-    return if @user.empty?
+    return if @user.nil?
 
     @job = job
     mail(to: @user.email, subject: "An operator has accepted your job")
@@ -47,9 +47,7 @@ class UserMailer < ApplicationMailer
     return if @user.empty?
 
     @job = job
-    @user.each do |operator|
-      mail(to: operator.email, subject: "A new job has become available")
-    end
+    mail(to: @user.pluck(:email), subject: "A new job has become available")
   end
 
   # admin emails
@@ -58,7 +56,7 @@ class UserMailer < ApplicationMailer
   def send_sign_up_email
     @user = User.where(role: [:admin, :owner])
     return if @user.empty?
-
+    
     @role = params[:role]
     @comment = params[:comment]
     @email = params[:email]
