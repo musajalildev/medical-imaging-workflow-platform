@@ -45,26 +45,26 @@ class UserMailer < ApplicationMailer
 
   # send operator an email when a new job is created
   def send_new_job_email(job)
-    @user = User.where(role: :operator)
-    return if @user.empty?
+    @users = User.where(role: :operator)
+    return if @users.empty?
 
     @job = job
-    mail(to: @user.pluck(:email), subject: "A new job has become available")
+    mail(to: @users.pluck(:email), subject: "A new job has become available")
   end
 
   # admin emails
 
   # send admin an email when a user signs up
   def send_sign_up_email
-    @user = User.where(role: [:admin, :owner])
-    return if @user.empty?
-    
+    @users = User.where(role: [:admin, :owner])
+    return if @users.empty?
+
     @role = params[:role]
     @comment = params[:comment]
     @email = params[:email]
 
     mail(
-      to: @user.pluck(:email),
+      to: @users.pluck(:email),
       subject: "New sign-up role request"
     )
   end
