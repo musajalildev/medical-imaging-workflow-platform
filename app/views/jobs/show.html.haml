@@ -78,7 +78,7 @@
             - file_1_url = file_slots[0]&.file_path
             - file_1_id = file_slots[0]&.drive_file_id
             - if file_1_url.present?
-              - if current_user&.admin?
+              - if current_user&.admin? || @job.status == "draft"
                 = button_to 'Delete PDF file', remove_file_path(image_file_id: file_slots[0].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete PDF file from Google Drive?' } }
               - if file_1_id.present?
                 = link_to 'Download PDF file', download_file_path(file_id: file_1_id), class: 'btn btn-primary', data: { turbo: false }
@@ -90,7 +90,7 @@
             - file_2_url = file_slots[1]&.file_path
             - file_2_id = file_slots[1]&.drive_file_id
             - if file_2_url.present?
-              - if current_user&.admin?
+              - if current_user&.admin? || @job.status == "draft"
                 = button_to 'Delete DICOM file', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete DICOM file from Google Drive?' } }
               - if file_2_id.present?
                 = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
