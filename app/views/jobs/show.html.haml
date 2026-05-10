@@ -93,7 +93,7 @@
               - if current_user&.admin?
                 = button_to 'Delete DICOM file', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete DICOM file from Google Drive?' } }
               - if file_2_id.present?
-                = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
+                = link_to 'Download DICOM file(s)', download_file_path(file_id: file_2_id, image_file_id: file_slots[1].id), class: 'btn btn-primary', data: { turbo: false }
               - else
                 %span.file-missing-indicator DICOM not uploaded yet
             - else

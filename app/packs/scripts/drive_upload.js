@@ -6,11 +6,11 @@ function getCsrfToken() {
 const MAX_FILE_SIZE_BYTES = 1073741824; // 1 GB
 const EMPTY_UPLOADS_JSON = JSON.stringify([
   { slot: 1, file_id: null, file_url: null, file_type: null },
-  { slot: 2, file_id: null, file_url: null, file_type: null }
+  { slot: 2, file_id: null, file_url: null, file_type: null, files: [] }
 ]);
 const formStates = new WeakMap();
 
-function uploadFileWithXhr(file, slot, onProgress, jobId = null) {
+function uploadFileWithXhr(file, slot, onProgress, jobId = null, relativePath = null) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
@@ -19,6 +19,9 @@ function uploadFileWithXhr(file, slot, onProgress, jobId = null) {
     formData.append('slot', String(slot));
     if (jobId) {
       formData.append('job_id', jobId);
+    }
+    if (relativePath) {
+      formData.append('relative_path', relativePath);
     }
 
     xhr.open('POST', '/files/upload', true);
@@ -69,12 +72,37 @@ function getDriveUploadElements(form) {
   return {
     fileInput1: form.querySelector('#upload-file-input-1'),
     fileInput2: form.querySelector('#upload-file-input-2'),
+    dicomFolderModeToggle: form.querySelector('#upload-dicom-folder-mode'),
     submitButtons: form.querySelectorAll('button[type="submit"]'),
     progressBar: form.querySelector('#upload-progress-bar'),
     progressText: form.querySelector('#upload-progress-text'),
     statusText: form.querySelector('#upload-status'),
     uploadedFilesJsonInput: form.querySelector('#uploaded-files-json')
   };
+}
+
+function applyDicomInputMode(elements) {
+  if (!elements.fileInput2) {
+    return;
+  }
+
+  const folderModeEnabled = Boolean(elements.dicomFolderModeToggle?.checked);
+  const inputLabel = document.getElementById('upload-file-input-2-label');
+  const modeLabel = document.getElementById('upload-dicom-folder-mode-label');
+  
+  if (folderModeEnabled) {
+    elements.fileInput2.removeAttribute('multiple');
+    elements.fileInput2.setAttribute('webkitdirectory', '');
+    elements.fileInput2.setAttribute('directory', '');
+    if (inputLabel) inputLabel.textContent = 'DICOM folder';
+    if (modeLabel) modeLabel.textContent = 'Upload individual files instead';
+  } else {
+    elements.fileInput2.setAttribute('multiple', 'true');
+    elements.fileInput2.removeAttribute('webkitdirectory');
+    elements.fileInput2.removeAttribute('directory');
+    if (inputLabel) inputLabel.textContent = 'DICOM files';
+    if (modeLabel) modeLabel.textContent = 'Upload as folder';
+  }
 }
 
 function getFormState(form) {
@@ -134,10 +162,6 @@ function validateFileBySlot(slot, file) {
     return 'PDF file must have .pdf extension.';
   }
 
-  if (slot === 2 && !name.endsWith('.dcm')) {
-    return 'DICOM file must have .dcm extension.';
-  }
-
   return null;
 }
 
@@ -153,6 +177,7 @@ function initializeDriveUpload() {
   }
 
   const elements = getDriveUploadElements(form);
+  applyDicomInputMode(elements);
   if (elements.uploadedFilesJsonInput && !elements.uploadedFilesJsonInput.value) {
     elements.uploadedFilesJsonInput.value = EMPTY_UPLOADS_JSON;
   }
@@ -168,8 +193,17 @@ document.addEventListener('change', (event) => {
     return;
   }
 
-  if (target.id !== 'upload-file-input-1' && target.id !== 'upload-file-input-2') {
+  if (target.id !== 'upload-file-input-1' && target.id !== 'upload-file-input-2' && target.id !== 'upload-dicom-folder-mode') {
     return;
+  }
+
+  if (target.id === 'upload-dicom-folder-mode') {
+    const form = target.form;
+    const elements = getDriveUploadElements(form);
+    if (elements.fileInput2) {
+      elements.fileInput2.value = '';
+    }
+    applyDicomInputMode(elements);
   }
 
   resetSelectionState(target.form);
@@ -241,20 +275,22 @@ document.addEventListener('submit', async (event) => {
   const errorBox = form.querySelector('#client-side-errors');
   if (errorBox) errorBox.style.display = 'none';
 
+  const dicomFiles = Array.from(elements.fileInput2?.files || []);
+
   const selectedSlots = [
-    { slot: 1, file: elements.fileInput1?.files?.[0] },
-    { slot: 2, file: elements.fileInput2?.files?.[0] }
+    { slot: 1, files: elements.fileInput1?.files?.[0] ? [elements.fileInput1.files[0]] : [] },
+    { slot: 2, files: dicomFiles }
   ];
-  const files = selectedSlots.filter((entry) => entry.file);
+  const files = selectedSlots.flatMap((entry) => entry.files.map((file) => ({ slot: entry.slot, file })));
 
   const hasExistingPdf = form.querySelectorAll('.job-upload-field')[0]?.dataset.hasFile === 'true';
   const hasExistingDicom = form.querySelectorAll('.job-upload-field')[1]?.dataset.hasFile === 'true';
 
   const fileErrors = [];
   if (!skipValidation) {
-    if (!selectedSlots[0].file && !hasExistingPdf)
+    if (selectedSlots[0].files.length === 0 && !hasExistingPdf)
       fileErrors.push("PDF file can't be blank");
-    if (!selectedSlots[1].file && !hasExistingDicom)
+    if (selectedSlots[1].files.length === 0 && !hasExistingDicom)
       fileErrors.push("DICOM file can't be blank");
   }
 
@@ -271,7 +307,7 @@ document.addEventListener('submit', async (event) => {
   }
 
   const validationError = selectedSlots
-    .map((entry) => validateFileBySlot(entry.slot, entry.file))
+    .flatMap((entry) => entry.files.map((file) => validateFileBySlot(entry.slot, file)))
     .find(Boolean);
 
   if (validationError) {
@@ -305,14 +341,35 @@ document.addEventListener('submit', async (event) => {
       const response = await uploadFileWithXhr(file, selected.slot, (filePercent) => {
         const overallPercent = Math.min(Math.round(((index + (filePercent / 100)) / files.length) * 100), 99);
         setProgress(elements, overallPercent);
-      }, jobId);
+      }, jobId, file.webkitRelativePath || null);
 
-      uploadedFiles[selected.slot - 1] = {
-        slot: selected.slot,
-        file_id: response.file_id,
-        file_url: response.file_url || null,
-        file_type: file.type || 'application/octet-stream'
-      };
+      if (selected.slot === 1) {
+        uploadedFiles[0] = {
+          slot: 1,
+          file_id: response.file_id,
+          file_url: response.file_url || null,
+          file_type: file.type || 'application/octet-stream'
+        };
+      } else {
+        if (!Array.isArray(uploadedFiles[1].files)) {
+          uploadedFiles[1].files = [];
+        }
+
+        uploadedFiles[1].files.push({
+          file_id: response.file_id,
+          file_url: response.file_url || null,
+          file_type: file.type || 'application/octet-stream',
+          file_name: response.file_name || file.name || 'dicom-file',
+          relative_path: response.relative_path || file.webkitRelativePath || file.name || 'dicom-file'
+        });
+
+        // Keep first file also at top-level keys for compatibility.
+        if (!uploadedFiles[1].file_id) {
+          uploadedFiles[1].file_id = response.file_id;
+          uploadedFiles[1].file_url = response.file_url || null;
+          uploadedFiles[1].file_type = file.type || 'application/octet-stream';
+        }
+      }
     }
 
     if (elements.uploadedFilesJsonInput) {
