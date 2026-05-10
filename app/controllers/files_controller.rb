@@ -12,6 +12,8 @@ class FilesController < ApplicationController
   def upload
     file = params.require(:file)
     slot = params[:slot].to_s
+    job_id = params[:job_id]
+    
     validate_input_file!(file, slot)
 
     drive_service = Google::Apis::DriveV3::DriveService.new
@@ -25,11 +27,24 @@ class FilesController < ApplicationController
     credentials.fetch_access_token!
     drive_service.authorization = credentials
 
+    # Determine the parent folder for the file
+    parent_folder_id = FOLDER_ID
+    if job_id.present?
+      job = Job.find_by(id: job_id)
+      if job&.google_drive_folder_id.present?
+        parent_folder_id = job.google_drive_folder_id
+      elsif job
+        # Create folder if it doesn't exist yet
+        create_job_folder(drive_service, job)
+        parent_folder_id = job.google_drive_folder_id.presence || FOLDER_ID
+      end
+    end
+
     # Generate unique name with UUID prefix to avoid collisions
     generated_filename = "#{SecureRandom.uuid}-#{file.original_filename}"
     metadata = Google::Apis::DriveV3::File.new(
       name: generated_filename,
-      parents: [FOLDER_ID]
+      parents: [parent_folder_id]
     )
 
     uploaded_file = drive_service.create_file(
@@ -134,6 +149,25 @@ class FilesController < ApplicationController
     redirect_back fallback_location: jobs_path, alert: "File delete failed. The service account likely lacks delete permission for this Shared Drive file: #{e.message}"
   rescue StandardError => e
     redirect_back fallback_location: jobs_path, alert: "File delete failed: #{e.message}"
+  end
+
+  def create_job_folder(drive_service, job)
+    folder_name = "Job #{job.id} - #{job.title} [#{job.created_at.in_time_zone.strftime('%d/%m/%Y @ %H:%M:%S')}]"
+    folder_metadata = Google::Apis::DriveV3::File.new(
+      name: folder_name,
+      mime_type: "application/vnd.google-apps.folder",
+      parents: [FOLDER_ID]
+    )
+    
+    created_folder = drive_service.create_file(
+      folder_metadata,
+      fields: "id",
+      supports_all_drives: true
+    )
+    
+    job.update(google_drive_folder_id: created_folder.id)
+  rescue StandardError => e
+    Rails.logger.error("Failed to create Google Drive folder for job #{job.id}: #{e.message}")
   end
 
   private

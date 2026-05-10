@@ -30,7 +30,7 @@
         %h2.job-form-section__title.mb-1 Upload source files
         %p.text-muted.small.mb-0 Selected files upload automatically before the job is saved.
 
-      #drive-upload.job-upload-panel{ data: { is_draft: is_draft } }
+      #drive-upload.job-upload-panel{ data: { is_draft: is_draft, job_id: (@job.persisted? ? @job.id : '') } }
         .job-upload-grid
           .job-upload-field{ data: { has_file: (@job.persisted? && existing_slots[0]&.drive_file_id.present?).to_s } } 
             %label.form-label.fw-semibold{ for: 'upload-file-input-1' } PDF file

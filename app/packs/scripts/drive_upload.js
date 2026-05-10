@@ -10,13 +10,16 @@ const EMPTY_UPLOADS_JSON = JSON.stringify([
 ]);
 const formStates = new WeakMap();
 
-function uploadFileWithXhr(file, slot, onProgress) {
+function uploadFileWithXhr(file, slot, onProgress, jobId = null) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
 
     formData.append('file', file);
     formData.append('slot', String(slot));
+    if (jobId) {
+      formData.append('job_id', jobId);
+    }
 
     xhr.open('POST', '/files/upload', true);
     xhr.setRequestHeader('X-CSRF-Token', getCsrfToken());
@@ -289,6 +292,9 @@ document.addEventListener('submit', async (event) => {
   setStatus(elements, 'Uploading files before save...');
 
   try {
+    // Extract job ID from the form's data attribute if it exists
+    const jobId = form.querySelector('#drive-upload')?.dataset.jobId || null;
+    
     const uploadedFiles = JSON.parse(EMPTY_UPLOADS_JSON);
 
     for (let index = 0; index < files.length; index += 1) {
@@ -299,7 +305,7 @@ document.addEventListener('submit', async (event) => {
       const response = await uploadFileWithXhr(file, selected.slot, (filePercent) => {
         const overallPercent = Math.min(Math.round(((index + (filePercent / 100)) / files.length) * 100), 99);
         setProgress(elements, overallPercent);
-      });
+      }, jobId);
 
       uploadedFiles[selected.slot - 1] = {
         slot: selected.slot,

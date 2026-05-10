@@ -349,8 +349,12 @@ class JobsController < ApplicationController
         return
       end
 
+      drive_service = build_drive_service
+      destination_folder_id = ensure_drive_folder!(job, drive_service)
+
       valid_uploaded_files.each do |uploaded|
         file_id = uploaded["file_id"].presence
+        move_file_to_folder!(drive_service, file_id, destination_folder_id) if file_id.present?
         file_url = uploaded["file_url"].presence
         file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)
         file_type = {
@@ -368,11 +372,46 @@ class JobsController < ApplicationController
         existing_non_output = job.image_files.reject(&:output_file?).count
         [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
+    rescue Google::Apis::Error => e
+      Rails.logger.error("Failed to move uploaded files for job #{job.id}: #{e.message}")
     rescue JSON::ParserError
       if ensure_placeholders
         existing_non_output = job.image_files.reject(&:output_file?).count
         [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
+    end
+
+    def ensure_drive_folder!(job, drive_service)
+      return job.google_drive_folder_id if job.google_drive_folder_id.present?
+
+      folder = drive_service.create_file(
+        Google::Apis::DriveV3::File.new(
+          name: "Job #{job.id} - #{job.title} [#{job.created_at.in_time_zone.strftime('%d/%m/%Y @ %H:%M:%S')}]",
+          mime_type: "application/vnd.google-apps.folder",
+          parents: [FilesController::FOLDER_ID]
+        ),
+        fields: "id",
+        supports_all_drives: true
+      )
+
+      job.update_column(:google_drive_folder_id, folder.id)
+      folder.id
+    end
+
+    def move_file_to_folder!(drive_service, file_id, destination_folder_id)
+      metadata = drive_service.get_file(file_id, fields: "id,parents", supports_all_drives: true)
+      current_parents = metadata.parents || []
+      return if current_parents.include?(destination_folder_id)
+
+      remove_parents = current_parents.join(",")
+      drive_service.update_file(
+        file_id,
+        Google::Apis::DriveV3::File.new,
+        add_parents: destination_folder_id,
+        remove_parents: remove_parents.presence,
+        supports_all_drives: true,
+        fields: "id,parents"
+      )
     end
 
     def build_drive_service
