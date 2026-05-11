@@ -4,7 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft unassign ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft unassign re_assign ]
   before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
@@ -192,6 +192,24 @@ class JobsController < ApplicationController
     end
   end
 
+  # PATCH /jobs/1/re_assign
+  def re_assign
+    old_status = @job.get_status_for_display
+
+    if @job.update!(operator_id: job_params, status: :assigned)
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "assigned",
+        initiator: current_user
+      )
+      #UserMailer.send_job_reassigned_email(@job).deliver_later
+      redirect_to @job, notice: "Job reassigned successfully.", status: :see_other
+    else
+      redirect_to @job, alert: "Failed to reassign job.", status: :unprocessable_entity
+    end
+  end
+
   # PATCH /jobs/1/complete_job
   def complete_job
     # save old status for status history record after update
@@ -350,6 +368,8 @@ class JobsController < ApplicationController
         params.expect(job: [ :status, :custom_status ])
       when "submit_draft"
         {}
+      when "re_assign"
+        params.expect(:operator_id)
       end
     end
 

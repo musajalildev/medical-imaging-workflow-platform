@@ -65,13 +65,28 @@
             %dt.col-md-3 Operator
             %dd.col-md-9= @job.operator.email
 
-        - if @user.role == "operator"
+        - if can? :unassign, Job
           #unassign_button
             = button_to "Drop Job", unassign_job_path(@job),
               method: :patch,
               class: "btn btn-outline-danger btn-sm",
               form: { class: 'job-action-form' },
-              data: { turbo_confirm: "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unnasigned jobs list. Are you sure?" }
+              data: { turbo_confirm: "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unassigned jobs list. Are you sure?" }
+
+        - if can? :re_assign, @job
+          #re_assign_dropdown
+            = form_with url: re_assign_job_path(@job), method: :patch, class: "job-action-form" do
+              .mb-4
+                %label.form-label.fw-semibold Select New Operator:
+
+                = select_tag "operator_id",
+                  options_from_collection_for_select(User.where(role: :operator), :id, :email, @job.operator_id),
+                  class: "form-select new-operator-dropdown"
+
+              = submit_tag "Update Operator",
+                class: "btn btn-success btn-sm",
+                data: { turbo_confirm: "Are you sure you want to change this job's operator? The old operator will no longer have access." }
+
 
 
         .job-file-panel.mt-4
