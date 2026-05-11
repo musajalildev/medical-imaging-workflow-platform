@@ -86,15 +86,22 @@ class JobsController < ApplicationController
     rescue JSON::ParserError
       []
     end
-    valid_uploaded_files = uploaded_files.first(2).select do |f|
-      f["file_id"].present? || f["file_url"].present?
+    uploaded_pdf = uploaded_files.find { |entry| entry.is_a?(Hash) && entry["slot"].to_i == 1 }
+    uploaded_dicom = uploaded_files.find { |entry| entry.is_a?(Hash) && entry["slot"].to_i == 2 }
+    has_pdf_upload = uploaded_pdf.present? && (uploaded_pdf["file_id"].present? || uploaded_pdf["file_url"].present?)
+    has_dicom_upload = if uploaded_dicom.present?
+      dicom_entries = uploaded_dicom["files"]
+      (uploaded_dicom["file_id"].present? || uploaded_dicom["file_url"].present?) ||
+        (dicom_entries.is_a?(Array) && dicom_entries.any? { |f| f.is_a?(Hash) && f["file_id"].present? })
+    else
+      false
     end
 
     @job.valid?
     unless params[:save_as_draft].present?
       Rails.logger.info("Validation starting")
 
-      if  valid_uploaded_files.length < 2
+      if !has_pdf_upload || !has_dicom_upload
         @job.errors.add(:base, "Both input files (PDF and DICOM) must be uploaded")
       end
     end
@@ -338,7 +345,12 @@ class JobsController < ApplicationController
     def attach_uploaded_file(job, ensure_placeholders: false)
       uploaded_files = JSON.parse(params[:uploaded_files_json].presence || "[]")
       valid_uploaded_files = uploaded_files.first(2).select do |uploaded|
-        uploaded["file_id"].present? || uploaded["file_url"].present?
+        next false unless uploaded.is_a?(Hash)
+
+        has_single = uploaded["file_id"].present? || uploaded["file_url"].present?
+        multi_files = uploaded["files"]
+        has_multi = multi_files.is_a?(Array) && multi_files.any? { |entry| entry.is_a?(Hash) && entry["file_id"].present? }
+        has_single || has_multi
       end
 
       if valid_uploaded_files.blank?
@@ -349,14 +361,46 @@ class JobsController < ApplicationController
         return
       end
 
+      drive_service = build_drive_service
+      destination_folder_id = ensure_drive_folder!(job, drive_service)
+
       valid_uploaded_files.each do |uploaded|
-        file_id = uploaded["file_id"].presence
-        file_url = uploaded["file_url"].presence
-        file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)
-        file_type = {
-          file_id: file_id,
-          mime_type: uploaded["file_type"].presence
-        }.to_json
+        slot = uploaded["slot"].to_i
+
+        if slot == 2 && uploaded["files"].is_a?(Array)
+          dicom_files = uploaded["files"].select { |entry| entry.is_a?(Hash) && entry["file_id"].present? }
+          dicom_files.each { |entry| move_file_to_folder!(drive_service, entry["file_id"], destination_folder_id) }
+
+          first = dicom_files.first
+          file_id = first&.dig("file_id").presence || uploaded["file_id"].presence
+          file_url = first&.dig("file_url").presence || uploaded["file_url"].presence
+          file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)
+
+          file_type = {
+            slot: "2",
+            file_id: file_id,
+            mime_type: uploaded["file_type"].presence,
+            files: dicom_files.map do |entry|
+              {
+                file_id: entry["file_id"],
+                file_url: entry["file_url"],
+                file_type: entry["file_type"],
+                file_name: entry["file_name"],
+                relative_path: entry["relative_path"]
+              }
+            end
+          }.to_json
+        else
+          file_id = uploaded["file_id"].presence
+          move_file_to_folder!(drive_service, file_id, destination_folder_id) if file_id.present?
+          file_url = uploaded["file_url"].presence
+          file_path = file_url.presence || (file_id.present? ? "https://drive.google.com/file/d/#{file_id}/view" : nil)
+          file_type = {
+            slot: (slot == 1 ? "1" : nil),
+            file_id: file_id,
+            mime_type: uploaded["file_type"].presence
+          }.compact.to_json
+        end
 
         image_file = job.image_files.build
         image_file.file_path = file_path
@@ -368,11 +412,46 @@ class JobsController < ApplicationController
         existing_non_output = job.image_files.reject(&:output_file?).count
         [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
+    rescue Google::Apis::Error => e
+      Rails.logger.error("Failed to move uploaded files for job #{job.id}: #{e.message}")
     rescue JSON::ParserError
       if ensure_placeholders
         existing_non_output = job.image_files.reject(&:output_file?).count
         [2 - existing_non_output, 0].max.times { job.image_files.create!(file_path: "", file_type: "{}") }
       end
+    end
+
+    def ensure_drive_folder!(job, drive_service)
+      return job.google_drive_folder_id if job.google_drive_folder_id.present?
+
+      folder = drive_service.create_file(
+        Google::Apis::DriveV3::File.new(
+          name: "Job #{job.id} - #{job.title} [#{job.created_at.in_time_zone.strftime('%d/%m/%Y @ %H:%M:%S')}]",
+          mime_type: "application/vnd.google-apps.folder",
+          parents: [FilesController::FOLDER_ID]
+        ),
+        fields: "id",
+        supports_all_drives: true
+      )
+
+      job.update_column(:google_drive_folder_id, folder.id)
+      folder.id
+    end
+
+    def move_file_to_folder!(drive_service, file_id, destination_folder_id)
+      metadata = drive_service.get_file(file_id, fields: "id,parents", supports_all_drives: true)
+      current_parents = metadata.parents || []
+      return if current_parents.include?(destination_folder_id)
+
+      remove_parents = current_parents.join(",")
+      drive_service.update_file(
+        file_id,
+        Google::Apis::DriveV3::File.new,
+        add_parents: destination_folder_id,
+        remove_parents: remove_parents.presence,
+        supports_all_drives: true,
+        fields: "id,parents"
+      )
     end
 
     def build_drive_service
@@ -399,7 +478,7 @@ class JobsController < ApplicationController
     end
 
     def purge_job_files_from_drive
-      file_ids = @job.image_files.filter_map(&:drive_file_id).uniq
+      file_ids = @job.image_files.flat_map(&:drive_file_ids).uniq
       return nil if file_ids.empty?
 
       drive_service = build_drive_service

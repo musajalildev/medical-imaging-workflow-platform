@@ -30,7 +30,7 @@
         %h2.job-form-section__title.mb-1 Upload source files
         %p.text-muted.small.mb-0 Selected files upload automatically before the job is saved.
 
-      #drive-upload.job-upload-panel{ data: { is_draft: is_draft } }
+      #drive-upload.job-upload-panel{ data: { is_draft: is_draft, job_id: (@job.persisted? ? @job.id : '') } }
         .job-upload-grid
           .job-upload-field{ data: { has_file: (@job.persisted? && existing_slots[0]&.drive_file_id.present?).to_s } } 
             %label.form-label.fw-semibold{ for: 'upload-file-input-1' } PDF file
@@ -44,15 +44,18 @@
               %p.form-text.mb-0 Attach the document or instructions for the job.
 
           .job-upload-field{ data: { has_file: (@job.persisted? && existing_slots[1]&.drive_file_id.present?).to_s } } 
-            %label.form-label.fw-semibold{ for: 'upload-file-input-2' } DICOM file
-            %input#upload-file-input-2.form-control{ type: 'file', accept: '.dcm,application/dicom' }
+            %label.form-label.fw-semibold{ for: 'upload-file-input-2', id: 'upload-file-input-2-label' } DICOM files
+            .form-check.form-switch.mb-2
+              %input#upload-dicom-folder-mode.form-check-input{ type: 'checkbox' }
+              %label.form-check-label{ for: 'upload-dicom-folder-mode', id: 'upload-dicom-folder-mode-label' } Upload as folder
+            %input#upload-file-input-2.form-control{ type: 'file', multiple: true }
             - if @job.persisted? && existing_slots[1]&.drive_file_id.present?
               %p.form-text.mb-0
                 Currently uploaded &mdash;
-                = link_to 'view DICOM', download_file_path(file_id: existing_slots[1].drive_file_id), data: { turbo: false }, target: '_blank'
-                %span.text-muted (selecting a new file will replace it)
+                = link_to 'download DICOM files', download_file_path(file_id: existing_slots[1].drive_file_id, image_file_id: existing_slots[1].id), data: { turbo: false }, target: '_blank'
+                %span.text-muted (selecting new files will replace existing DICOM files)
             - else
-              %p.form-text.mb-0 Attach the imaging dataset used as input.
+              %p.form-text.mb-0.dicom-upload-help Attach one file or many files. Enable folder upload to select a whole folder.
 
         .job-upload-status
           .d-flex.justify-content-between.align-items-center.flex-wrap.gap-2.mb-2
