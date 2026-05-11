@@ -35,9 +35,12 @@ class Ability
     #
     # JOB PERMISSIONS
     #
+    
     if user.admin? || user.owner?
+      # this makes it so that the :update action also applies to :re_assign, :unassign, and :update_status actions for easier permission management
+      alias_action :re_assign, :unassign, :update_status, to: :update
       can :manage, Job
-
+    
     elsif user.operator?
       can :read, Job
       cannot :read, Job, status: Job.statuses[:draft]

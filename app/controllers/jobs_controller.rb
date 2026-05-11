@@ -204,9 +204,9 @@ class JobsController < ApplicationController
         initiator: current_user
       )
       #UserMailer.send_job_reassigned_email(@job).deliver_later
-      redirect_to @job, notice: "Job reassigned successfully.", status: :see_other
+      redirect_to @job, notice: "Operator reassigned successfully.", status: :see_other
     else
-      redirect_to @job, alert: "Failed to reassign job.", status: :unprocessable_entity
+      redirect_to @job, alert: "Failed to reassign operator.", status: :unprocessable_entity
     end
   end
 

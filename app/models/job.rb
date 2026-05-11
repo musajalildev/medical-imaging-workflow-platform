@@ -50,6 +50,15 @@ class Job < ApplicationRecord
     end
   end
 
+  # helper method to determine if a job has been assigned to an operator and not closed yet
+  def open?
+    if status == "custom" ||  status == "assigned" || status == "in_progress" || status == "pending"
+      true
+    else
+      false
+    end
+  end
+
   private
 
   def set_default_status
