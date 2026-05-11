@@ -6,6 +6,8 @@ class UserMailer < ApplicationMailer
   # send client an email when their job status changes
   def send_job_status_change_email(job)
     @user = job.client
+    return if @user.nil?
+
     @job = job
     mail(to: @user.email, subject: "Your job status has changed to #{@job.status}")
   end
@@ -13,6 +15,8 @@ class UserMailer < ApplicationMailer
   # send client an email when their job is cancelled
   def send_job_cancelled_email(job)
     @user = job.client
+    return if @user.nil?
+
     @job = job
     mail(to: @user.email, subject: "Your job #{@job.title} has been cancelled")
   end
@@ -20,6 +24,8 @@ class UserMailer < ApplicationMailer
   # send client an email when their job is completed
   def send_job_completed_email(job)
     @user = job.client
+    return if @user.nil?
+
     @job = job
     mail(to: @user.email, subject: "Your job #{@job.title} has been completed")
   end
@@ -29,6 +35,8 @@ class UserMailer < ApplicationMailer
   # send client an email when a job is accepted by an operator
   def send_job_accepted_email(job)
     @user = job.client
+    return if @user.nil?
+
     @job = job
     mail(to: @user.email, subject: "An operator has accepted your job")
   end
@@ -37,24 +45,26 @@ class UserMailer < ApplicationMailer
 
   # send operator an email when a new job is created
   def send_new_job_email(job)
-    @user = User.where(role: :operator)
+    @users = User.where(role: :operator)
+    return if @users.empty?
+
     @job = job
-    @user.each do |operator|
-      mail(to: operator.email, subject: "A new job has become available")
-    end
+    mail(to: @users.pluck(:email), subject: "A new job has become available")
   end
 
   # admin emails
 
   # send admin an email when a user signs up
   def send_sign_up_email
-    @user = User.where(role: [:admin, :owner])
+    @users = User.where(role: [:admin, :owner])
+    return if @users.empty?
+
     @role = params[:role]
     @comment = params[:comment]
     @email = params[:email]
 
     mail(
-      to: @user.pluck(:email),
+      to: @users.pluck(:email),
       subject: "New sign-up role request"
     )
   end
