@@ -26,6 +26,7 @@ class Job < ApplicationRecord
   belongs_to :client, class_name: "User"
   belongs_to :operator, class_name: "User", optional: true
   has_many :image_files, dependent: :destroy
+  has_many :job_status_history, dependent: :destroy
 
   before_validation :set_default_status
   after_create :create_google_drive_folder
