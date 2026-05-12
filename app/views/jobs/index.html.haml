@@ -36,7 +36,7 @@
       .d-flex.align-items-center.gap-3
         - unless @tab == 'drafts'
           = f.select :status,
-              Job::STATUSES.reject { |s| s == :draft }.map { |s| [s.to_s.humanize, s] },
+              Job::STATUSES.reject { |s| s == :draft || s == :deletable }.map { |s| [s.to_s.humanize, s] },
               { include_blank: 'All Statuses', selected: params[:status] },
               class: 'form-select form-select-sm', style: 'width: auto', onchange: 'this.form.submit()'
         %p.text-muted.mb-0.small= "Showing #{@jobs.count} of #{@total_count}"
