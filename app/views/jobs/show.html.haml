@@ -5,7 +5,7 @@
     - file_slots = regular_files.first(2)
     - file_slots << nil while file_slots.length < 2
     - can_manage_job = can?(:manage, Job)
-    - can_use_status_dropdown = can?(:update_status, @job) && (can_manage_job || !(@job.status == "cancelled" || @job.status == "complete" || @job.status == "pending"))
+    - can_use_status_dropdown =  @job.assigned? && (can_manage_job || (can?(:update_status, @job) && !@job.closed?))
     .card.job-card
       .card-header
         .job-header-bar
@@ -30,16 +30,15 @@
                     = f.submit "Update status", class: "btn btn-primary btn-sm"
 
           .job-header-actions
-            - if @job.draft? && can?(:submit_draft, @job)
-              .job-action-row
+            .job-action-row
+              - if @job.draft? && can?(:submit_draft, @job)
                 = button_to "Submit Job", submit_draft_job_path(@job),
                   method: :patch,
                   class: "btn btn-primary btn-sm",
                   form: { class: 'job-action-form' },
                   data: { turbo_confirm: 'Submit this job? It will enter the queue for operators.' }
-            - if can?(:complete_job, @job) && @job.open?
-              .job-action-row
-                - if can?(:complete_job, @job) && @job.open?
+              - if !@job.closed?
+                - if can?(:complete_job, @job)
                   #complete_job_button
                     = button_to "Mark as Complete", complete_job_job_path(@job),
                       method: :patch,
@@ -47,7 +46,7 @@
                       form: { class: 'job-action-form' },
                       data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
-                - if can?(:cancel_job, @job) && @job.open?
+                - if can?(:cancel_job, @job)
                   #cancel_job_button
                     - cancel_label = @job.draft? ? "Delete Draft" : "Cancel Job"
                     - cancel_confirm = @job.draft? ? "Delete this draft? This cannot be undone." : "Are you sure you want to cancel this job? You will no longer be able to edit it."
@@ -66,12 +65,13 @@
             %dd.col-md-9.d-flex.align-items-center.justify-content-between
               %span= @job.client.email
 
-              - if can?(:unassign, @job) && @job.operator.present? && @job.open?
+              - if can?(:unassign, @job) && @job.operator.present? && !@job.closed?
+                - unassign_dialogue = can_manage_job ? "You are about to unassign this job from #{@job.operator.email}, meaning they will no longer be the operator and can no longer work on the job. Are you sure?" : "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unassigned jobs list. Are you sure?"              
                 = button_to "Drop Job", unassign_job_path(@job),
                   method: :patch,
                   class: "btn btn-outline-danger btn-sm",
                   form: { class: 'job-action-form d-inline' },
-                  data: { turbo_confirm: "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unassigned jobs list. Are you sure?" }
+                  data: { turbo_confirm: unassign_dialogue }
 
           - if current_user.role != "operator" && @job.operator.present?
             %dt.col-md-3.d-flex.align-items-center
@@ -80,7 +80,7 @@
             %dd.col-md-9.d-flex.align-items-center
               #display_operator_email= @job.operator.email
 
-            - if can?(:re_assign, Job) && @job.open?
+            - if can?(:re_assign, Job) && !@job.closed?
               %dt.col-md-3.d-flex.align-items-center.text-nowrap
                 Select New Operator
 

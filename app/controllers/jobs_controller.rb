@@ -176,7 +176,9 @@ class JobsController < ApplicationController
 
   # PATCH /jobs/1/unassign
   def unassign
-    if @job.operator_id == current_user.id
+    if can?(:unassign, @job)
+
+      old_operator_email = @job.operator.email
       old_status = @job.get_status_for_display
       @job.update!(operator: nil, status: :pending)
       JobStatusHistory.create!(
@@ -186,7 +188,12 @@ class JobsController < ApplicationController
         initiator: current_user
       )
       #UserMailer.send_job_unassigned_email(@job).deliver_later
-      redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
+      # get correct notice and path for the user unnasigning
+      if current_user.operator?
+        redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
+      else
+        redirect_to @job, notice: "Job unassigned from #{old_operator_email}.", status: :see_other
+      end
     else
       redirect_to jobs_path(tab: "assigned"), alert: "You can only unassign jobs assigned to you.", status: :see_other
     end
