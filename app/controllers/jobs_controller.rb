@@ -193,7 +193,8 @@ class JobsController < ApplicationController
         old_operator: old_operator,
         history_type: "job_dropped"
       )
-      #UserMailer.send_job_unassigned_email(@job).deliver_later
+      UserMailer.send_job_dropped_email(@job, old_operator, current_user).deliver_later
+      UserMailer.send_unassigned_from_job_email(@job, current_user).deliver_later
       redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
     else
       redirect_to jobs_path(tab: "assigned"), alert: "You can only unassign jobs assigned to you.", status: :see_other
@@ -212,13 +213,17 @@ class JobsController < ApplicationController
       history_type = 
         if old_operator.nil?
           history_type = "manual_assignment"
-          #UserMailer.send_job_assigned_email(@job).deliver_later
+          UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+          UserMailer.send_job_accepted_email(@job).deliver_later
         elsif new_operator.nil?
           history_type = "job_dropped"
-          #UserMailer.send_job_unassigned_email(@job).deliver_later
+          UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+          UserMailer.send_job_dropped_email(@job, current_user).deliver_later
         else
           history_type = "job_re_assigned"
-          #UserMailer.send_job_reassigned_email(@job).deliver_later
+          UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+          UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+          UserMailer.send_operator_reassigned_email(@job, old_operator, current_user).deliver_later
         end
 
       JobStatusHistory.create!(
@@ -311,7 +316,7 @@ class JobsController < ApplicationController
         history_type: "re_instated"
       )
       if ! current_user.client?
-        #UserMailer.send_job_re_instated_email(@job).deliver_later
+        UserMailer.send_job_reinstated_email(@job, current_user).deliver_later
       end
       redirect_to @job, notice: "Job was successfully reinstated.", status: :see_other
     else
