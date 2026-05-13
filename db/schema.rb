@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_12_161645) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_13_123831) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,12 +48,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_161645) do
     t.bigint "old_operator_id"
     t.bigint "new_operator_id"
     t.integer "history_type", default: 0, null: false
-    t.bigint "operator_at_time_of_update_id", null: false
     t.index ["initiator_id"], name: "index_job_status_histories_on_initiator_id"
     t.index ["job_id"], name: "index_job_status_histories_on_job_id"
     t.index ["new_operator_id"], name: "index_job_status_histories_on_new_operator_id"
     t.index ["old_operator_id"], name: "index_job_status_histories_on_old_operator_id"
-    t.index ["operator_at_time_of_update_id"], name: "index_job_status_histories_on_operator_at_time_of_update_id"
   end
 
   create_table "jobs", force: :cascade do |t|
@@ -124,7 +122,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_161645) do
   add_foreign_key "job_status_histories", "users", column: "initiator_id"
   add_foreign_key "job_status_histories", "users", column: "new_operator_id"
   add_foreign_key "job_status_histories", "users", column: "old_operator_id"
-  add_foreign_key "job_status_histories", "users", column: "operator_at_time_of_update_id"
   add_foreign_key "jobs", "users", column: "client_id"
   add_foreign_key "jobs", "users", column: "operator_id"
   add_foreign_key "notifications", "users"

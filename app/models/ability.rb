@@ -40,6 +40,13 @@ class Ability
       # this makes it so that the :update action also applies to :re_assign, :unassign, and :update_status actions for easier permission management
       alias_action :re_assign, :unassign, :update_status, to: :update
       can :manage, Job
+      # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # jobs can only be uncancelled if they are already cancelled and the operator is not assigned
+      cannot :uncancel_job, Job do |job|
+        !job.cancelled? || job.operator.present?
+      end
+      cannot :unassign, Job
     
     elsif user.operator?
       can :read, Job
@@ -58,6 +65,7 @@ class Ability
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
+      can :uncancel_job, Job, status: "cancelled", operator_id: nil, client_id: user.id
     end
 
     #

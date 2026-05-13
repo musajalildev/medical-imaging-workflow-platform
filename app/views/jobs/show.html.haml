@@ -56,6 +56,14 @@
                       form: { class: 'job-action-form' },
                       data: { turbo_confirm: cancel_confirm }
 
+              - if can?(:uncancel_job, @job)
+                #uncancel_job_button
+                  = button_to "Reinstate Job", uncancel_job_job_path(@job),
+                    method: :patch,
+                    class: "btn btn-success btn-sm",
+                    form: { class: 'job-action-form' },
+                    data: { turbo_confirm: "You are about to reinstate this job, meanining it's status will be set to pending and it will re-enter the queue for operators, Are you sure?" }
+
       .card-body
         %dl.row.mb-0.job-meta-list
           - if @user.role != "client"
@@ -66,12 +74,11 @@
               %span= @job.client.email
 
               - if can?(:unassign, @job) && @job.operator.present? && !@job.closed?
-                - unassign_dialogue = can_manage_job ? "You are about to unassign this job from #{@job.operator.email}, meaning they will no longer be the operator and can no longer work on the job. Are you sure?" : "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unassigned jobs list. Are you sure?"              
                 = button_to "Drop Job", unassign_job_path(@job),
                   method: :patch,
                   class: "btn btn-outline-danger btn-sm",
                   form: { class: 'job-action-form d-inline' },
-                  data: { turbo_confirm: unassign_dialogue }
+                  data: { turbo_confirm: "You are about to drop this job, meaning you will no longer be the operator for this job and it will be sent back to the unassigned jobs list. Are you sure?" }
 
           - if current_user.role != "operator" && @job.operator.present?
             %dt.col-md-3.d-flex.align-items-center
@@ -80,23 +87,23 @@
             %dd.col-md-9.d-flex.align-items-center
               #display_operator_email= @job.operator.email
 
-            - if can?(:re_assign, Job) && !@job.closed?
-              %dt.col-md-3.d-flex.align-items-center.text-nowrap
-                Select New Operator
+          - if !@job.closed? && can?(:re_assign, Job)
+            - label_dialogue = @job.operator.present? ? "Select New Operator" : "Assign Operator"
+            %dt.col-md-3.d-flex.align-items-center.text-nowrap
+              = label_dialogue
 
-              %dd.col-md-9
-                = form_with url: re_assign_job_path(@job), method: :patch, class: "update_operator_form" do
-                  .d-flex.align-items-center.gap-3
-                    = select_tag "operator_id",
-                      options_from_collection_for_select(User.where(role: :operator), :id, :email, @job.operator_id),
-                      class: "form-select new-operator-dropdown",
-                      id: "operator_select"
+            %dd.col-md-9
+              = form_with url: re_assign_job_path(@job), method: :patch, class: "update_operator_form" do
+                .d-flex.align-items-center.gap-3
+                  = select_tag "operator_id",
+                    options_for_select([["No Operator", ""]], @job.operator_id) + options_from_collection_for_select(User.where(role: :operator), :id, :email, @job.operator_id),
+                    class: "form-select new-operator-dropdown",
+                    id: "operator_select"
 
-                    = submit_tag "Update Operator",
-                      class: "btn btn-success btn-sm text-nowrap",
-                      id: "update_operator_button",
-                      data: { turbo_confirm: "Are you sure you want to change this job's operator? The old operator will no longer have access." }
-
+                  = submit_tag "Update Operator",
+                    class: "btn btn-success btn-sm text-nowrap",
+                    id: "update_operator_button"
+                      
         .job-file-panel.mt-4
           %h2.h5.mb-3 Description
           - if @job.description.present?
@@ -155,15 +162,14 @@
         .job-file-panel.mt-4
           %h4.mb-3 Status history
           .status-history-box
-            - if @job.status_histories.any?
-              %ul.list-unstyled.mb-0
-                - if @job.status_histories.any?
-                  - @job.status_histories.each do |history|
-                    %li.status-history-item
-                      = history.formatted_history
-                %li.status-history-item
-                  - job_type = @job.status == "draft" ? "Draft" : "Job"
-                  = job_type + " created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
+            %ul.list-unstyled.mb-0
+              - if @job.status_histories.any?
+                - @job.status_histories.each do |history|
+                  %li.status-history-item
+                    = history.formatted_history
+              %li.status-history-item
+                - job_type = @job.status == "draft" ? "Draft" : "Job"
+                = job_type + " created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
 
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
         - if can?(:manage, Job) || (@job.draft? && can?(:edit, @job))
