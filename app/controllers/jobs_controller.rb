@@ -203,23 +203,23 @@ class JobsController < ApplicationController
   # PATCH /jobs/1/re_assign
   def re_assign
     old_status = @job.get_status_for_display
-    old_operator = @job.operator.present? ? @job.operator : nil
-    new_operator = job_params[:operator_id].presence.nil? ? nil : User.find(job_params[:operator_id].presence)
+    old_operator = @job.operator
+    new_operator = User.find_by(id: job_params[:operator_id].presence)
     new_status = new_operator.nil? ? :pending : :assigned
     
     if @job.update(operator: new_operator, status: new_status)
       # need to decide what type of history to create, this action can be a re-assignment, unassignment or assignment
-      history_type = ""
-      if old_operator.nil?
-        history_type = "manual_assignment"
-        #UserMailer.send_job_assigned_email(@job).deliver_later
-      elsif new_operator.nil?
-        history_type = "job_dropped"
-        #UserMailer.send_job_unassigned_email(@job).deliver_later
-      else
-        history_type = "job_re_assigned"
-        #UserMailer.send_job_reassigned_email(@job).deliver_later
-      end
+      history_type = 
+        if old_operator.nil?
+          history_type = "manual_assignment"
+          #UserMailer.send_job_assigned_email(@job).deliver_later
+        elsif new_operator.nil?
+          history_type = "job_dropped"
+          #UserMailer.send_job_unassigned_email(@job).deliver_later
+        else
+          history_type = "job_re_assigned"
+          #UserMailer.send_job_reassigned_email(@job).deliver_later
+        end
 
       JobStatusHistory.create!(
         job: @job,
@@ -230,7 +230,18 @@ class JobsController < ApplicationController
         new_operator: new_operator,
         history_type: history_type
       )
-      redirect_to @job, notice: "Operator reassigned successfully.", status: :see_other
+
+      notice =
+        case history_type
+        when "manual_assignment"
+          "Operator assigned successfully."
+        when "job_dropped"
+          "Operator dropped successfully."
+        else
+          "Operator reassigned successfully."
+        end
+
+      redirect_to @job, notice: notice, status: :see_other
     else
       redirect_to @job, alert: "Failed to reassign operator.", status: :unprocessable_content
     end
