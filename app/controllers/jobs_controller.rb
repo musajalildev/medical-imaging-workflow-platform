@@ -220,18 +220,25 @@ class JobsController < ApplicationController
       history_type = 
         if old_operator.nil?
           history_type = "manual_assignment"
-          UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
-          UserMailer.send_job_accepted_email(@job).deliver_later
         elsif new_operator.nil?
           history_type = "job_dropped"
-          UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
-          UserMailer.send_job_dropped_email(@job, current_user).deliver_later
         else
           history_type = "job_re_assigned"
-          UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
-          UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
-          UserMailer.send_operator_reassigned_email(@job, old_operator, current_user).deliver_later
         end
+
+      #send email based on the action performed here
+      case history_type
+      when "manual_assignment"
+        UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+        UserMailer.send_job_accepted_email(@job).deliver_later
+      when "job_dropped"
+        UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+        UserMailer.send_job_dropped_email(@job, current_user).deliver_later
+      when "job_re_assigned"
+        UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+        UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+        UserMailer.send_operator_reassigned_email(@job, old_operator, current_user).deliver_later
+      end
 
       JobStatusHistory.create!(
         job: @job,
