@@ -63,6 +63,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_13_123831) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "custom_status"
+    t.string "google_drive_folder_id"
     t.index ["client_id"], name: "index_jobs_on_client_id"
     t.index ["operator_id"], name: "index_jobs_on_operator_id"
   end

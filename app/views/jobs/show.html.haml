@@ -22,12 +22,12 @@
                     - status_options = [[current_status_label, @job.status]] +Job::STATUSES[1...-3].reject { |s| s.to_s == @job.status.to_s }.map { |s| [s.to_s.humanize, s] }
                     = f.select :status, status_options, class: "form-select status-change-select"
 
-                  #custom_status_field{ style: "display: none;" }
-                    = f.label :custom_status, "Enter custom status"
-                    = f.text_field :custom_status, class: "form-control form-control-sm"
+                    #custom_status_field{ style: "display: none;" }
+                      = f.label :custom_status, "Enter custom status"
+                      = f.text_field :custom_status, class: "form-control form-control-sm"
 
-                  #save_changes_button{ style: "display: none;" }
-                    = f.submit "Update status", class: "btn btn-primary btn-sm"
+                    #save_changes_button{ style: "display: none;" }
+                      = f.submit "Update status", class: "btn btn-primary btn-sm"
 
           .job-header-actions
             .job-action-row
@@ -132,7 +132,7 @@
               - if current_user&.admin? || @job.status == "draft"
                 = button_to 'Delete DICOM file', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete DICOM file from Google Drive?' } }
               - if file_2_id.present?
-                = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
+                = link_to 'Download DICOM file(s)', download_file_path(file_id: file_2_id, image_file_id: file_slots[1].id), class: 'btn btn-primary', data: { turbo: false }
               - else
                 %span.file-missing-indicator DICOM not uploaded yet
             - else
