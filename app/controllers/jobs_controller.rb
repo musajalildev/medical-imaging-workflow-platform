@@ -23,6 +23,10 @@ class JobsController < ApplicationController
       else
         @jobs = Job.where(client_id: current_user.id).where.not(status: :draft)
       end
+    else
+      # For admins/owners and other users, show only non-draft jobs in the index
+      @tab = params[:tab]
+      @jobs = Job.accessible_by(current_ability).where.not(status: :draft)
     end
 
     permitted = params.permit(:status, :search, :search_by, :sort, :_method, :authenticity_token, :tab, job: {})
