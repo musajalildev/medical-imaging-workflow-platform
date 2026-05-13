@@ -49,7 +49,7 @@ class JobStatusHistory < ApplicationRecord
       "#{user_dialogue} #{initiator.email} dropped this job#{admin_dropped_job}, reverting its status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"
     
     when "job_re_assigned"
-      "#{user_dialogue} #{initiator.email} re-assigned the operator for this job, from #{old_operator&.email || "none"} to #{new_operator&.email || "none"}, reverting the status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"
+      "#{user_dialogue} #{initiator.email} re-assigned the operator for this job, from #{old_operator&.email || "none"} to #{new_operator&.email || "none"}, #{status_change_on_reassignment_dialogue} on #{formatted_timestamp}"
     
     when "self_assigned"
       "#{user_dialogue} #{initiator.email} self assigned this job, updating the status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"
@@ -83,6 +83,14 @@ class JobStatusHistory < ApplicationRecord
         " from #{old_operator&.email}"
       else
         ""
+      end
+    end
+
+    def status_change_on_reassignment_dialogue
+      if old_status.humanize == new_status.humanize
+        "The status remained as #{old_status}"
+      else
+        "reverting the status from #{old_status.humanize} to #{new_status.humanize}"
       end
     end
 
