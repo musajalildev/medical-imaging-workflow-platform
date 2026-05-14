@@ -19,7 +19,6 @@ Rails.application.routes.draw do
       patch :submit_draft
       patch :unassign
       patch :re_assign
-      patch :uncancel_job
     end
   end
   resources :reports

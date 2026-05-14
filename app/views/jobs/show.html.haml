@@ -56,14 +56,6 @@
                       form: { class: 'job-action-form' },
                       data: { turbo_confirm: cancel_confirm }
 
-              - if can?(:uncancel_job, @job)
-                #uncancel_job_button
-                  = button_to "Reinstate Job", uncancel_job_job_path(@job),
-                    method: :patch,
-                    class: "btn btn-success btn-sm",
-                    form: { class: 'job-action-form' },
-                    data: { turbo_confirm: "You are about to reinstate this job, meanining it's status will be set to pending and it will re-enter the queue for operators, Are you sure?" }
-
       .card-body
         %dl.row.mb-0.job-meta-list
           - if @user.role != "client"

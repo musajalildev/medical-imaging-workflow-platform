@@ -42,10 +42,7 @@ class Ability
       can :manage, Job
       # jobs can only be completed once they have been assigned
       cannot :complete_job, Job, operator_id: nil
-      # jobs can only be uncancelled if they are already cancelled and the operator is not assigned
-      cannot :uncancel_job, Job do |job|
-        !job.cancelled? || job.operator.present?
-      end
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
       cannot :unassign, Job
     
     elsif user.operator?
@@ -65,7 +62,6 @@ class Ability
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
-      can :uncancel_job, Job, status: "cancelled", operator_id: nil, client_id: user.id
     end
 
     #

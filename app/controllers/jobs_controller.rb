@@ -318,26 +318,6 @@ class JobsController < ApplicationController
     end
   end
 
-  # PATCH /jobs/1/uncancel_job
-  def uncancel_job
-    if @job.update(status: :pending)
-      # create history for action
-      JobStatusHistory.create!(
-        job: @job,
-        old_status: "cancelled",
-        new_status: "pending",
-        initiator: current_user,
-        history_type: "re_instated"
-      )
-      if ! current_user.client?
-        UserMailer.send_job_reinstated_email(@job, current_user).deliver_later
-      end
-      redirect_to @job, notice: "Job was successfully reinstated.", status: :see_other
-    else
-      redirect_to @job, alert: "Failed to reinstate job.", status: :unprocessable_entity
-    end
-  end
-
   # PATCH /jobs/1/submit_draft
   def submit_draft
     unless @job.draft?
