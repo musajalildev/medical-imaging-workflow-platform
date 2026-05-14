@@ -261,7 +261,7 @@ class JobsController < ApplicationController
     end
 
     @job.destroy!
-    redirect_to jobs_path, notice: "Job was successfully destroyed.", status: :see_other
+    redirect_to jobs_path, notice: "Job was successfully deleted.", status: :see_other
   rescue StandardError => e
     redirect_to @job, alert: "Job delete failed: #{e.message}"
   end

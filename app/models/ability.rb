@@ -53,6 +53,7 @@ class Ability
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
+      can :destroy, Job, client_id: user.id, status: Job.statuses[:draft]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
     end
 
