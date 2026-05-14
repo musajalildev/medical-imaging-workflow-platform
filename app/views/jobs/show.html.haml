@@ -4,8 +4,6 @@
     - regular_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
     - file_slots = regular_files.first(2)
     - file_slots << nil while file_slots.length < 2
-    - can_manage_job = can?(:manage, Job)
-    - can_use_status_dropdown =  @job.assigned? && (can_manage_job || (can?(:update_status, @job) && !@job.closed?))
     .card.job-card
       .card-header
         .job-header-bar
@@ -13,13 +11,13 @@
             %span.job-form-section__eyebrow Job overview
             %h1.h3.mb-2= @job.title
             #status_display.job-status-pill= @job.get_status_for_display
-            - if can_use_status_dropdown
+            - if can?(:update_status, @job)
               .status-under-pill
                 = simple_form_for(@job, url: update_status_job_path(@job), method: :patch, html: { class: 'status-inline-form' }) do |f|
                   .d-flex.flex-column.gap-2
                     %p.text-muted.mb-0.small.fw-semibold Change status
                     - current_status_label = @job.status == "custom" ? "Custom" : @job.get_status_for_display
-                    - status_options = [[current_status_label, @job.status]] +Job::STATUSES[1...-3].reject { |s| s.to_s == @job.status.to_s }.map { |s| [s.to_s.humanize, s] }
+                    - status_options = [[current_status_label, @job.status]] + @job.valid_statuses.reject { |s| s.to_s == @job.status.to_s }.map { |s| [s.to_s.humanize, s] }
                     = f.select :status, status_options, class: "form-select status-change-select"
 
                     #custom_status_field{ style: "display: none;" }

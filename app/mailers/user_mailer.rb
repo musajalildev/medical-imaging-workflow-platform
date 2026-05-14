@@ -4,11 +4,12 @@ class UserMailer < ApplicationMailer
   # client emails
 
   # send client an email when their job status changes
-  def send_job_status_change_email(job)
+  def send_job_status_change_email(job, initiator)
     @user = job.client
     return if @user.nil?
 
     @job = job
+    @initiator = initiator
     mail(to: @user.email, subject: "Your job status has changed to #{@job.get_status_for_display}")
   end
 

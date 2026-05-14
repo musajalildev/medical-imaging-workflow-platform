@@ -62,6 +62,10 @@ class Ability
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
+      # client can only change status when no operator is assigned yet
+      can :update_status, Job do |job| 
+        job.client_id == user.id && !job.assigned?
+      end
     end
 
     #

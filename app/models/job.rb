@@ -51,6 +51,16 @@ class Job < ApplicationRecord
     end
   end
 
+  # what statuses are valid in the jobs state - used to inform which statuses appear in the change status dropdown
+  def valid_statuses
+    # ignore complete, cancelled and draft as those are closed job states
+    if operator.nil?
+      return [ :pending, :custom ]
+    else
+      return [ :assigned, :in_progress, :custom ]
+    end
+  end
+
   # helper method to determine if a job has been closed already
   def closed?
     return true if status == "complete" || status == "cancelled"

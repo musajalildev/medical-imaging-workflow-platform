@@ -4,7 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft unassign re_assign uncancel_job ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft unassign re_assign ]
   before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
@@ -157,7 +157,7 @@ class JobsController < ApplicationController
           history_type: "status_update"
         )
         # send email to client if job status changed
-        UserMailer.send_job_status_change_email(@job).deliver_later
+        UserMailer.send_job_status_change_email(@job, current_user).deliver_later
       end
 
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
