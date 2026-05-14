@@ -37,7 +37,7 @@
                   class: "btn btn-primary btn-sm",
                   form: { class: 'job-action-form' },
                   data: { turbo_confirm: 'Submit this job? It will enter the queue for operators.' }
-            - if (can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)) || ((can?(:cancel_job, @job) || can?(:destroy, @job)) && !(@job.complete? || @job.cancelled?))
+            - if (can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)) || ((can?(:cancel_job, @job) || can?(:destroy, @job) || can?(:revert_to_draft, @job)) && !(@job.complete? || @job.cancelled?))
               .job-action-row
                 - if @job.operator.present?
                   - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)
@@ -48,13 +48,20 @@
                         form: { class: 'job-action-form' },
                         data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
-                - if ((can?(:destroy, @job) ) || can?(:cancel_job, @job)) && !(@job.complete? || @job.cancelled?)
+                - revert_eligible = @job.pending? && @job.operator.nil? && current_user.client?
+                - if ((can?(:destroy, @job) || can?(:cancel_job, @job) || can?(:revert_to_draft, @job)) && !(@job.complete? || @job.cancelled?))
                   #cancel_job_button
-                    - cancel_label = @job.draft? ? "Delete Draft" : "Cancel Job"
-                    - cancel_confirm = @job.draft? ? "Permanently delete this draft and all its uploaded files? This cannot be undone." : "Are you sure you want to cancel this job? You will no longer be able to edit it."
+                    - cancel_label = @job.draft? ? "Delete Draft" : revert_eligible ? "Revert to Draft" : "Cancel Job"
+                    - cancel_confirm = @job.draft? ? "Permanently delete this draft and all its uploaded files? This cannot be undone." : revert_eligible ? "Revert this job to draft? You can edit and resubmit it later." : "Are you sure you want to cancel this job? You will no longer be able to edit it."
                     - if @job.draft?
                       = button_to cancel_label, job_path(@job),
                         method: :delete,
+                        class: "btn btn-outline-danger btn-sm",
+                        form: { class: 'job-action-form' },
+                        data: { turbo_confirm: cancel_confirm }
+                    - elsif revert_eligible
+                      = button_to cancel_label, revert_to_draft_job_path(@job),
+                        method: :patch,
                         class: "btn btn-outline-danger btn-sm",
                         form: { class: 'job-action-form' },
                         data: { turbo_confirm: cancel_confirm }

@@ -4,7 +4,7 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft revert_to_draft ]
   before_action :check_client_role, only: %i[ new create edit update submit_draft ]
 
   # GET /jobs
@@ -225,6 +225,19 @@ class JobsController < ApplicationController
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
+    end
+  end
+
+  def revert_to_draft
+    unless @job.pending? && @job.operator.nil?
+      redirect_to @job, alert: "Only unassigned pending jobs can be reverted to draft.", status: :see_other
+      return
+    end
+
+    if @job.update(status: :draft)
+      redirect_to @job, notice: "Job was reverted to draft.", status: :see_other
+    else
+      redirect_to @job, alert: "Failed to revert job to draft.", status: :unprocessable_entity
     end
   end
 
