@@ -277,6 +277,7 @@ class JobsController < ApplicationController
       return
     end
 
+    rename_drive_folder_deleted
     @job.destroy!
     redirect_to jobs_path, notice: "Job was successfully deleted.", status: :see_other
   rescue StandardError => e
@@ -511,6 +512,22 @@ class JobsController < ApplicationController
       end
 
       nil
+    end
+
+    def rename_drive_folder_deleted
+      folder_id = @job.google_drive_folder_id
+      return unless folder_id.present?
+
+      drive_service = build_drive_service
+      current_name = drive_service.get_file(folder_id, fields: "name", supports_all_drives: true).name
+      drive_service.update_file(
+        folder_id,
+        Google::Apis::DriveV3::File.new(name: "#{current_name} (deleted)"),
+        supports_all_drives: true,
+        fields: "id"
+      )
+    rescue StandardError => e
+      Rails.logger.error("Failed to rename Drive folder for job #{@job.id}: #{e.message}")
     end
 
     def purge_drive_file!(drive_service, file_id)
