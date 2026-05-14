@@ -49,15 +49,6 @@ class UserMailer < ApplicationMailer
     mail(to: job.client.email, subject: "Your job has been dropped")
   end
 
-  # send client an email when their job has been reinstated
-  def send_job_reinstated_email(job, initiator)
-    return if job.nil? || initiator.nil?
-
-    @initiator = initiator
-    @job = job
-    mail(to: job.client.email, subject: "Your job has been reinstated")
-  end
-
   # send client an email when their operator changes
   def send_operator_reassigned_email(job, old_operator, initiator)
     return if job.nil? || old_operator.nil? || initiator.nil?
