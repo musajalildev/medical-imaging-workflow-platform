@@ -72,5 +72,17 @@ class Ability
       can :assign_role, User
       can :update, User
     end
+
+    #
+    # OTHER PERMISSIONS
+    #
+    unless user.admin? || user.owner? || user.unassigned?
+      can :help, :pages
+      can :send_help_email, :pages
+    end
+    if user.unassigned?
+      can :sign_up, :pages
+      can :send_sign_up_email, :pages
+    end
   end
 end

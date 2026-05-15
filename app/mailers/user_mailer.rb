@@ -68,4 +68,16 @@ class UserMailer < ApplicationMailer
       subject: "New sign-up role request"
     )
   end
+
+  def send_help_email(recipient, initiator, job, issue, expansion)
+    # recipient, initiator, issue and expansion are required
+    return if recipient.blank? || initiator.blank? || issue.blank? || expansion.blank?
+
+    @job = job
+    @initiator = initiator
+    @issue = issue
+    @expansion = expansion
+
+    mail(to: recipient.email, subject: "New help request from user: #{initiator.email}")
+  end
 end
