@@ -36,7 +36,7 @@ class JobStatusHistory < ApplicationRecord
   validates :old_operator, presence: true, if: :needs_old_operator?
   validates :new_operator, presence: true, if: :needs_new_operator?
 
-  HISTORY_TYPES = [ :status_update, :job_dropped, :job_re_assigned, :self_assigned, :re_instated, :manual_assignment ]
+  HISTORY_TYPES = [ :status_update, :job_dropped, :job_re_assigned, :self_assigned, :manual_assignment ]
   enum :history_type, HISTORY_TYPES
 
   # get formatted status history for display
@@ -53,9 +53,6 @@ class JobStatusHistory < ApplicationRecord
     
     when "self_assigned"
       "#{user_dialogue} #{initiator.email} self assigned this job, updating the status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"
-    
-    when "re_instated"
-      "#{user_dialogue} #{initiator.email} reinstated this job, reverting it's status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"
     
     when "manual_assignment"
       "#{user_dialogue} #{initiator.email} assigned this job to #{new_operator&.email}, changing it's status from #{old_status.humanize} to #{new_status.humanize} on #{formatted_timestamp}"

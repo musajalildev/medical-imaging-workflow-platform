@@ -85,8 +85,10 @@
             %dd.col-md-9
               = form_with url: re_assign_job_path(@job), method: :patch, class: "update_operator_form" do
                 .d-flex.align-items-center.gap-3
+                  - dropdown_label_header = @job.operator.present? ? [[@job.operator.email, @job.operator.email], ["No Operator", ""]] : [["No Operator", ""]]
+                  - remaining_operator_labels = User.where(role: :operator).where.not(email: dropdown_label_header[0][1])
                   = select_tag "operator_id",
-                    options_for_select([["No Operator", ""]], @job.operator_id) + options_from_collection_for_select(User.where(role: :operator), :id, :email, @job.operator_id),
+                    options_for_select(dropdown_label_header, @job.operator_id) + options_from_collection_for_select(remaining_operator_labels, :id, :email, @job.operator_id),
                     class: "form-select new-operator-dropdown",
                     id: "operator_select"
 
