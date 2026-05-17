@@ -35,8 +35,15 @@ class Ability
     #
     # JOB PERMISSIONS
     #
-    if user.admin? || user.owner?
+    if user.owner?
       can :manage, Job
+
+    elsif user.admin?
+      can :manage, Job
+      cannot :new, Job
+      cannot :create, Job
+      cannot :update, Job
+
 
     elsif user.operator?
       can :read, Job
