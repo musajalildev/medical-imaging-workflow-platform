@@ -30,5 +30,6 @@ FactoryBot.define do
     status { :pending }
     title { "Test Job" }
     description { "Test Description" }
+    google_drive_folder_id { "test_folder_id" }
   end
 end

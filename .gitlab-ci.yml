@@ -12,6 +12,8 @@ variables:
   POSTGRES_HOST_AUTH_METHOD: 'trust'
   SELENIUM_HOST: chrome
   SELENIUM_PORT: 4444
+  GOOGLE_DRIVE_FOLDER_ID: 'ci_placeholder'
+  GOOGLE_SERVICE_ACCOUNT_PATH: '/dev/null'
 
 stages:
   - setup

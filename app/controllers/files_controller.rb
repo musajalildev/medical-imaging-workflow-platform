@@ -4,7 +4,7 @@ require "stringio"
 require "zlib"
 require "rubygems/package"
 class FilesController < ApplicationController
-  FOLDER_ID = ENV.fetch("GOOGLE_DRIVE_FOLDER_ID")
+  FOLDER_ID = ENV.fetch("GOOGLE_DRIVE_FOLDER_ID", nil)
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
 
   skip_before_action :dev_auto_login, only: :upload
