@@ -8,10 +8,10 @@ RSpec.describe Ability, type: :model do
   let(:owner_user)    { create(:user, role: :owner) }
   let(:other_client)  { create(:user, role: :client) }
 
-  let(:own_job)   { Job.create!(title: 'Own Job',   status: :pending, client: client_user) }
-  let(:other_job) { Job.create!(title: 'Other Job', status: :pending, client: other_client) }
-  let(:assigned_to_operator) { Job.create!(title: 'Assigned Job', status: :assigned, client: other_client, operator: operator_user) }
-  let(:completed_assigned_job) { Job.create!(title: 'Completed Assigned Job', status: :complete, client: other_client, operator: operator_user) }
+  let(:own_job)   { Job.create!(title: 'Own Job', description: 'some description', status: :pending, client: client_user) }
+  let(:other_job) { Job.create!(title: 'Other Job', description: 'some description', status: :pending, client: other_client) }
+  let(:assigned_to_operator) { Job.create!(title: 'Assigned Job', description: 'some description', status: :assigned, client: other_client, operator: operator_user) }
+  let(:completed_assigned_job) { Job.create!(title: 'Completed Assigned Job', description: 'some description', status: :complete, client: other_client, operator: operator_user) }
 
   describe 'unauthenticated user' do
     subject(:ability) { Ability.new(nil) }
