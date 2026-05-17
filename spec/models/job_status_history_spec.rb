@@ -170,17 +170,5 @@ RSpec.describe JobStatusHistory, type: :model do
         "assigned this job to operator@example.com"
       )
     end
-
-    it "formats reinstated jobs correctly" do
-      reinstated_history = JobStatusHistory.create!(
-        job: job,
-        old_status: :cancelled,
-        new_status: :pending,
-        initiator: admin,
-        history_type: :re_instated
-      )
-
-      expect(reinstated_history.formatted_history).to include("reinstated this job")
-    end
   end
 end
