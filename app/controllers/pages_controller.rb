@@ -46,7 +46,9 @@ class PagesController < ApplicationController
 
       # only cache if email is sent successfully to prevent blocking users if there is an issue with email delivery
       Rails.cache.write(cache_key, true, expires_in: 7.day)
-      UserMailer.with(email: current_user.email, role: role, comment: comment).send_sign_up_email.deliver_later
+      User.where(role: :admin).each do |admin|
+        UserMailer.with(admin, current_user.email, role, comment).send_sign_up_email.deliver_later
+      end
       redirect_to sign_up_path, notice: "Sign up email sent successfully!"
     end
   end

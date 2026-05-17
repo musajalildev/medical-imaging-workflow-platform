@@ -37,12 +37,20 @@ class Ability
     #
     if user.owner?
       can :manage, Job
+       # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
+      cannot :unassign, Job
 
     elsif user.admin?
       can :manage, Job
       cannot :new, Job
       cannot :create, Job
       cannot :update, Job
+       # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
+      cannot :unassign, Job
 
 
     elsif user.operator?
@@ -53,6 +61,7 @@ class Ability
       can :complete_job, Job, operator_id: user.id
       can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
       can :self_assign, Job
+      can :unassign, Job, operator_id: user.id
 
     elsif user.client?
       can :read, Job, client_id: user.id
@@ -61,6 +70,8 @@ class Ability
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
+      # client can only change status when no operator is assigned yet
+      can :update_status, Job, client_id: user.id, operator_id: nil
     end
 
     #
