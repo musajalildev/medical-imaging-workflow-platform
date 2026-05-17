@@ -22,7 +22,7 @@
 
                     #custom_status_field{ style: "display: none;" }
                       = f.label :custom_status, "Enter custom status"
-                      = f.text_field :custom_status, class: "form-control form-control-sm"
+                      = f.text_field :custom_status, class: "form-control form-control-sm", maxlength: 47
 
                     #save_changes_button{ style: "display: none;" }
                       = f.submit "Update status", class: "btn btn-primary btn-sm"

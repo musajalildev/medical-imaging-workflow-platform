@@ -33,6 +33,7 @@ class Job < ApplicationRecord
 
   validates :title, presence: true
   validates :description, presence: true, unless: :draft?
+  validates :custom_status, length: { maximum: 40 }, allow_blank: true
 
   STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft ]
   enum :status, STATUSES
