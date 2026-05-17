@@ -218,7 +218,7 @@ class JobsController < ApplicationController
         history_type: "job_dropped"
       )
       # since unassign is only accessed by operators it is fine to assume we can just send email to client
-      UserMailer.send_job_dropped_email(@job, old_operator, current_user).deliver_later
+      UserMailer.send_job_dropped_email(@job, current_user).deliver_later
       redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
     else
       redirect_to jobs_path(tab: "assigned"), alert: "You can only unassign jobs assigned to you.", status: :see_other
