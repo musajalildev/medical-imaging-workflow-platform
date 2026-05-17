@@ -35,16 +35,24 @@ class Ability
     #
     # JOB PERMISSIONS
     #
-    
-    if user.admin? || user.owner?
-      # this makes it so that the :update action also applies to :re_assign, :unassign, and :update_status actions for easier permission management
-      alias_action :re_assign, :unassign, :update_status, to: :update
+    if user.owner?
       can :manage, Job
-      # jobs can only be completed once they have been assigned
+       # jobs can only be completed once they have been assigned
       cannot :complete_job, Job, operator_id: nil
       # unassigning reserved for operators only, re-assign to nil to remove op for admins
       cannot :unassign, Job
-    
+
+    elsif user.admin?
+      can :manage, Job
+      cannot :new, Job
+      cannot :create, Job
+      cannot :update, Job
+       # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
+      cannot :unassign, Job
+
+
     elsif user.operator?
       can :read, Job
       cannot :read, Job, status: Job.statuses[:draft]
