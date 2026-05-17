@@ -587,7 +587,7 @@ class JobsController < ApplicationController
       drive_service = Google::Apis::DriveV3::DriveService.new
       drive_service.client_options.application_name = "Rails Drive Upload"
 
-      service_account_path = Rails.root.join("service_account.json")
+      service_account_path = ENV.fetch("GOOGLE_SERVICE_ACCOUNT_PATH", Rails.root.join("service_account.json").to_s)
       credentials = Google::Auth::ServiceAccountCredentials.make_creds(
         json_key_io: File.open(service_account_path),
         scope: [Google::Apis::DriveV3::AUTH_DRIVE]
