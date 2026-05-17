@@ -123,7 +123,7 @@ class JobsController < ApplicationController
       attach_uploaded_file(@job, ensure_placeholders: false)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -161,7 +161,7 @@ class JobsController < ApplicationController
 
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      redirect_to @job, status: :unprocessable_entity
+      redirect_to @job, status: :unprocessable_content
     end
   end
 
@@ -198,7 +198,7 @@ class JobsController < ApplicationController
       )
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
-      redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
+      redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_content
     end
   end
 
@@ -226,17 +226,12 @@ class JobsController < ApplicationController
       )
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
-      redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
+      redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_content
     end
   end
 
   # PATCH /jobs/1/submit_draft
   def submit_draft
-    unless @job.draft?
-      redirect_to @job, alert: "This job is not a draft."
-      return
-    end
-
     input_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
     has_pdf = input_files[0]&.file_path.present?
     has_dicom = input_files[1]&.file_path.present?
