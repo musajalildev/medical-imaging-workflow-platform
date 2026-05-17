@@ -81,9 +81,10 @@ class UserMailer < ApplicationMailer
   end
 
   # send user an email when their job is cancelled
-  def send_job_cancelled_email(job, user)
+  def send_job_cancelled_email(job, user, initiator)
     return if user.nil? || job.nil?
 
+    @initiator = initiator
     @job = job
     mail(to: user.email, subject: "Your job #{@job.title} has been cancelled")
   end

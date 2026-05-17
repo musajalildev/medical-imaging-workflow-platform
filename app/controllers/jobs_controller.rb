@@ -337,14 +337,14 @@ class JobsController < ApplicationController
       case current_user.role
       when "operator"
         # send email to client
-        UserMailer.send_job_cancelled_email(@job, @job.client).deliver_later
+        UserMailer.send_job_cancelled_email(@job, @job.client, current_user).deliver_later
       when "admin", "owner"
         # send email to client and operator
-        UserMailer.send_job_cancelled_email(@job, @job.client).deliver_later
+        UserMailer.send_job_cancelled_email(@job, @job.client, current_user).deliver_later
 
         # have to be safe as jobs with no operator can be cancelled
         if @job.operator.present?
-          UserMailer.send_job_cancelled_email(@job, @job.operator).deliver_later
+          UserMailer.send_job_cancelled_email(@job, @job.operator, current_user).deliver_later
         end
       end
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
