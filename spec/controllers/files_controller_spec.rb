@@ -51,13 +51,14 @@ RSpec.describe FilesController, type: :controller do
       end.to raise_error(ArgumentError, "PDF file must have .pdf extension.")
     end
 
-    it "raises when slot 2 is not a dicom" do
-      file = fake_file(filename: "report.pdf", size: 100)
+    # current version no longer requires dicom in second slot
+    # it "raises when slot 2 is not a dicom" do
+    #   file = fake_file(filename: "report.pdf", size: 100)
 
-      expect do
-        controller.send(:validate_input_file!, file, "2")
-      end.to raise_error(ArgumentError, "DICOM file must have .dcm extension.")
-    end
+    #   expect do
+    #     controller.send(:validate_input_file!, file, "2")
+    #   end.to raise_error(ArgumentError, "DICOM file must have .dcm extension.")
+    # end
 
     it "raises when slot is invalid" do
       file = fake_file(filename: "report.pdf", size: 100)
@@ -86,7 +87,7 @@ RSpec.describe FilesController, type: :controller do
 
   describe "DELETE #remove" do
     it "destroys the image file when there is no drive file id" do
-      image_file = double("ImageFile", drive_file_id: nil, destroy!: true)
+      image_file = double("ImageFile", drive_file_ids: nil, destroy!: true)
       allow(ImageFile).to receive(:find).and_return(image_file)
 
       delete :remove, params: { image_file_id: 1 }
