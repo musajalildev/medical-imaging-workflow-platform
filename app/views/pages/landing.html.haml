@@ -1,0 +1,110 @@
+/ ParOSol-X Header Section
+.row.mb-5
+  .col-md-12
+    .card.shadow-sm.bg-light
+      .card-body
+        .text-center
+          %h1.mb-3 ParOSol-X
+          %h4.text-muted.mb-4 Extreme-scale finite-element analysis services
+
+        %p.lead
+          ParOSol-X is a suite of finite-element analysis (FEA) services that target extreme-scale applications, i.e. where the smallest feature of interest is orders of magnitude smaller than the dimension of the domain.
+
+        %p
+          %strong Examples include:
+          (A) stress analysis of a single bone region, (B) stress analysis in a bone region with variable material representing a population, (C) analysis of contact between trabecular bone and an orthopaedic screw.
+
+
+/ Background Section
+.row.mb-5
+  .col-md-12
+    .card.shadow-sm
+      .card-body
+        %h3.mb-3 Background
+        %p
+          All services are based on variants developed starting with the highly-scalable, Cartesian-mesh based, matrix-free FE solver ParOSol (referred to as native ParOSol below). Native ParOSol was developed originally by C. Flaig, P. Arbenz and co-workers, and to our best knowledge, first released c. 2011.
+        %p
+          Native ParOSol has been shown to possess excellent weak and strong scalability up to 8000 cores and ~100 billion elements. This underpins the extreme scale capability of the current service. Native ParOSol and our variants have been extensively code-verified as reported #{link_to "elsewhere", "https://dx.doi.org/10.2139/ssrn.5257819"}.
+
+/ Access Section
+.row.mb-5
+  .col-md-12
+    .card.shadow-sm
+      .card-body
+        %h3.mb-3 Access
+        %p
+          Access to the service suite is available only once a research collaboration has been established. Please get in touch to discuss your requirements. Once we have determined that this service is suitable for you, we will jointly develop a study plan, organize training to use the service, and if needed, apply for further funding.
+
+/ Trialing the Service Section
+.row.mb-5
+  .col-md-12
+    .card.shadow-sm
+      .card-body
+        %h3.mb-3 Trialing the Service
+        %p
+          We appreciate that potential users might desire to try out the ParOSol-X services on their own. Therefore, some aspects of the service suite are available as open-source code. Native ParOSol is free software, and #{link_to "our fork of this code", "https://github.com/INSIGNEO/ParOSol-UoS"} is available freely, which updates the original code in line with recent versions of dependencies, standards, etc.
+        %p
+          An interactive #{link_to "pre-processing toolkit", "https://github.com/INSIGNEO/ParOSolPrePVPy"} based on the VTK library and the visualization software ParaView is also available which provides functionality to convert images and geometries to FE models and to write input files readable by ParOSol.
+        %p
+          For users interested in giving native ParOSol a try on a Windows laptop, we #{link_to "provide", "https://github.com/INSIGNEO/ParOSol-Tools"} a Windows application which allows intuitive job submission, control and result extraction to and from a lightweight and headless Ubuntu Linux virtual machine that is pre-installed with native ParOSol and packaged with the application.
+
+
+/ Appendix
+.row.mb-5
+  .col-md-12
+    .card.shadow-sm
+      .card-body
+        %h3.mb-3 Appendix
+        %p
+          (A) Proximal femur region under a sideways fall loading condition, with a 5% by volume sub-region highlighted that possesses the highest tensile strains.
+        %p  
+          (B) Local coefficients of variation of von Mises stress in a femur neck model that possesses the same elastic modulus everywhere except in a patch where the elastic modulus varies normally simulating a population of bones with varying degree of “focal osteoporosis”.
+        %p  
+          (C) Frictionless contact between an orthopaedic screw inserted monocortically into a virtual bone replica. Inset shows detail of bone screw interface.
+
+
+
+%hr.my-5
+
+/ Job Management System Statistics
+%h2.mb-4 Job Management System
+
+.row.mb-4
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-primary.mb-2= @total_jobs
+        %p.mb-0.fw-semibold Total Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-success.mb-2= @completed_jobs
+        %p.mb-0.fw-semibold Completed Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-danger.mb-2= @cancelled_jobs
+        %p.mb-0.fw-semibold Cancelled Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-warning.mb-2= @pending_jobs
+        %p.mb-0.fw-semibold Pending Jobs
+
+.row.mb-4
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-info.mb-2= @active_jobs
+        %p.mb-0.fw-semibold Active Jobs
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-secondary.mb-2= @avg_completion_time
+        %p.mb-0.fw-semibold Avg Completion Time (days)
+  .col-md-3.mb-3
+    .card.shadow-sm.h-100
+      .card-body.text-center
+        %h2.h1.text-success.mb-2= "#{@completion_rate}%"
+        %p.mb-0.fw-semibold Completion Rate
+

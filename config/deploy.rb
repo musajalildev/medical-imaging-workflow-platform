@@ -1,7 +1,7 @@
 ## Application configuration
 set :application,             'Project'
 set :branch,                  -> { fetch(:stage) }
-set :repo_url,                ''
+set :repo_url,    'git@git.shefcompsci.org.uk:com213-2025-26/team36/project.git'
 set :linked_files,            fetch(:linked_files,  fetch(:env_links, [])).push('config/credentials.yml.enc', 'config/database.yml', 'config/master.key')
 set :linked_dirs,             fetch(:linked_dirs, []).push('log', 'tmp/pids', 'public/packs', 'node_modules', 'storage')
 

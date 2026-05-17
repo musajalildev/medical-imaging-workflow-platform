@@ -28,6 +28,7 @@ RSpec.describe Ability, type: :model do
     it { is_expected.not_to be_able_to(:read, other_job) }
     it { is_expected.not_to be_able_to(:manage, own_job) }
     it { is_expected.to     be_able_to(:update, own_job) }
+    it { is_expected.to     be_able_to(:create, own_job) }
     it { is_expected.to     be_able_to(:cancel_job, own_job) }
     it { is_expected.not_to be_able_to(:cancel_job, other_job) }
     it { is_expected.not_to be_able_to(:update_status, own_job) }

@@ -16,36 +16,47 @@
             - if can_use_status_dropdown
               .status-under-pill
                 = simple_form_for(@job, url: update_status_job_path(@job), method: :patch, html: { class: 'status-inline-form' }) do |f|
-                  .d-flex.flex-column.gap-2
-                    %p.text-muted.mb-0.small.fw-semibold Change status
-                    - status_options = can_manage_job ? Job::STATUSES.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
-                    = f.select :status, status_options, class: "form-select status-change-select"
+                  - if @job.operator.present?
+                    .d-flex.flex-column.gap-2
+                      %p.text-muted.mb-0.small.fw-semibold Change status
+                      - status_options = can_manage_job ? Job::STATUSES.reject { |s| s == :draft || s == :cancelled || s == :complete }.map { |s| [s.to_s.humanize, s] } : Job::STATUSES[1...-2].map { |s| [s.to_s.humanize, s] }
+                      = f.select :status, status_options, class: "form-select status-change-select"
 
-                  #custom_status_field{ style: "display: none;" }
-                    = f.label :custom_status, "Enter custom status"
-                    = f.text_field :custom_status, class: "form-control form-control-sm"
+                    #custom_status_field{ style: "display: none;" }
+                      = f.label :custom_status, "Enter custom status"
+                      = f.text_field :custom_status, class: "form-control form-control-sm"
 
-                  #save_changes_button{ style: "display: none;" }
-                    = f.submit "Update status", class: "btn btn-primary btn-sm"
+                    #save_changes_button{ style: "display: none;" }
+                      = f.submit "Update status", class: "btn btn-primary btn-sm"
 
           .job-header-actions
-            - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
+            - if @job.draft? && can?(:submit_draft, @job)
               .job-action-row
-                - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled?)
-                  #complete_job_button
-                    = button_to "Mark as Complete", complete_job_job_path(@job),
-                      method: :patch,
-                      class: "btn btn-success btn-sm",
-                      form: { class: 'job-action-form' },
-                      data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
+                = button_to "Submit Job", submit_draft_job_path(@job),
+                  method: :patch,
+                  class: "btn btn-primary btn-sm",
+                  form: { class: 'job-action-form' },
+                  data: { turbo_confirm: 'Submit this job? It will enter the queue for operators.' }
+            - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?) || can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
+              .job-action-row
+                - if @job.operator.present?
+                  - if can?(:complete_job, @job) && !(@job.complete? || @job.cancelled? || @job.draft?)
+                    #complete_job_button
+                      = button_to "Mark as Complete", complete_job_job_path(@job),
+                        method: :patch,
+                        class: "btn btn-success btn-sm",
+                        form: { class: 'job-action-form' },
+                        data: { turbo_confirm: 'Are you sure you want to mark this job as complete? You will no longer be able to edit it.' }
 
                 - if can?(:cancel_job, @job) && !(@job.complete? || @job.cancelled?)
                   #cancel_job_button
-                    = button_to "Cancel Job", cancel_job_job_path(@job),
+                    - cancel_label = @job.draft? ? "Delete Draft" : "Cancel Job"
+                    - cancel_confirm = @job.draft? ? "Delete this draft? This cannot be undone." : "Are you sure you want to cancel this job? You will no longer be able to edit it."
+                    = button_to cancel_label, cancel_job_job_path(@job),
                       method: :patch,
                       class: "btn btn-outline-danger btn-sm",
                       form: { class: 'job-action-form' },
-                      data: { turbo_confirm: 'Are you sure you want to cancel this job? You will no longer be able to edit it.' }
+                      data: { turbo_confirm: cancel_confirm }
 
       .card-body
         %dl.row.mb-0.job-meta-list
@@ -69,7 +80,7 @@
             - file_1_url = file_slots[0]&.file_path
             - file_1_id = file_slots[0]&.drive_file_id
             - if file_1_url.present?
-              - if current_user&.admin?
+              - if current_user&.admin? || @job.status == "draft"
                 = button_to 'Delete PDF file', remove_file_path(image_file_id: file_slots[0].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete PDF file from Google Drive?' } }
               - if file_1_id.present?
                 = link_to 'Download PDF file', download_file_path(file_id: file_1_id), class: 'btn btn-primary', data: { turbo: false }
@@ -81,10 +92,10 @@
             - file_2_url = file_slots[1]&.file_path
             - file_2_id = file_slots[1]&.drive_file_id
             - if file_2_url.present?
-              - if current_user&.admin?
+              - if current_user&.admin? || @job.status == "draft"
                 = button_to 'Delete DICOM file', remove_file_path(image_file_id: file_slots[1].id), method: :delete, class: 'btn btn-outline-danger', form: { data: { turbo_confirm: 'Delete DICOM file from Google Drive?' } }
               - if file_2_id.present?
-                = link_to 'Download DICOM file', download_file_path(file_id: file_2_id), class: 'btn btn-primary', data: { turbo: false }
+                = link_to 'Download DICOM file(s)', download_file_path(file_id: file_2_id, image_file_id: file_slots[1].id), class: 'btn btn-primary', data: { turbo: false }
               - else
                 %span.file-missing-indicator DICOM not uploaded yet
             - else
@@ -93,7 +104,7 @@
         .job-file-panel.mt-4
           %h2.h5.mb-3 Output file
 
-          - if can?(:upload_output, @job) && !@job.complete?
+          - if can?(:upload_output, @job) && !@job.complete? && !@job.cancelled?
             = form_with url: upload_output_job_path(@job), method: :post, local: true, multipart: true, class: 'job-output-form d-flex flex-column gap-2 mb-3' do
               %input.form-control{ type: 'file', name: 'output_file', accept: '.pdf,application/pdf' }
               %button.btn.btn-outline-primary.align-self-start{ type: 'submit' } Upload report file
@@ -119,10 +130,12 @@
                 - @job.status_histories.each do |history|
                   %li.status-history-item
                     = history.formatted_history
-            - else
-              %p.text-muted.small.mb-0.fst-italic No status changes recorded yet.
+            %ul.list-unstyled.mb-0
+              %li.status-history-item
+                - job_type = @job.status == "draft" ? "Draft" : "Job"
+                = job_type + " created at " + @job.created_at.strftime("%Y/%m/%d, at %H:%M") + " by " + @job.client.email
 
       .card-footer.d-flex.align-items-center.gap-2.flex-wrap
-        -if can?(:manage, Job)
+        - if can?(:manage, Job) || (@job.draft? && can?(:edit, @job))
           = link_to 'Edit', edit_job_path(@job), class: 'btn btn-link'
-        = link_to 'Back', jobs_path, class: 'btn btn-link ms-auto'
+        = link_to 'Back', jobs_path(tab: @tab), class: 'btn btn-link ms-auto'

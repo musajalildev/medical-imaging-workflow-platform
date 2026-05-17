@@ -22,6 +22,15 @@ class ApplicationController < ActionController::Base
    # end
  # end
 
+  # tells devise where to redirect the user after signing in
+  def after_sign_in_path_for(resource)
+    if resource.unassigned?
+      sign_up_path
+    else
+      jobs_path
+    end
+  end
+
 
   private
      def dev_auto_login
@@ -29,8 +38,6 @@ class ApplicationController < ActionController::Base
        if (user_id = session[:dev_user_id])
          user = User.find_by(id: user_id)
          sign_in(user, store: false) if user && !user_signed_in?
-       elsif !devise_controller?
-         redirect_to new_dev_session_path
        end
      end
 

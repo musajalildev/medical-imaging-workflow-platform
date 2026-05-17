@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       patch :complete_job
       patch :cancel_job
       patch :self_assign
+      patch :submit_draft
     end
   end
   resources :reports
@@ -30,6 +31,11 @@ Rails.application.routes.draw do
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :users, only: [:index, :edit, :update]
+
+  get '/landing', to: 'pages#landing'
+  get '/sign_up', to: 'pages#sign_up'
+  post "send_sign_up_email", to: "pages#send_sign_up_email", as: :send_sign_up_email
+
   # Defines the root path route ("/")
-  root "pages#home"
+  root "pages#landing"
 end
