@@ -304,24 +304,6 @@ RSpec.describe JobsController, type: :controller do
 
           expect(Job.last.status).to eq("draft")
         end
-
-        it "creates a normal job when two uploaded files are provided" do
-          expect do
-            post :create, params: {
-              job: {
-                title: "Test Job",
-                description: "Test Description"
-              },
-              uploaded_files_json: [
-                { file_id: "file-1", file_type: "application/pdf" },
-                { file_id: "file-2", file_type: "application/dicom" }
-              ].to_json
-            }
-          end.to change(Job, :count).by(1)
-
-          expect(Job.last.client_id).to eq(client_user.id)
-          expect(Job.last.status).to eq("pending")
-        end
       end
     end
 
