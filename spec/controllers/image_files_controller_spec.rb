@@ -12,19 +12,9 @@ RSpec.describe ImageFilesController, type: :controller do
     allow(controller).to receive(:redirect_to).and_return(true)
     allow(controller).to receive(:render).and_return(true)
 
-    file = image_file_double
-
-    ImageFile.singleton_class.send(:define_method, :all) do
-      []
-    end
-
-    ImageFile.singleton_class.send(:define_method, :find) do |_id|
-      file
-    end
-
-    ImageFile.singleton_class.send(:define_method, :new) do |_attrs = {}|
-      file
-    end
+    allow(ImageFile).to receive(:all).and_return([])
+    allow(ImageFile).to receive(:find).and_return(image_file_double)
+    allow(ImageFile).to receive(:new).and_return(image_file_double)
   end
 
   describe "GET #index" do
