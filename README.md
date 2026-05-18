@@ -59,3 +59,112 @@ GOOGLE_SERVICE_ACCOUNT_PATH=/rails/service_account.json
 ```
 
 `GOOGLE_SERVICE_ACCOUNT_PATH` defaults to `/rails/service_account.json` (the project root inside Docker) and can be omitted if you place the file there.
+
+---
+
+# Email Configuration Guide
+
+This application uses [SendGrid](https://sendgrid.com) to send transactional emails. Follow the steps below to configure your own SendGrid account.
+
+The current configuration uses email account softwarehutdevemail.noreply@gmail.com, it will expire on July 17th, 2026
+
+---
+
+## 1. Create a SendGrid Account
+
+1. Go to [sendgrid.com](https://sendgrid.com) and sign up for a free account
+2. The free tier allows up to **100 emails per day** at no cost
+3. Skip the onboarding flow and go straight to the dashboard (its in the top right corner)
+
+---
+
+## 2. Verify a Sender Identity
+
+Before sending emails, SendGrid requires you to verify the address you'll be sending from.
+
+1. In the SendGrid dashboard, go to **Settings → Sender Authentication**
+2. Click **Create a Sender**
+3. Fill in your details — use the email address you want to send from (e.g. `noreply@yourcompany.com`)
+4. SendGrid will send a verification email to that address — click the link to confirm
+
+---
+
+## 3. Generate an API Key
+
+1. In the SendGrid dashboard, go to **Settings → API Keys**
+2. Click **Create API Key**
+3. Give it a name (e.g. your app name)
+4. Select **Restricted Access** and enable **Mail Send** only
+5. Click **Create & View**
+6. **Copy the key immediately** — SendGrid will only show it once
+
+---
+
+## 4. Add the API Key to the Application
+
+Open the Rails credentials file:
+
+```bash
+rails credentials:edit
+```
+
+Add the following (using spaces, not tabs):
+
+```yaml
+sendgrid:
+  api_key: SG.your_full_api_key_here
+```
+
+Save and close the file.
+
+---
+
+## Troubleshooting
+
+1. Verify It's Working
+
+In the Rails console, confirm the key is loaded:
+
+```ruby
+Rails.application.credentials.dig(:sendgrid, :api_key)
+```
+
+This should return your API key, not `nil`.
+
+---
+
+2. Start the Background Job Processor
+
+Emails are sent asynchronously via Delayed Job. Make sure it's running:
+
+```bash
+bin/delayed_job start
+```
+
+To stop it:
+
+```bash
+bin/delayed_job stop
+```
+
+For production, ensure the Delayed Job process is always running alongside your Rails server. If using a `Procfile`:
+
+```
+web: bundle exec rails server
+worker: bundle exec rake jobs:work
+```
+
+---
+
+**Emails not sending:**
+- Check SendGrid **Activity** feed in the dashboard — if there's no activity, the app isn't reaching SendGrid
+- Make sure Delayed Job is running (`bin/delayed_job start`)
+- After updating credentials, always restart both the Rails server and Delayed Job
+
+**API key returning nil:**
+- Make sure the key is saved under `sendgrid: api_key:` in credentials (not `send_grid` with an underscore)
+- Make sure you're editing the correct credentials file for your environment
+
+**Emails going to spam:**
+- Set up domain authentication in SendGrid under **Settings → Sender Authentication**
+- This requires access to your domain's DNS settings
