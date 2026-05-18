@@ -30,17 +30,17 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
     it "shows only active (non-draft) jobs in active tab" do
       visit jobs_path(tab: "active")
       
-      expect(page).to have_content("Medical records review")
-      expect(page).to have_content("Document analysis")
-      expect(page).to have_content("X-ray processing")
-      expect(page).not_to have_content("Draft invoice scan")
+      expect(page).to have_content("Medical Records Review")
+      expect(page).to have_content("Document Analysis")
+      expect(page).to have_content("X Ray Processing")
+      expect(page).not_to have_content("Draft Invoice Scan")
     end
 
     it "shows only draft jobs in drafts tab" do
       visit jobs_path(tab: "drafts")
       
-      expect(page).to have_content("Draft invoice scan")
-      expect(page).not_to have_content("Medical records review")
+      expect(page).to have_content("Draft Invoice Scan")
+      expect(page).not_to have_content("Medical Records Review")
     end
 
     it "hides other client's jobs in active tab" do
@@ -74,18 +74,18 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
     it "shows only own assigned jobs in assigned tab" do
       visit jobs_path(tab: "assigned")
       
-      expect(page).to have_content("Op1 job 1")
-      expect(page).to have_content("Op1 job 2")
-      expect(page).not_to have_content("Op2 job 1")
-      expect(page).not_to have_content("Unassigned job 1")
+      expect(page).to have_content("Op1 Job 1")
+      expect(page).to have_content("Op1 Job 2")
+      expect(page).not_to have_content("Op2 Job 1")
+      expect(page).not_to have_content("Unassigned Job 1")
     end
 
     it "shows unassigned jobs in unassigned tab" do
       visit jobs_path(tab: "unassigned")
       
-      expect(page).to have_content("Unassigned job 1")
-      expect(page).to have_content("Unassigned job 2")
-      expect(page).not_to have_content("Op1 job 1")
+      expect(page).to have_content("Unassigned Job 1")
+      expect(page).to have_content("Unassigned Job 2")
+      expect(page).not_to have_content("Op1 Job 1")
     end
 
     it "hides draft jobs from operators" do
@@ -124,8 +124,8 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
         select "Title", from: "search_by"
         click_button "Search"
         
-        expect(page).to have_content("Medical record analysis")
-        expect(page).not_to have_content("Invoice processing")
+        expect(page).to have_content("Medical Record Analysis")
+        expect(page).not_to have_content("Invoice Processing")
       end
 
       it "finds jobs by partial title match (case insensitive)" do
@@ -135,7 +135,7 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
         select "Title", from: "search_by"
         click_button "Search"
         
-        expect(page).to have_content("Medical record analysis")
+        expect(page).to have_content("Medical Record Analysis")
       end
 
       it "returns empty results for non-matching title search" do
@@ -157,7 +157,7 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
         # Default search searches all fields
         click_button "Search"
         
-        expect(page).to have_content("Document verification")
+        expect(page).to have_content("Document Verification")
       end
     end
 
@@ -168,7 +168,7 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
         fill_in "search", with: "MEDICAL"
         click_button "Search"
         
-        expect(page).to have_content("Medical record analysis")
+        expect(page).to have_content("Medical Record Analysis")
       end
 
       it "handles special characters in search" do
@@ -193,7 +193,7 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
         select "Client", from: "search_by"
         click_button "Search"
 
-        expect(page).to have_content(job.title)
+        expect(page).to have_content(job.title.titleize)
       end
     end
 
@@ -283,7 +283,7 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
       jobs = page.all("table tbody tr")
       first_job_title = jobs.first.text
       
-      expect(first_job_title).to include("Apple job")
+      expect(first_job_title).to include("Apple Job")
     end
 
   end

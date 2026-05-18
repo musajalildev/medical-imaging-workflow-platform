@@ -110,16 +110,16 @@ RSpec.describe "Draft Jobs", type: :feature do
       it "shows drafts in the drafts tab" do
         visit jobs_path(tab: "drafts")
         
-        expect(page).to have_content("Client draft 1")
-        expect(page).to have_content("Client draft 2")
+        expect(page).to have_content("Client Draft 1")
+        expect(page).to have_content("Client Draft 2")
       end
 
       it "does not show drafts in the active jobs tab" do
         visit jobs_path(tab: "active")
         
-        expect(page).not_to have_content("Client draft 1")
-        expect(page).not_to have_content("Client draft 2")
-        expect(page).to have_content("Active job")
+        expect(page).not_to have_content("Client Draft 1")
+        expect(page).not_to have_content("Client Draft 2")
+        expect(page).to have_content("Active Job")
       end
 
       it "shows only user's own drafts" do
@@ -128,8 +128,8 @@ RSpec.describe "Draft Jobs", type: :feature do
         
         visit jobs_path(tab: "drafts")
         
-        expect(page).to have_content("Client draft 1")
-        expect(page).not_to have_content("Other client draft")
+        expect(page).to have_content("Client Draft 1")
+        expect(page).not_to have_content("Other Client Draft")
       end
     end
 
@@ -370,9 +370,9 @@ RSpec.describe "Draft Jobs", type: :feature do
     it "displays all client drafts in the drafts tab" do
       visit jobs_path(tab: "drafts")
       
-      expect(page).to have_content("Draft one")
-      expect(page).to have_content("Draft two")
-      expect(page).to have_content("Draft three")
+      expect(page).to have_content("Draft One")
+      expect(page).to have_content("Draft Two")
+      expect(page).to have_content("Draft Three")
     end
 
     it "allows editing one draft without affecting others" do
@@ -381,9 +381,9 @@ RSpec.describe "Draft Jobs", type: :feature do
       click_button "Update Draft"
 
       visit jobs_path(tab: "drafts")
-      expect(page).to have_content("Updated draft one")
-      expect(page).to have_content("Draft two")
-      expect(page).to have_content("Draft three")
+      expect(page).to have_content("Updated Draft One")
+      expect(page).to have_content("Draft Two")
+      expect(page).to have_content("Draft Three")
     end
 
   end
