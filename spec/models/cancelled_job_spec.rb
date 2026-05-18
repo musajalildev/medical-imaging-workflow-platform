@@ -16,8 +16,10 @@
 #
 #  fk_rails_...  (job_id => jobs.id)
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe CancelledJob, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it "defines the CancelledJob class" do
+    expect(described_class.name).to eq("CancelledJob")
+  end
 end

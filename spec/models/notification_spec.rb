@@ -17,8 +17,13 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Notification, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  let(:user) { create(:user) }
+
+  it "is valid with valid attributes" do
+    notification = build(:notification, user: user)
+    expect(notification).to be_valid
+  end
 end

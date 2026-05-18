@@ -30,4 +30,13 @@ class User < ApplicationRecord
   include EpiCas::DeviseHelper
 
   enum :role, [ :unassigned, :client, :operator, :admin, :owner ]
+
+  before_save :enforce_owner_role
+
+  private
+
+  def enforce_owner_role
+    owner_email = ENV['OWNER_EMAIL'].presence
+    self.role = :owner if owner_email && email == owner_email
+  end
 end

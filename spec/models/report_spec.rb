@@ -16,8 +16,13 @@
 #
 #  fk_rails_...  (job_id => jobs.id)
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Report, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  let(:job) { create(:job, title: "Test Job", description: "Test Description") }
+
+  it "is valid with valid attributes" do
+    report = build(:report, job: job)
+    expect(report).to be_valid
+  end
 end

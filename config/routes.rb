@@ -37,6 +37,8 @@ Rails.application.routes.draw do
   get '/landing', to: 'pages#landing'
   get '/sign_up', to: 'pages#sign_up'
   post "send_sign_up_email", to: "pages#send_sign_up_email", as: :send_sign_up_email
+  get '/help', to: 'pages#help'
+  post "send_help_email", to: "pages#send_help_email", as: :send_help_email
 
   # Defines the root path route ("/")
   root "pages#landing"

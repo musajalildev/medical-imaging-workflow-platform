@@ -7,6 +7,13 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 if Rails.env.production?
+	owner_email = ENV['OWNER_EMAIL'].presence
+	if owner_email
+		User.find_or_create_by(email: owner_email) do |u|
+			u.role = :owner
+		end
+	end
+
 	[
 		{username: "aca24bdg", role: :owner, email: "bdgrassie1@sheffield.ac.uk", givenname: "Ben", sn: "D Grassie"},
 		{username: "aca23ejw", role: :admin, email: "ejwood1@sheffield.ac.uk", givenname: "Ethan", sn: "Wood"},
@@ -39,6 +46,13 @@ if Rails.env.production?
 end
 
 if Rails.env.development?
+	owner_email = ENV['OWNER_EMAIL'].presence
+	if owner_email
+		User.find_or_create_by(email: owner_email) do |u|
+			u.role = :owner
+		end
+	end
+
 	[
 		{ username: "dev_admin",    role: :admin,    givenname: "Dev",    sn: "Admin",    email: "dev_admin@example.com" },
 		{ username: "dev_operator", role: :operator, givenname: "Dev",    sn: "Operator", email: "dev_operator@example.com" },
