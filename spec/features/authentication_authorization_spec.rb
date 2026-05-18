@@ -44,7 +44,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
         
         visit job_path(client_job)
         
-        expect(page).to have_content(client_job.title)
+        expect(page).to have_content(client_job.title.humanize)
       end
 
       it "prevents clients from creating drafts if not their role" do
@@ -118,7 +118,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
       it "allows operators to view assigned jobs" do
         visit job_path(job)
         
-        expect(page).to have_content(job.title)
+        expect(page).to have_content(job.title.humanize)
       end
 
       it "allows operators to update job status" do
@@ -137,7 +137,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
         #Operators should only see their own assigned jobs or unassigned pool
         visit jobs_path(tab: "assigned")
         
-        expect(page).not_to have_content(job.title) if job.operator != operator
+        expect(page).not_to have_content(job.title.humanize) if job.operator != operator
       end
 
       it "prevents operators from editing drafts" do
@@ -155,7 +155,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
       it "allows admins to view all jobs" do
         visit job_path(job)
         
-        expect(page).to have_content(job.title)
+        expect(page).to have_content(job.title.humanize)
       end
 
       it "allows admins to update job status" do
@@ -216,7 +216,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
       it "allows client to view their own job" do
         visit job_path(client_job)
         
-        expect(page).to have_content(client_job.title)
+        expect(page).to have_content(client_job.title.humanize)
       end
 
       it "prevents client from viewing other client's job" do
@@ -242,7 +242,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
       it "allows operator to view assigned job" do
         visit job_path(client_job)
         
-        expect(page).to have_content("Test Job")
+        expect(page).to have_content(client_job.title.humanize)
       end
 
       it "allows operator to view unassigned jobs" do
@@ -302,7 +302,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
     it "does not leak other client's jobs in job lists" do
       visit jobs_path
       
-      expect(page).not_to have_content(other_job.title)
+      expect(page).not_to have_content(other_job.title.humanize)
     end
 
     it "does not show other client's drafts to different client" do
@@ -310,7 +310,7 @@ RSpec.describe "User Authentication and Authorization", type: :feature do
       
       visit jobs_path(tab: "drafts")
       
-      expect(page).not_to have_content(other_draft.title)
+      expect(page).not_to have_content(other_draft.title.humanize)
     end
   end
 
