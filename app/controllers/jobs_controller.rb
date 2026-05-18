@@ -4,15 +4,13 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft ]
-  before_action :check_client_role, only: %i[ new create edit update submit_draft ]
-
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
   # GET /jobs
   def index
     if current_user&.operator?
       @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
       if @tab == "unassigned"
-        @jobs = Job.where(operator_id: nil).where.not(status: :draft)
+        @jobs = Job.where(status: :pending)
       else
         @jobs = Job.where(operator_id: current_user.id).where.not(status: :draft)
       end
@@ -23,6 +21,8 @@ class JobsController < ApplicationController
       else
         @jobs = Job.where(client_id: current_user.id).where.not(status: :draft)
       end
+    else # admin
+      @jobs = Job.where.not(status: :draft)
     end
 
     permitted = params.permit(:status, :search, :search_by, :sort, :_method, :authenticity_token, :tab, job: {})
@@ -108,7 +108,12 @@ class JobsController < ApplicationController
 
     if @job.errors.empty? && @job.save
       attach_uploaded_file(@job, ensure_placeholders: !@job.draft?)
-      UserMailer.send_new_job_email(@job).deliver_later unless @job.draft?
+      unless @job.draft?
+        # notify all operators of the new job
+        User.where(role: :operator).each do |operator|
+          UserMailer.send_new_job_email(@job, operator).deliver_later
+        end
+      end
       redirect_to @job, notice: @job.draft? ? "Draft saved." : "Job was successfully created."
     else
       render :new, status: :unprocessable_content
@@ -121,7 +126,7 @@ class JobsController < ApplicationController
       attach_uploaded_file(@job, ensure_placeholders: false)
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -151,33 +156,128 @@ class JobsController < ApplicationController
           job: @job,
           old_status: old_status,
           new_status: new_status,
-          initiator: current_user
+          initiator: current_user,
+          history_type: "status_update"
         )
-        # send email to client if job status changed
-        UserMailer.send_job_status_change_email(@job).deliver_later
+        # to appropriate user based on who changed the status
+        case current_user.role
+        when "operator"
+          # send email to client
+          UserMailer.send_job_status_change_email(@job, current_user, @job.client).deliver_later
+        when "admin", "owner"
+          # send email to client and operator
+          UserMailer.send_job_status_change_email(@job, current_user, @job.client).deliver_later
+
+          # have to be safe as jobs can have their status updated with no operator
+          if @job.operator.present?
+            UserMailer.send_job_status_change_email(@job, current_user, @job.operator).deliver_later
+          end
+        end
       end
 
       redirect_to @job, notice: "Job was successfully updated.", status: :see_other
     else
-      redirect_to @job, status: :unprocessable_entity
+      redirect_to @job, status: :unprocessable_content
     end
   end
 
   # PATCH /jobs/1/self_assign
   def self_assign
     if @job.operator_id.nil?
+      old_status = @job.get_status_for_display
       @job.update!(operator: current_user, status: :assigned)
       # Automatically update job status when assigned
       JobStatusHistory.create!(
         job: @job,
-        old_status: @job.status_before_last_save || "pending",
+        old_status: old_status,
         new_status: "assigned",
-        initiator: current_user
+        initiator: current_user,
+        new_operator: @job.operator,
+        history_type: "self_assigned"
       ) if @job.saved_change_to_operator_id?
       UserMailer.send_job_accepted_email(@job).deliver_later
       redirect_to jobs_path(tab: "unassigned"), notice: "Job assigned to you.", status: :see_other
     else
       redirect_to jobs_path(tab: "unassigned"), alert: "Job is already assigned.", status: :see_other
+    end
+  end
+
+  # PATCH /jobs/1/unassign
+  def unassign
+    old_operator = @job.operator
+    old_status = @job.get_status_for_display
+    if @job.update(operator: nil, status: :pending)
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: "pending",
+        initiator: current_user,
+        old_operator: old_operator,
+        history_type: "job_dropped"
+      )
+      # since unassign is only accessed by operators it is fine to assume we can just send email to client
+      UserMailer.send_job_dropped_email(@job, current_user).deliver_later
+      redirect_to jobs_path(tab: "assigned"), notice: "Job unassigned from you.", status: :see_other
+    else
+      redirect_to jobs_path(tab: "assigned"), alert: "You can only unassign jobs assigned to you.", status: :see_other
+    end
+  end
+
+  # PATCH /jobs/1/re_assign
+  def re_assign
+    old_status = @job.get_status_for_display
+    old_operator = @job.operator
+    new_operator = User.find_by(id: job_params[:operator_id].presence)
+    new_status = new_operator.nil? ? :pending : :assigned
+    
+    if @job.update(operator: new_operator, status: new_status)
+      # need to decide what type of history to create, this action can be a re-assignment, unassignment or assignment
+      history_type = 
+        if old_operator.nil?
+          history_type = "manual_assignment"
+        elsif new_operator.nil?
+          history_type = "job_dropped"
+        else
+          history_type = "job_re_assigned"
+        end
+
+      JobStatusHistory.create!(
+        job: @job,
+        old_status: old_status,
+        new_status: new_status.to_s,
+        initiator: current_user,
+        old_operator: old_operator,
+        new_operator: new_operator,
+        history_type: history_type
+      )
+
+      #send email based on the action performed here
+      case history_type
+      when "manual_assignment"
+        UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+        UserMailer.send_job_accepted_email(@job).deliver_later
+      when "job_dropped"
+        UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+        UserMailer.send_job_dropped_email(@job, current_user).deliver_later
+      when "job_re_assigned"
+        UserMailer.send_assigned_to_job_email(@job, current_user).deliver_later
+        UserMailer.send_unassigned_from_job_email(@job, old_operator, current_user).deliver_later
+        UserMailer.send_operator_reassigned_email(@job, old_operator, current_user).deliver_later
+      end
+
+      notice =
+        case history_type
+        when "manual_assignment"
+          "Operator assigned successfully."
+        when "job_dropped"
+          "Operator dropped successfully."
+        else
+          "Operator reassigned successfully."
+        end
+
+      redirect_to @job, notice: notice, status: :see_other
+    else
+      redirect_to @job, alert: "Failed to reassign operator.", status: :unprocessable_content
     end
   end
 
@@ -187,16 +287,29 @@ class JobsController < ApplicationController
     old_status = @job.get_status_for_display
 
     if @job.update(status: :complete)
-      UserMailer.send_job_completed_email(@job).deliver_later
       JobStatusHistory.create!(
         job: @job,
         old_status: old_status,
         new_status: "complete",
-        initiator: current_user
+        initiator: current_user,
+        history_type: "status_update"
       )
+      case current_user.role
+      when "operator"
+        # send email to client
+        UserMailer.send_job_completed_email(@job, @job.client).deliver_later
+      when "admin", "owner"
+        # send email to client and operator
+        UserMailer.send_job_completed_email(@job, @job.client).deliver_later
+
+        # have to be safe as jobs with no operator can be cancelled
+        if @job.operator.present?
+          UserMailer.send_job_completed_email(@job, @job.operator).deliver_later
+        end
+      end
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
-      redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
+      redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_content
     end
   end
 
@@ -213,28 +326,35 @@ class JobsController < ApplicationController
 
     if @job.update(status: :cancelled)
       # only send email to client that their job was cancelled after it has been assigned to an operator
-      if @job.operator.present?
-        UserMailer.send_job_cancelled_email(@job).deliver_later
-      end
       JobStatusHistory.create!(
         job: @job,
         old_status: old_status,
         new_status: "cancelled",
-        initiator: current_user
+        initiator: current_user,
+        # this is the only situation i cant easily resolve in the model, cancelling pending jobs is trouble but this shouldn't affect anything
+        history_type: "status_update"
       )
+      case current_user.role
+      when "operator"
+        # send email to client
+        UserMailer.send_job_cancelled_email(@job, @job.client, current_user).deliver_later
+      when "admin", "owner"
+        # send email to client and operator
+        UserMailer.send_job_cancelled_email(@job, @job.client, current_user).deliver_later
+
+        # have to be safe as jobs with no operator can be cancelled
+        if @job.operator.present?
+          UserMailer.send_job_cancelled_email(@job, @job.operator, current_user).deliver_later
+        end
+      end
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
-      redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
+      redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_content
     end
   end
 
   # PATCH /jobs/1/submit_draft
   def submit_draft
-    unless @job.draft?
-      redirect_to @job, alert: "This job is not a draft."
-      return
-    end
-
     input_files = @job.image_files.reject(&:output_file?).sort_by(&:id)
     has_pdf = input_files[0]&.file_path.present?
     has_dicom = input_files[1]&.file_path.present?
@@ -246,6 +366,10 @@ class JobsController < ApplicationController
 
     if @job.update(status: :pending)
       attach_uploaded_file(@job, ensure_placeholders: true)
+      # notify all operators of the new job
+      User.where(role: :operator).each do |operator|
+        UserMailer.send_new_job_email(@job, operator).deliver_later
+      end
       redirect_to @job, notice: "Job submitted successfully."
     else
       redirect_to @job, alert: "Failed to submit job."
@@ -313,6 +437,9 @@ class JobsController < ApplicationController
     output_image.file_type = metadata
     output_image.save!
 
+    # send client an email that the report has been uploaded
+    UserMailer.send_report_uploaded_email(@job, current_user).deliver_later
+
     redirect_to @job, notice: "Output file uploaded."
   rescue StandardError => e
     redirect_to @job, alert: "Output upload failed: #{e.message}"
@@ -339,6 +466,8 @@ class JobsController < ApplicationController
         params.expect(job: [ :status, :custom_status ])
       when "submit_draft"
         {}
+      when "re_assign"
+        params.permit(:operator_id, :_method, :authenticity_token, :commit, :id)
       end
     end
 

@@ -2,15 +2,16 @@
 #
 # Table name: jobs
 #
-#  id            :bigint           not null, primary key
-#  custom_status :string
-#  description   :text
-#  status        :integer          not null
-#  title         :string           not null
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  client_id     :bigint           not null
-#  operator_id   :bigint
+#  id                     :bigint           not null, primary key
+#  custom_status          :string
+#  description            :text
+#  status                 :integer          not null
+#  title                  :string           not null
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  client_id              :bigint           not null
+#  google_drive_folder_id :string
+#  operator_id            :bigint
 #
 # Indexes
 #
