@@ -57,7 +57,7 @@ RSpec.describe ApplicationController, type: :controller do
       get :html_denied
 
       expect(response).to redirect_to(root_path)
-      expect(flash[:alert]).to eq("You are not authorized to access this page.")
+      expect(flash[:alert]).to eq("You are not authorized to perform this action.")
     end
 
     it "returns json access denied responses as forbidden" do
