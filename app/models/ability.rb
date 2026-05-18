@@ -69,6 +69,8 @@ class Ability
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
       can :cancel_job, Job, client_id: user.id, status: [:pending]
+      can :destroy, Job, client_id: user.id, status: Job.statuses[:draft]
+      can :revert_to_draft, Job, client_id: user.id, status: Job.statuses[:pending], operator_id: nil
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
       # client can only change status when no operator is assigned yet
       can :update_status, Job, client_id: user.id, operator_id: nil
@@ -89,6 +91,18 @@ class Ability
       can :read, User
       can :assign_role, User
       can :update, User
+    end
+
+    #
+    # OTHER PERMISSIONS
+    #
+    unless user.admin? || user.owner? || user.unassigned?
+      can :help, :pages
+      can :send_help_email, :pages
+    end
+    if user.unassigned?
+      can :sign_up, :pages
+      can :send_sign_up_email, :pages
     end
   end
 end

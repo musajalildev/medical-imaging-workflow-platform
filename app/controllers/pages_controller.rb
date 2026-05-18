@@ -1,5 +1,6 @@
 class PagesController < ApplicationController
   skip_before_action :authenticate_user!, only: [:home, :landing]
+  before_action :authorize_pages, only: [ :sign_up, :send_sign_up_email, :help, :send_help_email]
 
   
   def home
@@ -25,6 +26,34 @@ class PagesController < ApplicationController
     @completion_rate = total_closed.positive? ? ((@completed_jobs.to_f / total_closed) * 100).round(1) : 0
   end
 
+  def help
+  end
+
+  def send_help_email
+    # verify all necessary parameters are here
+    # job is not required, only issue and expansion
+    if params[:issue_type].blank?
+      return redirect_to help_path, alert: "Please select an issue."
+    elsif params[:issue_type] == "Other" && params[:expansion].blank? 
+      return redirect_to help_path, alert: "Please provide an explanation of your issue."
+    else
+      # paramters provided are ok
+      job = Job.find_by(id: params[:job_id]) if params[:job_id].present?
+      issue = params[:issue_type]
+      expansion = params[:expansion]
+
+      admins = User.where(role: :admin)
+      if admins.empty?
+        return redirect_to help_path, alert: "Sorry, there are no system administrators available to contact at this time."
+      else
+        admins.each do |admin|
+          UserMailer.send_help_email(admin, current_user, job, issue, expansion).deliver_later
+        end
+        return redirect_to help_path, notice: "Help request sent successfully, a system administrator will be in touch."
+      end
+    end
+  end
+
   def sign_up
   end
 
@@ -47,10 +76,25 @@ class PagesController < ApplicationController
       # only cache if email is sent successfully to prevent blocking users if there is an issue with email delivery
       Rails.cache.write(cache_key, true, expires_in: 7.day)
       User.where(role: :admin).each do |admin|
-        UserMailer.with(admin, current_user.email, role, comment).send_sign_up_email.deliver_later
+        UserMailer.send_sign_up_email(admin, current_user.email, role, comment).deliver_later
       end
       redirect_to sign_up_path, notice: "Sign up email sent successfully!"
     end
   end
+
+  private
+
+    def authorize_pages
+      case action_name
+      when "help"
+        authorize! :help, :pages
+      when "send_help_email"
+        authorize! :send_help_email, :pages
+      when "sign_up"
+        authorize! :sign_up, :pages
+      when "send_sign_up_email"
+        authorize! :send_sign_up_email, :pages
+      end
+    end
 
 end
