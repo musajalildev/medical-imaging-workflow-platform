@@ -27,6 +27,7 @@ class Job < ApplicationRecord
   belongs_to :client, class_name: "User"
   belongs_to :operator, class_name: "User", optional: true
   has_many :image_files, dependent: :destroy
+  has_many :job_status_history, dependent: :destroy
 
   before_validation :set_default_status
   after_create :create_google_drive_folder
@@ -35,12 +36,23 @@ class Job < ApplicationRecord
   validates :description, presence: true, unless: :draft?
   validates :custom_status, length: { maximum: 40 }, allow_blank: true
 
-  STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft ]
+  STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft, :deletable ]
   enum :status, STATUSES
 
   # get all the status history for this job, ordered by most recent first
   def status_histories
     JobStatusHistory.where(job: self).order(created_at: :desc)
+  end
+
+  # add queue for deletion where appropriate
+  def get_title_for_display(user)
+    if closed?
+      if user.admin? || user.owner?
+        return "[Queued for Deletion] #{title.humanize}"
+      end
+    end
+    # return if not closed or for client/operator
+    return title.humanize
   end
 
   # get status for display, using custom status if status is set to custom

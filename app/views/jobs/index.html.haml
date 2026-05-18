@@ -36,7 +36,7 @@
       .d-flex.align-items-center.gap-3
         - unless @tab == 'drafts'
           = f.select :status,
-              Job::STATUSES.reject { |s| s == :draft }.map { |s| [s.to_s.humanize, s] },
+              Job::STATUSES.reject { |s| s == :draft || s == :deletable }.map { |s| [s.to_s.humanize, s] },
               { include_blank: 'All Statuses', selected: params[:status] },
               class: 'form-select form-select-sm', style: 'width: auto', onchange: 'this.form.submit()'
         %p.text-muted.mb-0.small= "Showing #{@jobs.count} of #{@total_count}"
@@ -57,7 +57,7 @@
         - else
           - @jobs.each do |job|
             %tr
-              %td= job.title.humanize
+              %td= job.get_title_for_display(current_user)
               %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
               %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
               %td= job.get_status_for_display

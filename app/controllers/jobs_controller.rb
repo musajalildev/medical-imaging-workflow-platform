@@ -4,7 +4,9 @@ require "googleauth"
 class JobsController < ApplicationController
   load_and_authorize_resource param_method: :job_params, except: :upload_output
   MAX_FILE_SIZE_BYTES = 1_073_741_824 # 1 GB
-  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job ]
+  before_action :set_job, only: %i[ show edit update destroy upload_output update_status self_assign complete_job cancel_job submit_draft revert_to_draft ]
+  before_action :check_client_role, only: %i[ new create edit update submit_draft ]
+
   # GET /jobs
   def index
     if current_user&.operator?
@@ -294,6 +296,9 @@ class JobsController < ApplicationController
         initiator: current_user,
         history_type: "status_update"
       )
+      # schedule job for deletion in 30 days and mark as queued for deletion to trigger any UI changes related to pending deletion
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "complete"), run_at: 30.days.from_now) # TODO: set to days for prod
+
       case current_user.role
       when "operator"
         # send email to client
@@ -320,8 +325,7 @@ class JobsController < ApplicationController
 
     if @job.draft?
       @job.destroy!
-      redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
-      return
+      return redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
     end
 
     if @job.update(status: :cancelled)
@@ -334,6 +338,11 @@ class JobsController < ApplicationController
         # this is the only situation i cant easily resolve in the model, cancelling pending jobs is trouble but this shouldn't affect anything
         history_type: "status_update"
       )
+
+      # schedule job for deletion in 30 days and mark as queued for deletion to trigger any UI changes related to pending deletion
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "cancelled"), run_at: 30.days.from_now)
+
+
       case current_user.role
       when "operator"
         # send email to client
@@ -346,10 +355,23 @@ class JobsController < ApplicationController
         if @job.operator.present?
           UserMailer.send_job_cancelled_email(@job, @job.operator, current_user).deliver_later
         end
-      end
+      end      
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_content
+    end
+  end
+
+  def revert_to_draft
+    unless @job.pending? && @job.operator.nil?
+      redirect_to @job, alert: "Only unassigned pending jobs can be reverted to draft.", status: :see_other
+      return
+    end
+
+    if @job.update(status: :draft)
+      redirect_to @job, notice: "Job was reverted to draft.", status: :see_other
+    else
+      redirect_to @job, alert: "Failed to revert job to draft.", status: :unprocessable_entity
     end
   end
 
@@ -384,8 +406,9 @@ class JobsController < ApplicationController
       return
     end
 
+    rename_drive_folder_deleted
     @job.destroy!
-    redirect_to jobs_path, notice: "Job was successfully destroyed.", status: :see_other
+    redirect_to jobs_path, notice: "Job was successfully deleted.", status: :see_other
   rescue StandardError => e
     redirect_to @job, alert: "Job delete failed: #{e.message}"
   end
@@ -623,6 +646,22 @@ class JobsController < ApplicationController
       end
 
       nil
+    end
+
+    def rename_drive_folder_deleted
+      folder_id = @job.google_drive_folder_id
+      return unless folder_id.present?
+
+      drive_service = build_drive_service
+      current_name = drive_service.get_file(folder_id, fields: "name", supports_all_drives: true).name
+      drive_service.update_file(
+        folder_id,
+        Google::Apis::DriveV3::File.new(name: "#{current_name} (deleted)"),
+        supports_all_drives: true,
+        fields: "id"
+      )
+    rescue StandardError => e
+      Rails.logger.error("Failed to rename Drive folder for job #{@job.id}: #{e.message}")
     end
 
     def purge_drive_file!(drive_service, file_id)
