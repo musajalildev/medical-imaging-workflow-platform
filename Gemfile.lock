@@ -192,6 +192,10 @@ GEM
       net-ldap (>= 0.16.0)
     diff-lcs (1.6.2)
     docile (1.4.1)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     draper (4.0.4)
       actionpack (>= 5.0)
       activemodel (>= 5.0)
@@ -282,6 +286,7 @@ GEM
     marcel (1.0.4)
     matrix (0.4.3)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.9)
     minitest (5.25.5)
     msgpack (1.8.0)
     multi_json (1.19.1)
@@ -306,6 +311,9 @@ GEM
       net-protocol
     net-ssh (7.3.0)
     nio4r (2.7.4)
+    nokogiri (1.18.9)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.9-arm64-darwin)
@@ -316,6 +324,7 @@ GEM
     os (1.1.4)
     ostruct (0.6.3)
     package_json (0.1.0)
+    pg (1.6.2)
     pg (1.6.2-aarch64-linux)
     pg (1.6.2-arm64-darwin)
     pg (1.6.2-x86_64-linux)
@@ -493,6 +502,8 @@ PLATFORMS
   arm64-darwin-22
   arm64-darwin-23
   arm64-darwin-24
+  arm64-darwin-25
+  ruby
   x86_64-linux
 
 DEPENDENCIES
@@ -518,6 +529,7 @@ DEPENDENCIES
   delayed_job
   delayed_job_active_record
   devise
+  dotenv-rails
   draper
   drb
   ed25519 (>= 1.2, < 2.0)

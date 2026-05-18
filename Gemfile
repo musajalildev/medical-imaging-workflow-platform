@@ -59,6 +59,8 @@ gem 'sanitize_email'
 gem 'google-apis-drive_v3'
 gem 'googleauth'
 
+gem 'dotenv-rails'
+
 gem 'sentry-ruby'
 gem 'sentry-rails'
 
