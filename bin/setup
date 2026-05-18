@@ -12,9 +12,11 @@ FileUtils.chdir APP_ROOT do
   # This script is idempotent, so that you can run it at any time and get an expectable outcome.
   # Add necessary setup steps to this file.
 
-  puts "== Installing dependencies =="
+  puts "== Installing gem  dependencies =="
   system("bundle check") || system!("bundle install")
 
+  puts "\n== Installing javascript dependencies  =="
+  system! "yarn install --check-files"
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
   #   FileUtils.cp "config/database.yml.sample", "config/database.yml"
@@ -25,6 +27,9 @@ FileUtils.chdir APP_ROOT do
 
   puts "\n== Removing old logs and tempfiles =="
   system! "bin/rails log:clear tmp:clear"
+
+  puts "\n== Seeding database =="
+  system! "bin/rails db:seed"
 
   unless ARGV.include?("--skip-server")
     puts "\n== Starting development server =="
