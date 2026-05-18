@@ -112,7 +112,7 @@ class UserMailer < ApplicationMailer
 
   def send_help_email(recipient, initiator, job, issue, expansion)
     # recipient, initiator, issue and expansion are required
-    return if recipient.blank? || initiator.blank? || issue.blank? || expansion.blank?
+    return if recipient.blank? || initiator.blank? || issue.blank?
 
     @job = job
     @initiator = initiator

@@ -9,4 +9,8 @@
 <p><strong>Issue:</strong> <%= @issue %></p>
 
 <p>Expansion provided by the user:</p>
-<p><%= simple_format(@expansion) %></p>
+<% if @expansion.blank? %>
+  <p>No expansion provided.</p>
+<% else %>
+  <p><%= simple_format(@expansion) %></p>
+<% end %>
