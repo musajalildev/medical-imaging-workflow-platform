@@ -48,11 +48,11 @@ class Job < ApplicationRecord
   def get_title_for_display(user)
     if closed?
       if user.admin? || user.owner?
-        return "[Queued for Deletion] #{title.humanize}"
+        return "[Queued for Deletion] #{title.titleize}"
       end
     end
     # return if not closed or for client/operator
-    return title.humanize
+    return title.titleize
   end
 
   # get status for display, using custom status if status is set to custom
