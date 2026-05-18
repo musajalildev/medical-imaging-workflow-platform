@@ -11,7 +11,8 @@
         .job-header-bar
           .job-header-main
             %span.job-form-section__eyebrow Job overview
-            %h1.h3.mb-2= @job.title
+            - display_title = (current_user&.admin? || current_user&.owner?) ? @job.title : @job.title.delete_prefix("[Queued for Deletion] ")
+            %h1.h3.mb-2= display_title
             #status_display.job-status-pill= @job.get_status_for_display
             - if can_use_status_dropdown
               .status-under-pill

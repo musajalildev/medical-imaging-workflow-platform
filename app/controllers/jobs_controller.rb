@@ -198,7 +198,7 @@ class JobsController < ApplicationController
         new_status: "complete",
         initiator: current_user
       )
-      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "complete"), run_at: 30.seconds.from_now) # TODO: set to days for prod
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "complete"), run_at: 30.days.from_now) # TODO: set to days for prod
       mark_job_queued_for_deletion(@job)
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
@@ -228,7 +228,7 @@ class JobsController < ApplicationController
         new_status: "cancelled",
         initiator: current_user
       )
-      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "cancelled"), run_at: 2.minutes.from_now)
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "cancelled"), run_at: 30.days.from_now)
       mark_job_queued_for_deletion(@job)
       redirect_to jobs_path, notice: "Job was successfully cancelled.", status: :see_other
     else

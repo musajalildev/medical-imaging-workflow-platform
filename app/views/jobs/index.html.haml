@@ -57,7 +57,8 @@
         - else
           - @jobs.each do |job|
             %tr
-              %td= job.title.humanize
+              - display_title = (current_user&.admin? || current_user&.owner?) ? job.title : job.title.delete_prefix("[Queued for Deletion] ")
+              %td= display_title.humanize
               %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
               %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
               %td= job.status.to_s.humanize
