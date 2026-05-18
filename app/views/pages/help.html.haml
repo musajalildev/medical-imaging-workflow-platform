@@ -1,0 +1,46 @@
+%h1.mb-4
+  Help
+
+%p.mb-4
+  If you are having trouble or have ran into an issue you cannot resolve by yourself, fill in the form below and an admin will be in touch to help.
+
+.row.justify-content-left.mt-4
+  .col-md-8
+    .card.shadow-sm
+      .card-body.p-4
+        = form_with url: send_help_email_path, method: :post do |form|
+          .mb-4
+            - job_options = current_user.client? ? Job.where(client: current_user) :  Job.where(operator: current_user)
+            %label.form-label.fw-semibold Please select the job you are having issues with (if applicable):
+            = form.select :job_id, options_for_select(job_options.pluck(:title, :id)), { include_blank: "No related job" }, class: "form-select"
+
+          - issues = [ "Request new operator", "Request job deletion", "Request account deletion", "Incorrect role in system", "Other" ]
+
+          .mb-3
+            %label.form-label.fw-semibold.mb-2 Select Issue:
+
+            .d-flex.flex-wrap.gap-3
+              - issues.each_with_index do |issue, i|
+                .form-check.form-check-inline
+                  %input.form-check-input{
+                    type: "radio",
+                    name: "issue_type",
+                    id: "issue_#{i}",
+                    value: issue
+                  }
+                  %label.form-check-label{ for: "issue_#{i}" }
+                    = issue
+
+          .mb-4
+            %label.form-label.fw-semibold{ for: "text_input" }
+              Please expand:
+
+            %textarea.form-control{
+              id: "text_input",
+              name: "expansion",
+              rows: "4",
+              placeholder: "Type here..."
+            }
+
+          %button.btn.btn-primary.px-4{ type: "submit" }
+            Send

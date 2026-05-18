@@ -35,8 +35,23 @@ class Ability
     #
     # JOB PERMISSIONS
     #
-    if user.admin? || user.owner?
+    if user.owner?
       can :manage, Job
+       # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
+      cannot :unassign, Job
+
+    elsif user.admin?
+      can :manage, Job
+      cannot :new, Job
+      cannot :create, Job
+      cannot :update, Job
+       # jobs can only be completed once they have been assigned
+      cannot :complete_job, Job, operator_id: nil
+      # unassigning reserved for operators only, re-assign to nil to remove op for admins
+      cannot :unassign, Job
+
 
     elsif user.operator?
       can :read, Job
@@ -46,6 +61,7 @@ class Ability
       can :complete_job, Job, operator_id: user.id
       can :upload_output, Job, operator_id: user.id, status: Job.statuses.except("complete").values
       can :self_assign, Job
+      can :unassign, Job, operator_id: user.id
 
     elsif user.client?
       can :read, Job, client_id: user.id
@@ -56,6 +72,8 @@ class Ability
       can :destroy, Job, client_id: user.id, status: Job.statuses[:draft]
       can :revert_to_draft, Job, client_id: user.id, status: Job.statuses[:pending], operator_id: nil
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
+      # client can only change status when no operator is assigned yet
+      can :update_status, Job, client_id: user.id, operator_id: nil
     end
 
     #
@@ -73,6 +91,18 @@ class Ability
       can :read, User
       can :assign_role, User
       can :update, User
+    end
+
+    #
+    # OTHER PERMISSIONS
+    #
+    unless user.admin? || user.owner? || user.unassigned?
+      can :help, :pages
+      can :send_help_email, :pages
+    end
+    if user.unassigned?
+      can :sign_up, :pages
+      can :send_sign_up_email, :pages
     end
   end
 end

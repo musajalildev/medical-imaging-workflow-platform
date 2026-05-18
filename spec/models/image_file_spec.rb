@@ -17,8 +17,11 @@
 #
 #  fk_rails_...  (job_id => jobs.id)
 #
-require 'rails_helper'
+# spec/models/image_file_spec.rb
+require "rails_helper"
 
 RSpec.describe ImageFile, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it "defines the ImageFile class" do
+    expect(described_class.name).to eq("ImageFile")
+  end
 end

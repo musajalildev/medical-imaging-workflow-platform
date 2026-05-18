@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       patch :cancel_job
       patch :self_assign
       patch :submit_draft
+      patch :unassign
+      patch :re_assign
       patch :revert_to_draft
     end
   end
@@ -36,6 +38,8 @@ Rails.application.routes.draw do
   get '/landing', to: 'pages#landing'
   get '/sign_up', to: 'pages#sign_up'
   post "send_sign_up_email", to: "pages#send_sign_up_email", as: :send_sign_up_email
+  get '/help', to: 'pages#help'
+  post "send_help_email", to: "pages#send_help_email", as: :send_help_email
 
   # Defines the root path route ("/")
   root "pages#landing"

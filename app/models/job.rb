@@ -2,15 +2,16 @@
 #
 # Table name: jobs
 #
-#  id            :bigint           not null, primary key
-#  custom_status :string
-#  description   :text
-#  status        :integer          not null
-#  title         :string           not null
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  client_id     :bigint           not null
-#  operator_id   :bigint
+#  id                     :bigint           not null, primary key
+#  custom_status          :string
+#  description            :text
+#  status                 :integer          not null
+#  title                  :string           not null
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  client_id              :bigint           not null
+#  google_drive_folder_id :string
+#  operator_id            :bigint
 #
 # Indexes
 #
@@ -33,6 +34,7 @@ class Job < ApplicationRecord
 
   validates :title, presence: true
   validates :description, presence: true, unless: :draft?
+  validates :custom_status, length: { maximum: 40 }, allow_blank: true
 
   STATUSES = [ :pending, :assigned, :in_progress, :custom, :complete, :cancelled, :draft, :deletable ]
   enum :status, STATUSES
@@ -50,6 +52,31 @@ class Job < ApplicationRecord
       status.to_s.humanize
     end
   end
+
+  # what statuses are valid in the jobs state - used to inform which statuses appear in the change status dropdown
+  def valid_statuses
+    # ignore complete, cancelled and draft as those are closed job states
+    if operator.nil?
+      return [ :pending, :custom ]
+    else
+      return [ :assigned, :in_progress, :custom ]
+    end
+  end
+
+  # helper method to determine if a job has been closed already
+  def closed?
+    return true if status == "complete" || status == "cancelled"
+
+    return false
+  end
+
+  # helper method to determine if an operator is assigned to a job
+  def assigned?
+    return true if operator_id.present?
+
+    return false
+  end
+  
 
   private
 

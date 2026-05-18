@@ -61,7 +61,7 @@
               %td= display_title.humanize
               %td= [job.client.givenname, job.client.sn].compact.join(' ').presence || job.client.username || job.client.email
               %td= job.operator ? ([job.operator.givenname, job.operator.sn].compact.join(' ').presence || job.operator.username || job.operator.email) : '-'
-              %td= job.status.to_s.humanize
+              %td= job.get_status_for_display
               %td= job.created_at.strftime('%d %b, %Y ')
               %td= link_to 'Details', job_path(job, tab: @tab)
               - if current_user&.operator? && @tab == 'unassigned' && job.operator_id.nil?

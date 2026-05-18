@@ -1,0 +1,12 @@
+<p>Hello,</p>
+
+<% if @job.present? %>
+  <p> User <strong><%= @initiator.email %></strong> has an issue with job: <strong><%= @job.title %> (ID: <%= @job.id %>)</strong>. </p>
+<% else %>
+  <p> User <strong><%= @initiator.email %></strong> has an issue not involving a job. </p>
+<% end %>
+
+<p><strong>Issue:</strong> <%= @issue %></p>
+
+<p>Expansion provided by the user:</p>
+<p><%= simple_format(@expansion) %></p>

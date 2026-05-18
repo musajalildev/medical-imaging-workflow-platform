@@ -7,6 +7,13 @@
 #   Character.create(name: "Luke", movie: movies.first)
 
 if Rails.env.production?
+	owner_email = ENV['OWNER_EMAIL'].presence
+	if owner_email
+		User.find_or_create_by(email: owner_email) do |u|
+			u.role = :owner
+		end
+	end
+
 	[
 		{username: "aca24bdg", role: :owner, email: "bdgrassie1@sheffield.ac.uk", givenname: "Ben", sn: "D Grassie"},
 		{username: "aca23ejw", role: :admin, email: "ejwood1@sheffield.ac.uk", givenname: "Ethan", sn: "Wood"},
@@ -39,17 +46,24 @@ if Rails.env.production?
 end
 
 if Rails.env.development?
+	owner_email = ENV['OWNER_EMAIL'].presence
+	if owner_email
+		User.find_or_create_by(email: owner_email) do |u|
+			u.role = :owner
+		end
+	end
+
 	[
 		{ username: "dev_admin",    role: :admin,    givenname: "Dev",    sn: "Admin",    email: "dev_admin@example.com" },
 		{ username: "dev_operator", role: :operator, givenname: "Dev",    sn: "Operator", email: "dev_operator@example.com" },
 		{ username: "dev_client",   role: :client,   givenname: "Dev",    sn: "Client",   email: "dev_client@example.com" },
 		{ username: "dev_owner",    role: :owner,    givenname: "Dev",    sn: "Owner",    email: "dev_owner@example.com" },
-		{username: "aca24bdg", role: :owner, email: "bdgrassie1@sheffield.ac.uk", givenname: "Ben", sn: "D Grassie"},
-		{username: "aca23ejw", role: :admin, email: "ejwood1@sheffield.ac.uk", givenname: "Ethan", sn: "Wood"},
-		{username: "aca24iu", role: :admin, email: "iuteh-obuseh1@sheffield.ac.uk", givenname: "Ijeoma", sn: "Uteh-Obuseh"},
-		{username: "aca24maj", role: :operator, email: "majalil1@sheffield.ac.uk", givenname: "Musa", sn: "A Jalil"},
-		{username: "aca24ok", role: :operator, email: "okrasnovidov1@sheffield.ac.uk", givenname: "Alex", sn: "Krasnovidov"},
-		{username: "acc24rj", role: :client, email: "rjones26@sheffield.ac.uk", givenname: "Ryan ", sn: "Jones"}
+		# {username: "aca24bdg", role: :owner, email: "bdgrassie1@sheffield.ac.uk", givenname: "Ben", sn: "D Grassie"},
+		# {username: "aca23ejw", role: :admin, email: "ejwood1@sheffield.ac.uk", givenname: "Ethan", sn: "Wood"},
+		# {username: "aca24iu", role: :admin, email: "iuteh-obuseh1@sheffield.ac.uk", givenname: "Ijeoma", sn: "Uteh-Obuseh"},
+		# {username: "aca24maj", role: :operator, email: "majalil1@sheffield.ac.uk", givenname: "Musa", sn: "A Jalil"},
+		# {username: "aca24ok", role: :operator, email: "okrasnovidov1@sheffield.ac.uk", givenname: "Alex", sn: "Krasnovidov"},
+		# {username: "acc24rj", role: :client, email: "rjones26@sheffield.ac.uk", givenname: "Ryan ", sn: "Jones"}
 	].each do |attrs|
 		User.find_or_create_by(username: attrs[:username]) do |u|
 			u.assign_attributes(attrs)
