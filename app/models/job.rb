@@ -44,6 +44,17 @@ class Job < ApplicationRecord
     JobStatusHistory.where(job: self).order(created_at: :desc)
   end
 
+  # add queue for deletion where appropriate
+  def get_title_for_display(user)
+    if closed?
+      if user.admin? || user.owner?
+        return "[Queued for Deletion] #{title.humanize}"
+      end
+    end
+    # return if not closed or for client/operator
+    return title.humanize
+  end
+
   # get status for display, using custom status if status is set to custom
   def get_status_for_display
     if status == "custom"

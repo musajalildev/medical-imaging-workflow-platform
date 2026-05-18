@@ -298,7 +298,6 @@ class JobsController < ApplicationController
       )
       # schedule job for deletion in 30 days and mark as queued for deletion to trigger any UI changes related to pending deletion
       Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "complete"), run_at: 30.days.from_now) # TODO: set to days for prod
-      mark_job_queued_for_deletion(@job)
 
       case current_user.role
       when "operator"
@@ -326,8 +325,7 @@ class JobsController < ApplicationController
 
     if @job.draft?
       @job.destroy!
-      redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
-      return
+      return redirect_to jobs_path(tab: "drafts"), notice: "Draft was deleted.", status: :see_other
     end
 
     if @job.update(status: :cancelled)
@@ -343,7 +341,6 @@ class JobsController < ApplicationController
 
       # schedule job for deletion in 30 days and mark as queued for deletion to trigger any UI changes related to pending deletion
       Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "cancelled"), run_at: 30.days.from_now)
-      mark_job_queued_for_deletion(@job)
 
 
       case current_user.role
@@ -358,11 +355,8 @@ class JobsController < ApplicationController
         if @job.operator.present?
           UserMailer.send_job_cancelled_email(@job, @job.operator, current_user).deliver_later
         end
-      end
+      end      
       redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
-      
-
-      redirect_to jobs_path, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_content
     end
@@ -482,10 +476,6 @@ class JobsController < ApplicationController
 
     def authorize_job
       authorize! :manage, @job
-    end
-
-    def mark_job_queued_for_deletion(job)
-      job.update_column(:title, "[Queued for Deletion] #{job.title}")
     end
 
     # Only allow a list of trusted parameters through.

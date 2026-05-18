@@ -9,8 +9,7 @@
         .job-header-bar
           .job-header-main
             %span.job-form-section__eyebrow Job overview
-            - display_title = (current_user&.admin? || current_user&.owner?) ? @job.title : @job.title.delete_prefix("[Queued for Deletion] ")
-            %h1.h3.mb-2= display_title
+            %h1.h3.mb-2= @job.get_title_for_display(current_user)
             #status_display.job-status-pill= @job.get_status_for_display
             - if can?(:update_status, @job)
               .status-under-pill
