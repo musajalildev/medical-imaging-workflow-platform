@@ -34,7 +34,7 @@ class PagesController < ApplicationController
     # job is not required, only issue and expansion
     if params[:issue_type].blank?
       return redirect_to help_path, alert: "Please select an issue."
-    elsif params[:expansion].blank?
+    elsif params[:issue_type] == "Other" && params[:expansion].blank? 
       return redirect_to help_path, alert: "Please provide an explanation of your issue."
     else
       # paramters provided are ok
