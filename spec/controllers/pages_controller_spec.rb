@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe PagesController, type: :controller do
+  let(:unassigned_user) { create(:user, role: :unassigned, email: "user@example.com") }
+
   before do
     allow(controller).to receive(:authenticate_user!).and_return(true)
     allow(UserMailer).to receive_message_chain(:with, :send_sign_up_email, :deliver_later).and_return(true)
@@ -8,9 +10,16 @@ RSpec.describe PagesController, type: :controller do
   end
 
   describe "GET #sign_up" do
-    it "is successful" do
+    it "is successful when user is unassigned" do
+      sign_in unassigned_user
       get :sign_up
       expect(response).to be_successful
+    end
+
+    it "rejects users with a role" do
+      client = create(:user, role: :client)
+      get :sign_up
+      expect(response).to redirect_to(root_path)
     end
   end
 
@@ -51,8 +60,7 @@ RSpec.describe PagesController, type: :controller do
 
   describe "POST #send_sign_up_email" do
     it "redirects with an alert when role is missing" do
-      user = double("User", email: "client@example.com")
-      allow(controller).to receive(:current_user).and_return(user)
+      allow(controller).to receive(:current_user).and_return(unassigned_user)
 
       post :send_sign_up_email, params: { comment: "Please approve" }
 
@@ -61,8 +69,7 @@ RSpec.describe PagesController, type: :controller do
     end
 
     it "redirects with an alert when the email was already sent recently" do
-      user = double("User", email: "client@example.com")
-      allow(controller).to receive(:current_user).and_return(user)
+      allow(controller).to receive(:current_user).and_return(unassigned_user)
       allow(Rails.cache).to receive(:read).and_return(true)
 
       post :send_sign_up_email, params: { role_selection: "client", comment: "Please approve" }
@@ -72,8 +79,7 @@ RSpec.describe PagesController, type: :controller do
     end
 
     it "sends the email when the role is present and the cache is empty" do
-      user = double("User", email: "client@example.com")
-      allow(controller).to receive(:current_user).and_return(user)
+      allow(controller).to receive(:current_user).and_return(unassigned_user)
       allow(Rails.cache).to receive(:read).and_return(nil)
       allow(Rails.cache).to receive(:write)
 
