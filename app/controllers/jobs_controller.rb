@@ -198,6 +198,8 @@ class JobsController < ApplicationController
         new_status: "complete",
         initiator: current_user
       )
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "complete"), run_at: 30.seconds.from_now) # TODO: set to days for prod
+      mark_job_queued_for_deletion(@job)
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
     else
       redirect_to @job, alert: "Failed to complete job.", status: :unprocessable_entity
@@ -226,7 +228,9 @@ class JobsController < ApplicationController
         new_status: "cancelled",
         initiator: current_user
       )
-      redirect_to @job, notice: "Job was successfully cancelled.", status: :see_other
+      Delayed::Job.enqueue(DeleteJobAfterDelayJob.new(@job.id, "cancelled"), run_at: 2.minutes.from_now)
+      mark_job_queued_for_deletion(@job)
+      redirect_to jobs_path, notice: "Job was successfully cancelled.", status: :see_other
     else
       redirect_to @job, alert: "Failed to cancel job.", status: :unprocessable_entity
     end
@@ -344,6 +348,10 @@ class JobsController < ApplicationController
 
     def authorize_job
       authorize! :manage, @job
+    end
+
+    def mark_job_queued_for_deletion(job)
+      job.update_column(:title, "[Queued for Deletion] #{job.title}")
     end
 
     # Only allow a list of trusted parameters through.
