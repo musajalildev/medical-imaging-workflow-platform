@@ -44,6 +44,10 @@
                 = link_to users_path, class: "nav-link px-3 #{'active' if current_page?(users_path)}" do
                   %i.bi-people-fill.me-1
                   Users
+              - if can?(:help, :pages)
+                = link_to help_path, class: "nav-link px-3 #{'active' if current_page?(help_path)}" do
+                  %i.bi-question-circle-fill.me-1
+                  Help
           .d-flex.align-items-center.gap-2.flex-wrap
             - if user_signed_in?
               %span.text-muted.small.fw-medium.me-2
