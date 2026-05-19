@@ -72,7 +72,7 @@ class Ability
       can :destroy, Job, client_id: user.id, status: Job.statuses[:draft]
       can :revert_to_draft, Job, client_id: user.id, status: Job.statuses[:pending], operator_id: nil
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
-      # client can only change status when no operator is assigned yet and its not a dradt
+      # client can only change status when no operator is assigned yet and its not a draft
       can :update_status, Job, client_id: user.id, operator_id: nil
       cannot :update_status, Job, status: Job.statuses[:draft]
     end

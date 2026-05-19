@@ -9,7 +9,6 @@ RSpec.describe Ability, type: :model do
   let(:other_client)  { create(:user, role: :client) }
 
   let(:own_job)   { Job.create!(title: 'Own Job', description: 'some description', status: :pending, client: client_user) }
-  let(:own_assigned_job) { Job.create!(title: 'My Assigned Job', description: 'some description', status: :assigned, client: client_user, operator: operator_user) }
   let(:other_job) { Job.create!(title: 'Other Job', description: 'some description', status: :pending, client: other_client) }
   let(:assigned_to_operator) { Job.create!(title: 'Assigned Job', description: 'some description', status: :assigned, client: other_client, operator: operator_user) }
   let(:completed_assigned_job) { Job.create!(title: 'Completed Assigned Job', description: 'some description', status: :complete, client: other_client, operator: operator_user) }
@@ -30,10 +29,10 @@ RSpec.describe Ability, type: :model do
     it { is_expected.not_to be_able_to(:manage, own_job) }
     it { is_expected.to     be_able_to(:update, own_job) }
     it { is_expected.to     be_able_to(:create, own_job) }
-    it { is_expected.to     be_able_to(:cancel_job, own_job) }
+    it { is_expected.not_to     be_able_to(:cancel_job, own_job) }
+    it { is_expected.to     be_able_to(:revert_to_draft, own_job) }
     it { is_expected.not_to be_able_to(:cancel_job, other_job) }
     it { is_expected.to be_able_to(:update_status, own_job) }
-    it { is_expected.not_to be_able_to(:update_status, own_assigned_job) }
     it { is_expected.not_to be_able_to(:complete_job, own_job) }
     it { is_expected.not_to be_able_to(:destroy, own_job) }
   end
