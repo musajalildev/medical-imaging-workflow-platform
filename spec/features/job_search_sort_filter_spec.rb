@@ -197,42 +197,60 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
       end
     end
 
-    # describe "search by client name" do
-    #   let(:specific_client) { create(:user, role: :client, 
-    #                                  givenname: "John", sn: "Smith") }
-    #   before do
-    #     create(:job, status: :pending, client: specific_client, operator: nil,
-    #            title: "John Job")
-    #   end
-
-    #   it "finds jobs by client first name" do
-    #     visit jobs_path
-        
-    #     fill_in "search", with: "John"
-    #     select "Client", from: "search_by"
-    #     click_button "Search"
-        
-    #     expect(page).to have_content("John job")
-    #   end
-
-    #   it "finds jobs by client last name" do
-    #     visit jobs_path
-        
-    #     fill_in "search", with: "Smith"
-    #     select "Client", from: "search_by"
-    #     click_button "Search"
-        
-    #     expect(page).to have_content("John job")
-    #   end
-
-    describe "search by operator name" do
-      let(:specific_operator) { create(:user, role: :operator,
-                                       givenname: "Jane", sn: "Doe") }
+    describe "search by client name" do
+      let(:specific_client) { create(:user, role: :client, givenname: "John", sn: "Smith") }
       before do
-        create(:job, status: :assigned, client: client1, operator: specific_operator,
-               title: "Operator Job")
+        create(:job, status: :pending, client: specific_client, operator: nil, title: "John Job")
+        login_as specific_client, scope: :user
       end
 
+      it "finds jobs by client name" do
+        visit jobs_path
+        
+        fill_in "search", with: "John"
+        select "Client", from: "search_by"
+        click_button "Search"
+        
+        expect(page).to have_content("John Job")
+      end
+
+      it "finds jobs by client last name" do
+        visit jobs_path
+        
+        fill_in "search", with: "Smith"
+        select "Client", from: "search_by"
+        click_button "Search"
+        
+        expect(page).to have_content("John Job")
+      end
+    end
+
+    describe "search by operator name" do
+      let(:specific_operator) { create(:user, role: :operator, givenname: "Jane", sn: "Doe") }
+      before do
+        create(:job, status: :assigned, client: client1, operator: specific_operator, title: "Operator Job")
+        login_as specific_operator, scope: :user
+      end
+
+      it "finds jobs by operator name" do
+        visit jobs_path
+        
+        fill_in "search", with: "Jane"
+        select "Operator", from: "search_by"
+        click_button "Search"
+        
+        expect(page).to have_content("Operator Job")
+      end
+
+      it "finds jobs by operator last name" do
+        visit jobs_path
+        
+        fill_in "search", with: "Doe"
+        select "Operator", from: "search_by"
+        click_button "Search"
+        
+        expect(page).to have_content("Operator Job")
+      end
     end
   end
 
@@ -246,23 +264,23 @@ RSpec.describe "Job Search, Filtering and Sorting", type: :feature do
       login_as client1, scope: :user
     end
 
-    # it "filters jobs by status" do
-    #   visit jobs_path
+    it "filters jobs by status", js: true do
+      visit jobs_path
       
-    #   select "Pending", from: "status"
+      select "Pending", from: "status"
 
-    #   expect(page).to have_content("Pending job")
-    #   expect(page).not_to have_content("Assigned job")
-    # end
+      expect(page).to have_content("Pending Job")
+      expect(page).not_to have_content("Assigned Job")
+    end
 
-    # it "shows jobs of selected status only" do
-    #   visit jobs_path
+    it "shows jobs of selected status only", js: true do
+      visit jobs_path
       
-    #   select "Complete", from: "status"
+      select "Complete", from: "status"
       
-    #   expect(page).to have_content("Complete job")
-    #   expect(page).not_to have_content("Assigned job")
-    # end
+      expect(page).to have_content("Complete Job")
+      expect(page).not_to have_content("Assigned Job")
+    end
   end
 
   describe "Sorting" do

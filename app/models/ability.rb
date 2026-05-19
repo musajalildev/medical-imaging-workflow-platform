@@ -41,6 +41,7 @@ class Ability
       cannot :complete_job, Job, operator_id: nil
       # unassigning reserved for operators only, re-assign to nil to remove op for admins
       cannot :unassign, Job
+      cannot :revert_to_draft, Job
 
     elsif user.admin?
       can :manage, Job
@@ -51,7 +52,7 @@ class Ability
       cannot :complete_job, Job, operator_id: nil
       # unassigning reserved for operators only, re-assign to nil to remove op for admins
       cannot :unassign, Job
-
+      cannot :revert_to_draft, Job
 
     elsif user.operator?
       can :read, Job
@@ -68,12 +69,12 @@ class Ability
       can :create, Job
       can :update, Job, client_id: user.id
       can :edit, Job, client_id: user.id
-      can :cancel_job, Job, client_id: user.id, status: [:pending]
       can :destroy, Job, client_id: user.id, status: Job.statuses[:draft]
       can :revert_to_draft, Job, client_id: user.id, status: Job.statuses[:pending], operator_id: nil
       can :submit_draft, Job, client_id: user.id, status: Job.statuses[:draft]
-      # client can only change status when no operator is assigned yet
+      # client can only change status when no operator is assigned yet and its not a dradt
       can :update_status, Job, client_id: user.id, operator_id: nil
+      cannot :update_status, Job, status: Job.statuses[:draft]
     end
 
     #

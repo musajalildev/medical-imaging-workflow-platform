@@ -363,11 +363,6 @@ class JobsController < ApplicationController
   end
 
   def revert_to_draft
-    unless @job.pending? && @job.operator.nil?
-      redirect_to @job, alert: "Only unassigned pending jobs can be reverted to draft.", status: :see_other
-      return
-    end
-
     if @job.update(status: :draft)
       redirect_to @job, notice: "Job was reverted to draft.", status: :see_other
     else
