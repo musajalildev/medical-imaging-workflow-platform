@@ -90,9 +90,10 @@ class UserMailer < ApplicationMailer
   end
 
   # send user an email when their job is completed
-  def send_job_completed_email(job, user)
+  def send_job_completed_email(job, user, initiator)
     return if user.nil? || job.nil?
 
+    @initiator = initiator
     @job = job
     mail(to: user.email, subject: "Your job #{@job.title} has been completed")
   end
