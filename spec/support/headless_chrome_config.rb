@@ -44,7 +44,9 @@ if ENV['SELENIUM_HOST']
 
   Capybara.configure do |config|
     if RUBY_PLATFORM.match(/linux/)
-      config.server_host = `/sbin/ip route|awk '/scope/ { print $9 }'`.chomp
+      ip = `/sbin/ip route|awk '/scope/ { print $9 }'`.chomp
+      ip = `hostname -I 2>/dev/null`.chomp.split.first if ip.empty?
+      config.server_host = ip.presence || '0.0.0.0'
     else
       config.server_host = '127.0.0.1'
     end
