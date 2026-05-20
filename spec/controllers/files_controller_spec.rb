@@ -152,4 +152,68 @@ RSpec.describe FilesController, type: :controller do
       end.not_to raise_error
     end
   end
+
+  describe "POST #upload" do
+    before do
+      allow_any_instance_of(Job).to receive(:create_google_drive_folder).and_return("existing_folder_id")
+
+      # Stub DriveService instantiation
+      allow(Google::Apis::DriveV3::DriveService).to receive(:new).and_return(drive_service)
+      allow(drive_service).to receive(:client_options).and_return(double(application_name: nil, "application_name=" => nil))
+
+      # Stub credentials
+      allow(Google::Auth::ServiceAccountCredentials).to receive(:make_creds).and_return(credentials)
+      allow(credentials).to receive(:fetch_access_token!)
+      allow(drive_service).to receive(:authorization=)
+
+      # Stub file creation
+      allow(drive_service).to receive(:create_file).and_return(created_folder)
+
+      # Prevent real file reads
+      allow(File).to receive(:open).and_call_original
+      allow(File).to receive(:open).with(Rails.root.join("service_account.json")).and_return(double)
+
+      # Stub random name generation
+      allow(SecureRandom).to receive(:uuid).and_return("random")
+
+      #Stub validation
+      # allow(controller).to receive(:validate_input_file)
+    end
+
+    # Mock Job
+    let(:job) { create(:job, title: "some title", google_drive_folder_id: "existing_folder_id") }
+    # Mock Google API objects
+    let(:drive_service) { instance_double(Google::Apis::DriveV3::DriveService) }
+    let(:credentials)   { instance_double(Google::Auth::ServiceAccountCredentials) }
+    let(:created_folder) do
+      double(
+        id: "test_folder_id",
+        web_view_link: "http://example.com",
+        web_content_link: nil
+      )
+    end
+    let(:mock_file) do
+      Rack::Test::UploadedFile.new(
+        Rails.root.join("spec/factories/files/test.pdf"),
+        "application/pdf"
+      )
+    end
+
+    context "when all params are passed", js: true do
+      it "creates the filename with new random name" do
+        expect(Google::Apis::DriveV3::File).to receive(:new).with(
+          hash_including(name: "random-test.pdf")
+        )
+
+        post :upload, params: { file: mock_file, slot: "2", job_id: job.id, relative_path: "some path" }
+      end
+
+      it "finishes with success" do
+        post :upload, params: { file: mock_file, slot: "2", job_id: job.id, relative_path: "some path" }
+        
+        json = JSON.parse(response.body, symbolize_names: true)
+        expect(json[:success]).to eq(true)
+      end
+    end
+  end
 end
