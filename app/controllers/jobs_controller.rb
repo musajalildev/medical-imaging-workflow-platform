@@ -302,14 +302,14 @@ class JobsController < ApplicationController
       case current_user.role
       when "operator"
         # send email to client
-        UserMailer.send_job_completed_email(@job, @job.client).deliver_later
+        UserMailer.send_job_completed_email(@job, @job.client, current_user).deliver_later
       when "admin", "owner"
         # send email to client and operator
-        UserMailer.send_job_completed_email(@job, @job.client).deliver_later
+        UserMailer.send_job_completed_email(@job, @job.client, current_user).deliver_later
 
-        # have to be safe as jobs with no operator can be cancelled
+        # in theory this shouldn't be possible but have to be safe
         if @job.operator.present?
-          UserMailer.send_job_completed_email(@job, @job.operator).deliver_later
+          UserMailer.send_job_completed_email(@job, @job.operator, current_user).deliver_later
         end
       end
       redirect_to @job, notice: "Job was successfully completed.", status: :see_other
@@ -363,11 +363,6 @@ class JobsController < ApplicationController
   end
 
   def revert_to_draft
-    unless @job.pending? && @job.operator.nil?
-      redirect_to @job, alert: "Only unassigned pending jobs can be reverted to draft.", status: :see_other
-      return
-    end
-
     if @job.update(status: :draft)
       redirect_to @job, notice: "Job was reverted to draft.", status: :see_other
     else

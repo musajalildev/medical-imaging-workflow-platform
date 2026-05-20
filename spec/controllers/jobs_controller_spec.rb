@@ -270,4 +270,129 @@ RSpec.describe JobsController, type: :controller do
       expect(response).to redirect_to(job_path(job))
     end
   end
+
+  describe "PATCH #self_assign" do
+    let(:job) do
+      create(:job, client: client_user, operator: nil, title: "Unassigned Job", description: "Desc", status: :pending)
+    end
+
+    it "rejects a job when already assigned to an operator" do
+      job.update!(operator: operator_user)
+
+      patch :self_assign, params: { id: job.id }
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "assigns this job to the operator when no operator is assigned" do
+      allow(controller).to receive(:current_user).and_return(operator_user)
+      # record how many jobs this operator had before method call
+      before_count = Job.where(operator: operator_user).count
+
+      patch :self_assign, params: { id: job.id }
+
+      expect(response).to redirect_to(jobs_path(tab: "unassigned"))
+      expect(Job.where(operator: operator_user).count).to eq(before_count + 1) 
+    end
+  end
+
+  describe "PATCH #unassign" do
+    before do
+      allow(controller).to receive(:current_user).and_return(operator_user)
+    end
+    let(:job) do
+      create(:job, client: client_user, operator: operator_user, title: "Unassigned Job", description: "Desc", status: :assigned)
+    end
+
+    it "unassigns current operator from the job" do
+      # record how many jobs this operator had before method call
+      job # need to force lazy eval to make job
+      before_count = Job.where(operator: operator_user).count
+
+      patch :unassign, params: { id: job.id }
+
+      expect(response).to redirect_to(jobs_path(tab: "assigned"))
+      expect(Job.where(operator: operator_user).count).to eq(before_count - 1) 
+    end
+
+    it "sets the jobs status to pending" do
+
+      patch :unassign, params: { id: job.id }
+
+      expect(job.reload.status).to eq("pending")
+      expect(job.status).not_to eq("assigned")
+    end
+
+    it "rejects when job is assigned to another operator" do
+      other_operator_user = create(:user, role: :operator)
+      job.update!(operator: other_operator_user)
+
+      patch :unassign, params: { id: job.id }
+    
+      expect(response).to redirect_to(root_path)
+    end
+  end
+
+  describe "PATCH #re_assign" do
+    before do
+      allow(controller).to receive(:current_user).and_return(admin_user)
+    end
+    let(:job) do
+      create(:job, client: client_user, operator: operator_user, title: "Unassigned Job", description: "Desc", status: :assigned)
+    end
+    let(:other_operator_user) { create(:user, role: :operator) }
+
+    it "re-assigns the operator from the current to selected" do
+      patch :re_assign, params: { id: job.id, operator_id: other_operator_user }
+
+      expect(job.reload.operator).to eq(other_operator_user)
+      expect(job.status).to eq("assigned")
+      expect(response).to redirect_to(job_path(job))
+      expect(flash[:notice]).to eq("Operator reassigned successfully.")
+    end
+
+    it "removes the current operator when no operator selected" do
+      patch :re_assign, params: { id: job.id, operator_id: "" }
+
+      expect(job.reload.operator).to eq(nil)
+      expect(job.status).to eq("pending")
+      expect(response).to redirect_to(job_path(job))
+      expect(flash[:notice]).to eq("Operator dropped successfully.")
+    end
+
+    it "updates the operator from none to selected" do
+      job.update!(operator: nil)
+
+      patch :re_assign, params: { id: job.id, operator_id: operator_user }
+
+      expect(job.reload.operator).to eq(operator_user)
+      expect(job.status).to eq("assigned")
+      expect(response).to redirect_to(job_path(job))
+      expect(flash[:notice]).to eq("Operator assigned successfully.")
+    end
+  end
+
+  describe "PATCH #revert_to_draft" do
+    before do
+      sign_in client_user
+    end
+    let(:job) do
+      create(:job, client: client_user, operator: nil, title: "Unassigned Job", description: "Desc", status: :pending)
+    end
+    it "redirects with alert when job is not pending with no operator" do
+      job.update(operator: operator_user, status: :assigned)
+
+      patch :revert_to_draft, params: { id: job.id }
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "updates the jobs status to draft" do
+      patch :revert_to_draft, params: { id: job.id }
+
+      expect(job.reload.status).to eq("draft")
+      expect(response).to redirect_to(job_path(job))
+      expect(flash[:notice]).to eq("Job was reverted to draft.")
+    end
+  end
 end

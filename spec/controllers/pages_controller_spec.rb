@@ -6,6 +6,7 @@ RSpec.describe PagesController, type: :controller do
   before do
     allow(controller).to receive(:authenticate_user!).and_return(true)
     allow(UserMailer).to receive_message_chain(:with, :send_sign_up_email, :deliver_later).and_return(true)
+    allow(UserMailer).to receive_message_chain(:with, :send_help_email, :deliver_later).and_return(true)
     Rails.cache.clear
   end
 
@@ -20,6 +21,22 @@ RSpec.describe PagesController, type: :controller do
       client = create(:user, role: :client)
       get :sign_up
       expect(response).to redirect_to(root_path)
+    end
+  end
+
+  describe "GET #help" do
+    it "accepts clients" do
+      client = create(:user, role: :client)
+      sign_in client
+      get :help
+      expect(response).to be_successful
+    end
+
+    it "accepts operators" do
+      operator = create(:user, role: :operator)
+      sign_in operator
+      get :help
+      expect(response).to be_successful
     end
   end
 
@@ -90,6 +107,44 @@ RSpec.describe PagesController, type: :controller do
 
       expect(response).to redirect_to(sign_up_path)
       expect(flash[:notice]).to eq("Sign up email sent successfully!")
+    end
+  end
+
+  describe "POST #send_help_email" do
+    let(:client) { create(:user, role: :client) }
+
+    before do
+      sign_in client
+    end
+
+    it "redirects with alert when issue is blank" do
+      post :send_help_email, params: { issue_type: nil, expansion: "some expansion", job_id: nil }
+
+      expect(response).to redirect_to(help_path)
+      expect(flash[:alert]).to eq("Please select an issue.")
+    end
+
+    it "redirects with alert when issue is 'other' and no expansion is provided" do
+      post :send_help_email, params: { issue_type: "Other", expansion: nil, job_id: nil }
+
+      expect(response).to redirect_to(help_path)
+      expect(flash[:alert]).to eq("Please provide an explanation of your issue.")
+    end
+
+    it "redirects with alert when there are no admins in the database to contact" do
+      post :send_help_email, params: { issue_type: "Other", expansion: "some expansion", job_id: nil }
+
+      expect(response).to redirect_to(help_path)
+      expect(flash[:alert]).to eq("Sorry, there are no system administrators available to contact at this time.")
+    end
+
+    it "redirects with success message when everything is provided and there is an admin available" do
+      admin = create(:user, role: :admin, email: "admin@example.com")
+
+      post :send_help_email, params: { issue_type: "Other", expansion: "some expansion", job_id: nil }
+
+      expect(response).to redirect_to(help_path)
+      expect(flash[:notice]).to eq("Help request sent successfully, a system administrator will be in touch.")
     end
   end
 end
