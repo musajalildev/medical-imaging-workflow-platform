@@ -60,4 +60,7 @@ Rails.application.configure do
 
   # Make sure we know about it if params haven't been whitelisted
   config.action_controller.action_on_unpermitted_parameters = :raise
+
+  # Make sure we aren't pushing delayed jobs in tests to database
+  config.active_job.queue_adapter = :test
 end
