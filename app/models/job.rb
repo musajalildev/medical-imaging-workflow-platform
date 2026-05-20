@@ -105,7 +105,7 @@ class Job < ApplicationRecord
       drive_service = Google::Apis::DriveV3::DriveService.new
       drive_service.client_options.application_name = "Rails Drive Upload"
       
-      service_account_path = Rails.root.join("service_account.json")
+      service_account_path = ENV.fetch("GOOGLE_SERVICE_ACCOUNT_PATH", Rails.root.join("service_account.json").to_s)
       credentials = Google::Auth::ServiceAccountCredentials.make_creds(
         json_key_io: File.open(service_account_path),
         scope: [Google::Apis::DriveV3::AUTH_DRIVE]
@@ -118,7 +118,7 @@ class Job < ApplicationRecord
       folder_metadata = Google::Apis::DriveV3::File.new(
         name: folder_name,
         mime_type: "application/vnd.google-apps.folder",
-        parents: ["0AMU1EVlpjzbkUk9PVA"]  # Main shared folder
+        parents: [ENV.fetch("GOOGLE_DRIVE_FOLDER_ID")]  # Main shared folder
       )
       
       created_folder = drive_service.create_file(
