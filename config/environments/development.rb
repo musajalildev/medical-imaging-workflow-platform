@@ -70,19 +70,19 @@ Rails.application.configure do
   # Intentionally kept format to make it more obvious / easier to upgrade. #
   ##########################################################################
 
-  # Preview email in the browser instead of sending it
+  # send email with sendgrid
   config.action_mailer.default_url_options = { host: "localhost:3000" }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
 
   config.action_mailer.smtp_settings = {
-    address: 'smtp.gmail.com',
+    address: 'smtp.sendgrid.net',
     port: 587,
-    user_name: Rails.application.credentials.dig(:gmail, :username),
-    password:  Rails.application.credentials.dig(:gmail, :app_password),
-    authentication: 'plain',
+    user_name: 'apikey',
+    password: Rails.application.credentials.dig(:sendgrid, :api_key),
+    authentication: :plain,
     enable_starttls_auto: true
-}
+  }
 
 
   # Make sure we know about it if params haven't been whitelisted
