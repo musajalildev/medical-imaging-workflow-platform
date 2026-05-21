@@ -1,27 +1,68 @@
-# README
+# Project
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+A Rails 8 web application for managing image processing jobs. Users can submit jobs with DICOM files, track status, and receive email notifications. Files are stored on Google Drive via a service account.
 
-Things you may want to cover:
+**Stack:** Ruby on Rails 8 · PostgreSQL · Delayed Job · Shakapacker
 
-* Ruby version
+---
 
-* System dependencies
+## Running locally
 
-* Configuration
+**Prerequisites:** Ruby (see `.ruby-version`), PostgreSQL, Node.js/Yarn, and an SSH key with access to the Sheffield GitLab (needed for the `epi_cas` gem).
 
-* Database creation
+```bash
+bundle install
+yarn install
+cp config/database-sample.yml config/database.yml  # fill in your DB credentials
 
-* Database initialization
+bin/rails db:create db:migrate
+bin/rails db:seed   # optional
 
-* How to run the test suite
+bin/shakapacker      # compile assets
+bin/rails server
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+The app will be available at `http://localhost:3000`.
 
-* Deployment instructions
+To start the background job worker (needed for emails):
 
-* ...
+```bash
+bin/delayed_job start
+```
+
+---
+
+## Running tests
+
+```bash
+bundle exec rspec
+```
+
+---
+
+## Repository structure
+
+```
+app/
+  controllers/   # one controller per resource
+  models/        # Job, User, Report, Notification, ImageFile, etc.
+  decorators/    # Draper decorators for view logic
+  views/         # Haml templates
+  jobs/          # ActiveJob classes (e.g. delete_job_after_delay_job.rb)
+  mailers/       # UserMailer for email notifications
+  packs/         # JS/CSS entry points (Shakapacker/webpack)
+config/
+  routes.rb      # all routes defined here
+  deploy/        # Capistrano deploy config per environment
+db/
+  schema.rb      # current DB schema
+  migrate/       # migrations
+spec/            # RSpec tests (models, controllers, features, system)
+```
+
+Key models: `Job` (central), `User`, `ImageFile`, `Report`, `Notification`, `JobStatusHistory`, `CancelledJob`, `CompleteJob`.
+
+Authorization is handled by CanCanCan (`app/models/ability.rb`). Authentication uses CAS (University of Sheffield SSO) in production and a dev session controller locally.
 
 ---
 

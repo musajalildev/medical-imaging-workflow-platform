@@ -29,16 +29,16 @@ defaults: &defaults
     - staff
     - staff_honorary
     - staff_visiting
-    # - staff_retired
-    # - external
-    # - student_pg_research
-    # - student_pg_taught
+    - staff_retired
+    - external
+    - student_pg_research
+    - student_pg_taught
     - student_undergraduate
-    # - applicant_pg_research
-    # - applicant_pg_taught
-    # - applicant_undergraduate
+    - applicant_pg_research
+    - applicant_pg_taught
+    - applicant_undergraduate
     # - role
-    # - public
+    - public
 
   # Users in the following groups are created automatically in the app when logging in (comment/uncomment as necessary).
   # Users must also be in a department that is allowed to be created automatically in the app (see departments_allowed_to_be_created).
