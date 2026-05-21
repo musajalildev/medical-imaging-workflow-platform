@@ -12,7 +12,7 @@ class JobsController < ApplicationController
     if current_user&.operator?
       @tab = params[:tab].presence_in(%w[assigned unassigned]) || "assigned"
       if @tab == "unassigned"
-        @jobs = Job.where(status: :pending)
+        @jobs = Job.where(operator_id: nil).where.not(status: :draft)
       else
         @jobs = Job.where(operator_id: current_user.id).where.not(status: :draft)
       end
