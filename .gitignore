@@ -62,3 +62,5 @@ yarn-debug.log*
 
 Dockerfile
 docker-compose.yml
+.env
+service_account.json
