@@ -1,38 +1,184 @@
-# Project
+# Medical Imaging Workflow Platform
 
-A Rails 8 web application for managing image processing jobs. Users can submit jobs with DICOM files, track status, and receive email notifications. Files are stored on Google Drive via a service account.
+A full-stack **Ruby on Rails 8** application for managing medical imaging processing workflows.
 
-**Stack:** Ruby on Rails 8 · PostgreSQL · Delayed Job · Shakapacker
+The platform allows clients to submit processing jobs containing **DICOM medical imaging files**, track their progress through a defined workflow, and receive completed reports. Operators manage the processing of submitted jobs, while administrators manage users and the wider platform.
 
----
-
-## Running locally
-
-**Prerequisites:** Ruby (see `.ruby-version`), PostgreSQL, Node.js/Yarn, and an SSH key with access to the Sheffield GitLab (needed for the `epi_cas` gem).
-
-```bash
-bundle install
-yarn install
-cp config/database-sample.yml config/database.yml  # fill in your DB credentials
-
-bin/rails db:create db:migrate
-bin/rails db:seed   # optional
-
-bin/shakapacker      # compile assets
-bin/rails server
-```
-
-The app will be available at `http://localhost:3000`.
-
-To start the background job worker (needed for emails):
-
-```bash
-bin/delayed_job start
-```
+The application was developed collaboratively as a six-person software engineering team project at the **University of Sheffield**.
 
 ---
 
-## Running tests
+## Key Features
+
+* DICOM imaging job submission and management
+* Multi-stage job processing workflow
+* Client, operator and administrator user roles
+* Role-based authorization
+* Job status tracking and history
+* File and report management
+* Google Drive file storage
+* Automated transactional email notifications
+* Background job processing
+* University CAS authentication
+* PostgreSQL persistence
+* Automated RSpec test suite
+* Production deployment configuration
+
+---
+
+## How It Works
+
+The application manages the lifecycle of a medical imaging processing job.
+
+```text
+Client
+   │
+   ▼
+Submit Processing Job
+   │
+   ├── DICOM Files
+   └── Job Information
+   │
+   ▼
+Job Created
+   │
+   ▼
+Operator Processing
+   │
+   ├── Status Updates
+   ├── File Management
+   └── Processing Workflow
+   │
+   ▼
+Report Generated
+   │
+   ▼
+Client Receives Completed Report
+```
+
+Users receive notifications as jobs progress through the system.
+
+Different functionality is exposed depending on the user's role.
+
+### Clients
+
+Clients can submit imaging jobs, upload the associated files, monitor job progress and access completed reports.
+
+### Operators
+
+Operators manage the processing side of the workflow and update jobs as they progress.
+
+### Administrators
+
+Administrators manage the wider platform and its users.
+
+---
+
+## Architecture
+
+The application follows the standard Rails MVC architecture.
+
+```text
+                    ┌─────────────────┐
+                    │     Browser     │
+                    └────────┬────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Rails Controllers│
+                    └────────┬────────┘
+                             │
+                 ┌───────────┴───────────┐
+                 ▼                       ▼
+        ┌────────────────┐      ┌────────────────┐
+        │ Rails Models   │      │ Rails Views    │
+        └───────┬────────┘      │     Haml       │
+                │               └────────────────┘
+                ▼
+        ┌────────────────┐
+        │   PostgreSQL   │
+        └────────────────┘
+
+                │
+       External Services
+                │
+       ┌────────┴─────────┐
+       ▼                  ▼
+┌──────────────┐   ┌──────────────┐
+│ Google Drive │   │   SendGrid   │
+│ File Storage │   │    Email     │
+└──────────────┘   └──────────────┘
+```
+
+Background tasks such as email delivery are handled asynchronously using **Delayed Job**.
+
+---
+
+## Job Workflow
+
+`Job` is the central model within the application.
+
+Supporting models include:
+
+* `User`
+* `ImageFile`
+* `Report`
+* `Notification`
+* `JobStatusHistory`
+* `CancelledJob`
+* `CompleteJob`
+
+The application records changes to jobs as they move through the processing workflow, providing a history of status changes.
+
+---
+
+## Authentication & Authorization
+
+Authentication in production uses the **University of Sheffield CAS single sign-on system**.
+
+A development authentication mechanism is provided for local development.
+
+Authorization is implemented using **CanCanCan**, allowing functionality and resources to be restricted according to user roles.
+
+---
+
+## File Storage
+
+Uploaded job files are stored using **Google Drive**.
+
+The application integrates with the Google Drive API through a service account, allowing uploaded files to be organised and accessed as part of the processing workflow.
+
+Sensitive credentials and service-account keys are **not included in the repository** and must be configured separately for a local deployment.
+
+---
+
+## Email Notifications
+
+The application sends transactional emails using **SendGrid**.
+
+Email delivery is performed asynchronously through **Delayed Job**, preventing email operations from blocking normal web requests.
+
+Configuration values and API credentials must be supplied separately and are not stored in source control.
+
+---
+
+## Testing
+
+The project uses **RSpec** for automated testing.
+
+The test suite includes coverage across areas such as:
+
+* Models
+* Controllers
+* Features
+* System behaviour
+* Job workflows
+* User functionality
+* External service interactions
+
+External services such as Google Drive can be isolated from automated tests so that running the test suite does not create or modify real cloud resources.
+
+Run the test suite with:
 
 ```bash
 bundle exec rspec
@@ -40,172 +186,222 @@ bundle exec rspec
 
 ---
 
-## Repository structure
+## Technologies
 
-```
+### Backend
+
+* Ruby
+* Ruby on Rails 8
+* PostgreSQL
+* ActiveJob
+* Delayed Job
+
+### Frontend
+
+* Haml
+* JavaScript
+* Shakapacker
+* Webpack
+
+### Authentication & Authorization
+
+* CAS authentication
+* CanCanCan
+
+### External Services
+
+* Google Drive API
+* SendGrid
+
+### Testing
+
+* RSpec
+* Capybara
+
+### Development & Collaboration
+
+* Git
+* GitLab
+* GitHub
+
+---
+
+## Repository Structure
+
+```text
 app/
-  controllers/   # one controller per resource
-  models/        # Job, User, Report, Notification, ImageFile, etc.
-  decorators/    # Draper decorators for view logic
-  views/         # Haml templates
-  jobs/          # ActiveJob classes (e.g. delete_job_after_delay_job.rb)
-  mailers/       # UserMailer for email notifications
-  packs/         # JS/CSS entry points (Shakapacker/webpack)
+├── controllers/     # Request handling and application logic
+├── models/          # Job, User, Report, Notification, etc.
+├── decorators/      # Presentation/view logic
+├── views/           # Haml templates
+├── jobs/            # Background jobs
+├── mailers/         # Email notification logic
+└── packs/           # JavaScript/CSS entry points
+
 config/
-  routes.rb      # all routes defined here
-  deploy/        # Capistrano deploy config per environment
+├── routes.rb        # Application routes
+└── deploy/          # Deployment configuration
+
 db/
-  schema.rb      # current DB schema
-  migrate/       # migrations
-spec/            # RSpec tests (models, controllers, features, system)
+├── schema.rb
+└── migrate/
+
+spec/
+├── models/
+├── controllers/
+├── features/
+└── system/
 ```
 
-Key models: `Job` (central), `User`, `ImageFile`, `Report`, `Notification`, `JobStatusHistory`, `CancelledJob`, `CompleteJob`.
-
-Authorization is handled by CanCanCan (`app/models/ability.rb`). Authentication uses CAS (University of Sheffield SSO) in production and a dev session controller locally.
-
 ---
 
-## Google Drive Setup
+## Running Locally
 
-The application uploads job files to a Google Drive folder using a **service account**. A new owner needs to complete the following steps once before running the app.
+### Prerequisites
 
-### 1. Create a Google Drive folder
+The application requires:
 
-In any Google account, create a folder in Google Drive to act as the root uploads directory. You can name it anything (e.g. `App Uploads`).
+* Ruby (see `.ruby-version`)
+* PostgreSQL
+* Node.js
+* Yarn
 
-Open the folder in your browser. The folder ID is the last segment of the URL:
-
-```
-https://drive.google.com/drive/folders/<FOLDER_ID>
-```
-
-### 2. Share the folder with the service account
-
-Right-click the folder → **Share** → enter the service account's email address (found in `service_account.json` under the `"client_email"` key) and grant it **Editor** access.
-
-### 3. Obtain the service account key
-
-Get the `service_account.json` key file from the previous owner or generate a new one from the [Google Cloud Console](https://console.cloud.google.com/) under **IAM & Admin → Service Accounts**. Place it in the project root.
-
-The service account must have the **Google Drive API** enabled in its associated Google Cloud project.
-
-### 4. Configure environment variables
-
-Create a `.env` file in the project root (copy from `.env.example`):
-
-```
-GOOGLE_DRIVE_FOLDER_ID=<your folder ID from step 1>
-GOOGLE_SERVICE_ACCOUNT_PATH=/rails/service_account.json
-```
-
-`GOOGLE_SERVICE_ACCOUNT_PATH` defaults to `/rails/service_account.json` (the project root inside Docker) and can be omitted if you place the file there.
-
----
-
-# Email Configuration Guide
-
-This application uses [SendGrid](https://sendgrid.com) to send transactional emails. Follow the steps below to configure your own SendGrid account.
-
-The current configuration uses email account softwarehutdevemail.noreply@gmail.com, it will expire on July 17th, 2026
-
----
-
-## 1. Create a SendGrid Account
-
-1. Go to [sendgrid.com](https://sendgrid.com) and sign up for a free account
-2. The free tier allows up to **100 emails per day** at no cost
-3. Skip the onboarding flow and go straight to the dashboard (its in the top right corner)
-
----
-
-## 2. Verify a Sender Identity
-
-Before sending emails, SendGrid requires you to verify the address you'll be sending from.
-
-1. In the SendGrid dashboard, go to **Settings → Sender Authentication**
-2. Click **Create a Sender**
-3. Fill in your details — use the email address you want to send from (e.g. `noreply@yourcompany.com`)
-4. SendGrid will send a verification email to that address — click the link to confirm
-
----
-
-## 3. Generate an API Key
-
-1. In the SendGrid dashboard, go to **Settings → API Keys**
-2. Click **Create API Key**
-3. Give it a name (e.g. your app name)
-4. Select **Restricted Access** and enable **Mail Send** only
-5. Click **Create & View**
-6. **Copy the key immediately** — SendGrid will only show it once
-
----
-
-## 4. Add the API Key to the Application
-
-Open the Rails credentials file:
+Install the application dependencies:
 
 ```bash
-rails credentials:edit
+bundle install
+yarn install
 ```
 
-Add the following (using spaces, not tabs):
+Create your local database configuration:
 
-```yaml
-sendgrid:
-  api_key: SG.your_full_api_key_here
+```bash
+cp config/database-sample.yml config/database.yml
 ```
 
-Save and close the file.
+Configure the appropriate local database credentials and then initialise the database:
 
----
-
-## Troubleshooting
-
-1. Verify It's Working
-
-In the Rails console, confirm the key is loaded:
-
-```ruby
-Rails.application.credentials.dig(:sendgrid, :api_key)
+```bash
+bin/rails db:create
+bin/rails db:migrate
 ```
 
-This should return your API key, not `nil`.
+Optional development seed data can be created with:
 
----
+```bash
+bin/rails db:seed
+```
 
-2. Start the Background Job Processor
+Compile the frontend assets:
 
-Emails are sent asynchronously via Delayed Job. Make sure it's running:
+```bash
+bin/shakapacker
+```
+
+Start the Rails application:
+
+```bash
+bin/rails server
+```
+
+The application will then be available at:
+
+```text
+http://localhost:3000
+```
+
+Background jobs can be started with:
 
 ```bash
 bin/delayed_job start
 ```
 
-To stop it:
-
-```bash
-bin/delayed_job stop
-```
-
-For production, ensure the Delayed Job process is always running alongside your Rails server. If using a `Procfile`:
-
-```
-web: bundle exec rails server
-worker: bundle exec rake jobs:work
-```
+> Some functionality depends on external services and university infrastructure and therefore requires additional configuration that is not distributed with this repository.
 
 ---
 
-**Emails not sending:**
-- Check SendGrid **Activity** feed in the dashboard — if there's no activity, the app isn't reaching SendGrid
-- Make sure Delayed Job is running (`bin/delayed_job start`)
-- After updating credentials, always restart both the Rails server and Delayed Job
+## Security & Privacy Considerations
 
-**API key returning nil:**
-- Make sure the key is saved under `sendgrid: api_key:` in credentials (not `send_grid` with an underscore)
-- Make sure you're editing the correct credentials file for your environment
+Because the application was designed around medical imaging workflows, data protection was an important consideration during development.
 
-**Emails going to spam:**
-- Set up domain authentication in SendGrid under **Settings → Sender Authentication**
-- This requires access to your domain's DNS settings
+DICOM files can contain patient metadata within their headers. The project specification assumed files would be anonymised before entering the system.
+
+Reflecting on the design highlighted an important distinction between **assuming that incoming data has been anonymised** and actively verifying that it has been anonymised.
+
+A production implementation could strengthen this boundary through measures such as:
+
+* DICOM metadata validation
+* Removal of identifying metadata during upload
+* Explicit anonymisation confirmation
+* Stronger auditing of access to imaging data
+* Privacy-focused logging and monitoring
+
+This was an important lesson from the project: security and privacy requirements should influence system design directly rather than appearing only as consequences of other implementation decisions.
+
+---
+
+## Team Development
+
+This application was developed collaboratively by a **six-person software engineering team**.
+
+Development involved:
+
+* Feature branches
+* Merge requests
+* Code review
+* Collaborative Git workflows
+* Requirements gathering
+* Client communication
+* Testing and quality assurance
+* Deployment
+* Iterative development
+
+The project's original Git history has been retained to accurately represent its collaborative development.
+
+Working on a repository of this size also provided practical experience managing concurrent development and merge conflicts across a large number of branches.
+
+---
+
+## My Contribution
+
+My contributions included work across the application's development and testing, with particular experience around:
+
+* Ruby on Rails development
+* Automated testing with RSpec
+* System and integration testing
+* Job and user functionality
+* Google Drive integration testing
+* Isolating external services during automated tests
+* Debugging and resolving integration issues
+* Git-based collaborative development
+* Testing and quality assurance
+
+The project also gave me experience working within a larger existing codebase where features developed by multiple team members needed to integrate into a single production application.
+
+---
+
+## What I Learned
+
+This project provided experience beyond simply implementing application features.
+
+Some of the most important lessons involved:
+
+**Collaborative Git workflows**
+Working across many concurrent branches demonstrated why teams need an agreed branching and merging strategy rather than relying only on individual Git knowledge.
+
+**Testing external integrations**
+Services such as Google Drive demonstrated the importance of isolating external dependencies during automated testing.
+
+**Software engineering as a team process**
+Clear communication, agreed working practices and code review proved as important to successful delivery as the implementation itself.
+
+**Privacy by design**
+Working with a medical-imaging workflow highlighted why privacy and security assumptions need to be explicitly examined during system design.
+
+---
+
+## Academic Context
+
+Developed as part of the **COM213 Software Hut** module at the **University of Sheffield**.
+
+This was a collaborative team project developed in response to a client brief. The repository retains its original contributor and commit history to accurately represent the collaborative nature of the work.
